@@ -1,0 +1,75 @@
+package com.example.data.local
+
+import androidx.room.Entity
+import androidx.room.PrimaryKey
+
+@Entity(tableName = "study_timer_state")
+data class StudyTimerEntity(
+    @PrimaryKey val weekNumber: Int,
+    val currentPhaseIndex: Int = 0, // 0: Conceito(10m), 1: Visualização(20m), 2: Aplicação(30m), 3: Treino(15m), 4: Síntese(5m)
+    val remainingSeconds: Int = 600,
+    val isRunning: Boolean = false,
+    val completedBlocksCount: Int = 0,
+    val updatedAtEpochMs: Long = System.currentTimeMillis()
+)
+
+@Entity(tableName = "sm2_progress")
+data class Sm2ProgressEntity(
+    @PrimaryKey val cardId: String,
+    val repetitions: Int = 0,
+    val easinessFactor: Double = 2.5,
+    val intervalDays: Int = 0,
+    val nextReviewEpochDay: Long = 0L,
+    val lastGrade: Int = -1,
+    val updatedAtEpochMs: Long = System.currentTimeMillis()
+)
+
+@Entity(tableName = "mep_sheets")
+data class MepSheetEntity(
+    @PrimaryKey val recipeId: String,
+    val weekNumber: Int,
+    val targetServings: Int = 4,
+    val block1Identification: String = "",
+    val block2IngredientsPbPlFc: String = "",
+    val block3CookwareBlades: String = "",
+    val block4PrePrepCuts: String = "",
+    val block5ThermalFlowPcc: String = "",
+    val block6PlatingFinishing: String = "",
+    val block7HygieneAllergens: String = "",
+    val block8Selbstkontrolle: String = "",
+    val updatedAtEpochMs: Long = System.currentTimeMillis()
+)
+
+@Entity(tableName = "shopping_fifo_items")
+data class ShoppingFifoEntity(
+    @PrimaryKey(autoGenerate = true) val id: Long = 0,
+    val weekNumber: Int,
+    val ingredientName: String,
+    val sector: String, // Hortifrúti, Açougue & Peixaria, Laticínios & Ovos, Mercearia Seca, Especiarias & Fundos
+    val unit: String,
+    val netQuantityPl: Double,
+    val correctionFactorFc: Double,
+    val grossQuantityPb: Double,
+    val batchDate: String = "",
+    val expiryDate: String = "",
+    val isPurchased: Boolean = false,
+    val fifoPriorityNote: String = "PEPS/FIFO: usar lote mais antigo primeiro"
+)
+
+@Entity(tableName = "equipment_owned")
+data class EquipmentOwnedEntity(
+    @PrimaryKey val equipmentId: String,
+    val isOwned: Boolean = false
+)
+
+@Entity(tableName = "self_evaluations")
+data class SelfEvalEntity(
+    @PrimaryKey val weekNumber: Int,
+    val scoreMiseEnPlace: Int = 4, // 1..5
+    val scoreTechnique: Int = 4,   // 1..5
+    val scoreHygienePcc: Int = 5,  // 1..5
+    val scoreSensory: Int = 4,     // 1..5
+    val erkenntnisse: String = "",
+    val offenePunkte: String = "",
+    val updatedAtEpochMs: Long = System.currentTimeMillis()
+)

@@ -1,0 +1,21 @@
+<resources>
+    <string name="app_name">Atelier Gastronomia 24S</string>
+    <string name="app_subtitle">Formação Técnica Suíça • MEP • Chef IA</string>
+    <string name="sign_in_google">Entrar com Google</string>
+    <string name="sign_out">Sair da conta</string>
+    <string name="nav_course">Curso 24S</string>
+    <string name="nav_atlas">Aula &amp; Atlas</string>
+    <string name="nav_recipes">Receitas &amp; MEP</string>
+    <string name="nav_shopping">Compras &amp; Eq.</string>
+    <string name="nav_gestion">Gestão &amp; Calc</string>
+    <string name="nav_community">Mural &amp; IA</string>
+    <string name="keep_screen_on_badge">TELA ATIVA • MODO BANCADA</string>
+    <string name="start_study_block">Iniciar Bloco de Estudo (80 min)</string>
+    <string name="register_training_photo">Registrar Foto do Treino</string>
+    <string name="export_shareable_card">Compartilhar Card PNG</string>
+    <string name="ask_chef_ai">Consultar Chef Instrutor IA</string>
+    <string name="cd_swiss_emblem">Emblema Precisão Suíça Atelier Gastronomia 24S</string>
+    <string name="cd_timer_toggle">Alternar cronômetro de estudo ou cocção</string>
+    <string name="cd_close_dialog">Fechar janela</string>
+    <string name="cd_back_navigation">Voltar para a tela anterior</string>
+</resources>

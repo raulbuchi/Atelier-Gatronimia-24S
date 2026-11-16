@@ -1,0 +1,6 @@
+{
+  "name": "Atelier Gastronomia 24S",
+  "description": "Curso profissional autoguiado de gastronomia em 24 semanas com nucleo tecnico suico, Ficha MEP em 8 blocos, calculadoras de gestao, mural comunitario e Chef IA multimodal.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

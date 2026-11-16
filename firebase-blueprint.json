@@ -1,0 +1,287 @@
+{
+  "entities": {
+    "UserProfile": {
+      "title": "UserProfile",
+      "description": "Public culinary student profile without PII (email/phone excluded).",
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string",
+          "description": "Owner Firebase Auth UID."
+        },
+        "displayName": {
+          "type": "string",
+          "description": "Chef student display name."
+        },
+        "avatarUrl": {
+          "type": "string",
+          "description": "Optional profile photo URL."
+        },
+        "bio": {
+          "type": "string",
+          "description": "Short culinary bio or station specialty."
+        },
+        "currentWeek": {
+          "type": "integer",
+          "description": "Current active week in the 24-week curriculum (1-24)."
+        },
+        "cantonFocus": {
+          "type": "string",
+          "description": "Preferred Swiss canton code (AG to ZH)."
+        },
+        "specialtyBadge": {
+          "type": "string",
+          "description": "Active station or Chefkoch badge."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server creation timestamp via FieldValue.serverTimestamp()."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server update timestamp via FieldValue.serverTimestamp()."
+        }
+      },
+      "required": [
+        "userId",
+        "displayName",
+        "currentWeek",
+        "cantonFocus",
+        "specialtyBadge",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "PortfolioPost": {
+      "title": "PortfolioPost",
+      "description": "Denormalized culinary portfolio and community mural post metadata with lightweight thumbnail.",
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string",
+          "description": "Author Firebase Auth UID."
+        },
+        "authorName": {
+          "type": "string",
+          "description": "Denormalized author display name."
+        },
+        "visibility": {
+          "type": "string",
+          "enum": ["private", "public"],
+          "description": "Access visibility: private (owner portfolio only) or public (community mural)."
+        },
+        "weekNumber": {
+          "type": "integer",
+          "description": "Course week number (1-24)."
+        },
+        "cycleNumber": {
+          "type": "integer",
+          "description": "Course cycle number (1-4)."
+        },
+        "axisId": {
+          "type": "integer",
+          "description": "Thematic brochure axis ID (1-6)."
+        },
+        "materialType": {
+          "type": "string",
+          "enum": ["prato_final", "cortes_mep", "ficha_preenchida", "resumo_esquema"],
+          "description": "Category of submitted culinary training artifact."
+        },
+        "recipeId": {
+          "type": "string",
+          "description": "Associated recipe or preparation identifier."
+        },
+        "recipeTitle": {
+          "type": "string",
+          "description": "Denormalized recipe title."
+        },
+        "isSwissmilkClassic": {
+          "type": "boolean",
+          "description": "True if recipe belongs to the 23 Swissmilk cantonal classics."
+        },
+        "isChefkochV4": {
+          "type": "boolean",
+          "description": "True if recipe belongs to the v4 Chefkoch step-by-step dossier."
+        },
+        "cantonCode": {
+          "type": "string",
+          "description": "Canton code badge if applicable (e.g. ZH, BE, VD)."
+        },
+        "caption": {
+          "type": "string",
+          "description": "Student technical notes and observations."
+        },
+        "mepSummary": {
+          "type": "string",
+          "description": "Summary of MEP PCC temperatures, FC, and Erkenntnisse."
+        },
+        "aiFeedback": {
+          "type": "string",
+          "description": "Optional multimodal visual evaluation from Chef IA."
+        },
+        "thumbnailBase64": {
+          "type": "string",
+          "description": "Compact EXIF-stripped JPEG thumbnail Base64 (<80KB) for fast feed reads."
+        },
+        "reactedUserIds": {
+          "type": "array",
+          "description": "Bounded list of UIDs who applauded this post."
+        },
+        "reactionCount": {
+          "type": "integer",
+          "description": "Denormalized count equal to reactedUserIds size."
+        },
+        "commentCount": {
+          "type": "integer",
+          "description": "Denormalized comment count."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server creation timestamp via FieldValue.serverTimestamp()."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server update timestamp via FieldValue.serverTimestamp()."
+        }
+      },
+      "required": [
+        "userId",
+        "authorName",
+        "visibility",
+        "weekNumber",
+        "cycleNumber",
+        "axisId",
+        "materialType",
+        "recipeId",
+        "recipeTitle",
+        "isSwissmilkClassic",
+        "isChefkochV4",
+        "cantonCode",
+        "caption",
+        "mepSummary",
+        "aiFeedback",
+        "thumbnailBase64",
+        "reactedUserIds",
+        "reactionCount",
+        "commentCount",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "PortfolioMedia": {
+      "title": "PortfolioMedia",
+      "description": "On-demand high-resolution compressed image payload (max 1200px JPEG 0.80 without EXIF).",
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string",
+          "description": "Owner Firebase Auth UID."
+        },
+        "visibility": {
+          "type": "string",
+          "enum": ["private", "public"],
+          "description": "Mirrored visibility for zero-lookup rule enforcement."
+        },
+        "imageBase64": {
+          "type": "string",
+          "description": "Compressed JPEG Base64 payload without EXIF."
+        },
+        "width": {
+          "type": "integer",
+          "description": "Compressed image width in pixels (<= 1200)."
+        },
+        "height": {
+          "type": "integer",
+          "description": "Compressed image height in pixels (<= 1200)."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server creation timestamp via FieldValue.serverTimestamp()."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server update timestamp via FieldValue.serverTimestamp()."
+        }
+      },
+      "required": [
+        "userId",
+        "visibility",
+        "imageBase64",
+        "width",
+        "height",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "PostComment": {
+      "title": "PostComment",
+      "description": "Peer technical comment on a community mural post.",
+      "type": "object",
+      "properties": {
+        "postId": {
+          "type": "string",
+          "description": "Parent post document ID."
+        },
+        "postOwnerId": {
+          "type": "string",
+          "description": "Denormalized parent post owner UID for zero-lookup list evaluation."
+        },
+        "postVisibility": {
+          "type": "string",
+          "enum": ["private", "public"],
+          "description": "Denormalized parent post visibility for zero-lookup list evaluation."
+        },
+        "userId": {
+          "type": "string",
+          "description": "Comment author Firebase Auth UID."
+        },
+        "authorName": {
+          "type": "string",
+          "description": "Comment author display name."
+        },
+        "text": {
+          "type": "string",
+          "description": "Comment text (1-500 chars)."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server creation timestamp via FieldValue.serverTimestamp()."
+        }
+      },
+      "required": [
+        "postId",
+        "postOwnerId",
+        "postVisibility",
+        "userId",
+        "authorName",
+        "text",
+        "createdAt"
+      ]
+    }
+  },
+  "firestore": {
+    "/profiles/{userId}": {
+      "schema": "UserProfile",
+      "description": "Owner-isolated culinary student profile documents."
+    },
+    "/portfolio_posts/{postId}": {
+      "schema": "PortfolioPost",
+      "description": "Denormalized portfolio and mural feed documents."
+    },
+    "/portfolio_media/{postId}": {
+      "schema": "PortfolioMedia",
+      "description": "Segregated compressed 1200px image payloads fetched on demand."
+    },
+    "/portfolio_posts/{postId}/comments/{commentId}": {
+      "schema": "PostComment",
+      "description": "Technical peer comments under a portfolio post."
+    }
+  }
+}

@@ -56,17 +56,21 @@ class CommunityRepository(private val db: FirebaseFirestore) {
         displayName: String,
         bio: String?,
         avatarUrl: String?,
+        avatarBase64: String? = null,
+        defaultVisibility: String = "public",
         currentWeek: Int,
         cantonFocus: String,
         specialtyBadge: String
     ): Result<Unit> = runCatching {
         val uid = requireUserId()
         val docRef = db.collection("profiles").document(uid)
+        val safeDefaultVis = if (defaultVisibility == "private") "private" else "public"
         try {
             val existingSnap = docRef.get().await()
             if (existingSnap.exists()) {
                 val updates = mutableMapOf<String, Any>(
                     "displayName" to displayName.trim().take(80).ifEmpty { "Aluno Chef" },
+                    "defaultVisibility" to safeDefaultVis,
                     "currentWeek" to currentWeek.coerceIn(1, 24),
                     "cantonFocus" to cantonFocus.trim().take(10).ifEmpty { "ZH" },
                     "specialtyBadge" to specialtyBadge.trim().take(60).ifEmpty { "Lernender EFZ" },
@@ -78,6 +82,9 @@ class CommunityRepository(private val db: FirebaseFirestore) {
                 if (!avatarUrl.isNullOrBlank()) {
                     updates["avatarUrl"] = avatarUrl.trim().take(500)
                 }
+                if (!avatarBase64.isNullOrBlank()) {
+                    updates["avatarBase64"] = avatarBase64.take(59000)
+                }
                 docRef.update(updates).await()
             } else {
                 val payload = mapOf(
@@ -85,6 +92,8 @@ class CommunityRepository(private val db: FirebaseFirestore) {
                     "displayName" to displayName.trim().take(80).ifEmpty { "Aluno Chef" },
                     "bio" to bio?.trim()?.take(240)?.takeIf { it.isNotEmpty() },
                     "avatarUrl" to avatarUrl?.trim()?.take(500)?.takeIf { it.isNotEmpty() },
+                    "avatarBase64" to avatarBase64?.take(59000)?.takeIf { it.isNotEmpty() },
+                    "defaultVisibility" to safeDefaultVis,
                     "currentWeek" to currentWeek.coerceIn(1, 24),
                     "cantonFocus" to cantonFocus.trim().take(10).ifEmpty { "ZH" },
                     "specialtyBadge" to specialtyBadge.trim().take(60).ifEmpty { "Lernender EFZ" },
@@ -137,6 +146,7 @@ class CommunityRepository(private val db: FirebaseFirestore) {
 
     suspend fun createPostWithMedia(
         authorName: String,
+        authorAvatarBase64: String? = null,
         visibility: String,
         weekNumber: Int,
         cycleNumber: Int,
@@ -149,6 +159,9 @@ class CommunityRepository(private val db: FirebaseFirestore) {
         cantonCode: String,
         caption: String,
         mepSummary: String,
+        selbstkontrolleScore: Int = 0,
+        erkenntnisse: String = "",
+        offenePunkte: String = "",
         aiFeedback: String,
         thumbnailBase64: String,
         fullImageBase64: String?,
@@ -168,6 +181,7 @@ class CommunityRepository(private val db: FirebaseFirestore) {
         val postPayload = mapOf(
             "userId" to uid,
             "authorName" to authorName.trim().take(80).ifEmpty { "Chef Aluno" },
+            "authorAvatarBase64" to authorAvatarBase64?.take(59000)?.takeIf { it.isNotBlank() },
             "visibility" to safeVisibility,
             "weekNumber" to weekNumber.coerceIn(1, 24),
             "cycleNumber" to cycleNumber.coerceIn(1, 4),
@@ -180,14 +194,18 @@ class CommunityRepository(private val db: FirebaseFirestore) {
             "cantonCode" to cantonCode.trim().take(10),
             "caption" to caption.trim().take(1000).ifEmpty { "Registro técnico de bancada." },
             "mepSummary" to mepSummary.trim().take(1500),
+            "selbstkontrolleScore" to selbstkontrolleScore.coerceIn(0, 5).takeIf { it > 0 },
+            "erkenntnisse" to erkenntnisse.trim().take(600).takeIf { it.isNotEmpty() },
+            "offenePunkte" to offenePunkte.trim().take(600).takeIf { it.isNotEmpty() },
             "aiFeedback" to aiFeedback.trim().take(2500),
             "thumbnailBase64" to thumbnailBase64.take(80000),
+            "imageLink" to if (!fullImageBase64.isNullOrBlank()) "firestore://portfolio_media/$postId" else null,
             "reactedUserIds" to emptyList<String>(),
             "reactionCount" to 0,
             "commentCount" to 0,
             "createdAt" to FieldValue.serverTimestamp(),
             "updatedAt" to FieldValue.serverTimestamp()
-        )
+        ).filterValues { it != null }
 
         try {
             val batch = db.batch()
@@ -235,6 +253,157 @@ class CommunityRepository(private val db: FirebaseFirestore) {
         }
     }
 
+    fun observeMyMepSheetLinks(userId: String): Flow<List<MepSheetCloudLink>> {
+        val path = "mep_sheets"
+        return db.collection(path)
+            .whereEqualTo("userId", userId)
+            .snapshots()
+            .map { snapshot ->
+                snapshot.toObjects(
+                    MepSheetCloudLink::class.java,
+                    DocumentSnapshot.ServerTimestampBehavior.ESTIMATE
+                ).sortedByDescending { it.updatedAt?.seconds ?: 0L }
+            }
+            .catch { error ->
+                logFlowFirestoreError(error, OperationType.LIST, path, userId)
+                throw error
+            }
+    }
+
+    suspend fun saveMepSheetCreationPhoto(
+        recipeId: String,
+        title: String,
+        weekNumber: Int,
+        stationBrigade: String,
+        targetServings: Int,
+        pccTargetTempC: Int,
+        executionScore1To5: Int,
+        thumbnailBase64: String,
+        fullImageBase64: String,
+        imageWidth: Int,
+        imageHeight: Int,
+        localPhotoUri: String? = null
+    ): Result<MepSheetCloudLink> = runCatching {
+        val uid = requireUserId()
+        val safeRecipeId = recipeId.trim().take(80).ifEmpty { "ficha_autoral" }
+        val safeDocId = sanitizeFirestoreDocId("${uid}_$safeRecipeId")
+        val sheetRef = db.collection("mep_sheets").document(safeDocId)
+
+        val generatedMediaToken = db.collection("portfolio_media").document().id
+        val mediaId = sanitizeFirestoreDocId("mep_media_$generatedMediaToken")
+        val mediaRef = db.collection("portfolio_media").document(mediaId)
+        val canonicalImageLink = "firestore://portfolio_media/$mediaId"
+
+        val safeTitle = title.trim().take(120).ifEmpty { safeRecipeId }
+        val safeBrigade = stationBrigade.trim().take(40).ifEmpty { "Saucier" }
+        val safeWeek = weekNumber.coerceIn(1, 24)
+        val safeServings = targetServings.coerceIn(1, 500)
+        val safePcc = pccTargetTempC.coerceIn(-30, 250)
+        val safeScore = executionScore1To5.coerceIn(1, 5)
+        val safeThumb = thumbnailBase64.take(80000).ifEmpty { "dGh1bWI=" }
+        val safeLocalUri = localPhotoUri?.trim()?.take(500)?.takeIf { it.isNotEmpty() }
+
+        try {
+            val existingQuery = db.collection("mep_sheets")
+                .whereEqualTo("userId", uid)
+                .whereEqualTo("recipeId", safeRecipeId)
+                .limit(1)
+                .get()
+                .await()
+            val existingDoc = existingQuery.documents.firstOrNull()
+            val targetSheetRef = existingDoc?.reference ?: sheetRef
+            val previousMediaId = existingDoc?.getString("mediaId")
+
+            val mediaPayload = mapOf(
+                "userId" to uid,
+                "visibility" to "private",
+                "imageBase64" to fullImageBase64.take(590000),
+                "width" to imageWidth.coerceIn(1, 2000),
+                "height" to imageHeight.coerceIn(1, 2000),
+                "createdAt" to FieldValue.serverTimestamp(),
+                "updatedAt" to FieldValue.serverTimestamp()
+            )
+
+            val batch = db.batch()
+            batch.set(mediaRef, mediaPayload)
+
+            if (existingDoc != null) {
+                val updatePayload = mutableMapOf<String, Any>(
+                    "title" to safeTitle,
+                    "weekNumber" to safeWeek,
+                    "stationBrigade" to safeBrigade,
+                    "targetServings" to safeServings,
+                    "pccTargetTempC" to safePcc,
+                    "executionScore1To5" to safeScore,
+                    "mediaId" to mediaId,
+                    "imageLink" to canonicalImageLink,
+                    "thumbnailBase64" to safeThumb,
+                    "updatedAt" to FieldValue.serverTimestamp()
+                )
+                if (safeLocalUri != null) {
+                    updatePayload["localPhotoUri"] = safeLocalUri
+                }
+                batch.update(targetSheetRef, updatePayload)
+            } else {
+                val createPayload = mapOf(
+                    "userId" to uid,
+                    "recipeId" to safeRecipeId,
+                    "title" to safeTitle,
+                    "weekNumber" to safeWeek,
+                    "stationBrigade" to safeBrigade,
+                    "targetServings" to safeServings,
+                    "pccTargetTempC" to safePcc,
+                    "executionScore1To5" to safeScore,
+                    "mediaId" to mediaId,
+                    "imageLink" to canonicalImageLink,
+                    "thumbnailBase64" to safeThumb,
+                    "localPhotoUri" to safeLocalUri,
+                    "createdAt" to FieldValue.serverTimestamp(),
+                    "updatedAt" to FieldValue.serverTimestamp()
+                ).filterValues { it != null }
+                batch.set(targetSheetRef, createPayload)
+            }
+
+            if (!previousMediaId.isNullOrBlank() &&
+                previousMediaId != mediaId &&
+                previousMediaId.startsWith("mep_media_")
+            ) {
+                val oldMediaRef = db.collection("portfolio_media").document(previousMediaId)
+                batch.delete(oldMediaRef)
+            }
+
+            batch.commit().await()
+
+            MepSheetCloudLink(
+                id = targetSheetRef.id,
+                userId = uid,
+                recipeId = safeRecipeId,
+                title = safeTitle,
+                weekNumber = safeWeek,
+                stationBrigade = safeBrigade,
+                targetServings = safeServings,
+                pccTargetTempC = safePcc,
+                executionScore1To5 = safeScore,
+                mediaId = mediaId,
+                imageLink = canonicalImageLink,
+                thumbnailBase64 = safeThumb,
+                localPhotoUri = safeLocalUri
+            )
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            handleFirestoreError(e, OperationType.WRITE, sheetRef.path)
+            throw e
+        }
+    }
+
+    private fun sanitizeFirestoreDocId(raw: String): String {
+        return raw
+            .replace(Regex("[^a-zA-Z0-9_\\-]"), "_")
+            .take(120)
+            .ifEmpty { "doc_${System.currentTimeMillis()}" }
+    }
+
     suspend fun getPostById(postId: String): Result<PortfolioPost?> = runCatching {
         val docRef = db.collection("portfolio_posts").document(postId)
         try {
@@ -275,7 +444,6 @@ class CommunityRepository(private val db: FirebaseFirestore) {
                     "updatedAt" to FieldValue.serverTimestamp()
                 )
             ).await()
-            // Sync media visibility if media document exists
             val mediaRef = db.collection("portfolio_media").document(postId)
             val mediaSnap = mediaRef.get().await()
             if (mediaSnap.exists()) {
@@ -298,20 +466,29 @@ class CommunityRepository(private val db: FirebaseFirestore) {
         val uid = requireUserId()
         require(post.id.isNotBlank()) { "Post ID obrigatório" }
         val postRef = db.collection("portfolio_posts").document(post.id)
-        val currentList = post.reactedUserIds
-        val updatedList = if (uid in currentList) {
-            currentList.filterNot { it == uid }
-        } else {
-            (currentList + uid).distinct().take(500)
-        }
         try {
-            postRef.update(
-                mapOf(
-                    "reactedUserIds" to updatedList,
-                    "reactionCount" to updatedList.size,
-                    "updatedAt" to FieldValue.serverTimestamp()
+            db.runTransaction { transaction ->
+                val snap = transaction.get(postRef)
+                if (!snap.exists()) {
+                    throw IllegalStateException("Publicação não encontrada no Mural.")
+                }
+                val currentList = (snap.get("reactedUserIds") as? List<*>)
+                    ?.filterIsInstance<String>()
+                    .orEmpty()
+                val updatedList = if (uid in currentList) {
+                    currentList.filterNot { it == uid }
+                } else {
+                    (currentList + uid).distinct().take(500)
+                }
+                transaction.update(
+                    postRef,
+                    mapOf(
+                        "reactedUserIds" to updatedList,
+                        "reactionCount" to updatedList.size,
+                        "updatedAt" to FieldValue.serverTimestamp()
+                    )
                 )
-            ).await()
+            }.await()
         } catch (e: CancellationException) {
             throw e
         } catch (e: Exception) {
@@ -387,18 +564,63 @@ class CommunityRepository(private val db: FirebaseFirestore) {
         }
     }
 
-    suspend fun deletePost(postId: String): Result<Unit> = runCatching {
+    suspend fun deleteComment(
+        post: PortfolioPost,
+        comment: PostComment
+    ): Result<Unit> = runCatching {
         requireUserId()
+        require(post.id.isNotBlank() && comment.id.isNotBlank()) { "IDs obrigatórios" }
+        val postRef = db.collection("portfolio_posts").document(post.id)
+        val commentRef = postRef.collection("comments").document(comment.id)
+        try {
+            val batch = db.batch()
+            batch.delete(commentRef)
+            if (post.commentCount > 0) {
+                batch.update(
+                    postRef,
+                    mapOf(
+                        "commentCount" to FieldValue.increment(-1),
+                        "updatedAt" to FieldValue.serverTimestamp()
+                    )
+                )
+            }
+            batch.commit().await()
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            handleFirestoreError(e, OperationType.DELETE, commentRef.path)
+            throw e
+        }
+    }
+
+    /**
+     * Cascade-deletes child comments in portfolio_posts/{postId}/comments alongside
+     * portfolio_media/{postId} and portfolio_posts/{postId} in batches (v6.md Section 2.A).
+     */
+    suspend fun deletePost(postId: String): Result<Unit> = runCatching {
+        val uid = requireUserId()
         val postRef = db.collection("portfolio_posts").document(postId)
         val mediaRef = db.collection("portfolio_media").document(postId)
         try {
+            val childCommentsSnap = postRef.collection("comments")
+                .whereEqualTo("postOwnerId", uid)
+                .get()
+                .await()
             val mediaSnap = mediaRef.get().await()
-            val batch = db.batch()
-            batch.delete(postRef)
-            if (mediaSnap.exists()) {
-                batch.delete(mediaRef)
+
+            // Firestore write batch limit is 500 operations; chunk safely if needed
+            childCommentsSnap.documents.chunked(450).forEach { chunk ->
+                val commentBatch = db.batch()
+                chunk.forEach { commentDoc -> commentBatch.delete(commentDoc.reference) }
+                commentBatch.commit().await()
             }
-            batch.commit().await()
+
+            val rootBatch = db.batch()
+            rootBatch.delete(postRef)
+            if (mediaSnap.exists()) {
+                rootBatch.delete(mediaRef)
+            }
+            rootBatch.commit().await()
         } catch (e: CancellationException) {
             throw e
         } catch (e: Exception) {

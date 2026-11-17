@@ -4,266 +4,82 @@ import com.example.data.local.MepSheetEntity
 import com.example.domain.model.BrochureGuideSpec
 import com.example.domain.model.CourseWeek
 
+/**
+ * Cronograma oficial de 24 Semanas (4 Ciclos), 6 Brochuras (-v3.pdf) e Ficha MEP Exemplo
+ * carregados a partir de `curso-24-semanas-dados-v4.json` + expansões bibliográficas v5.
+ */
 object CurriculumWeeksAndGuides {
 
-    val brochures: List<BrochureGuideSpec> = listOf(
-        BrochureGuideSpec(
-            id = "eixo-1-seguranca-cortes-v2.pdf",
-            axisNumber = 1,
-            fileNameRef = "eixo-1-higiene-cortes-bateria-v2.pdf",
-            title = "Eixo 1 — Higiene (RDC 216 / Suíça), Schnittarten & Bateria",
-            summary = "Controle microbiológico, Zona de Perigo (5–60 °C máx. 4h), geometria suíça de cortes e condução térmica.",
-            keyBulletRules = listOf(
-                "Lavagem das mãos reduz ~99% da microbiota transitória; desinfecção alcoólica APÓS secagem completa atinge 99,99%.",
-                "Facas cegas esmagam paredes celulares vegetais, acelerando exsudação e escurecimento enzimático (polifenoloxidase).",
-                "Frigideira de aço puro (Lyoner Pfanne) oxida e destrói a vitamina C em vegetais salteados — obrigatório usar Poêle antiadhésif.",
-                "Refrigeração segura ≤ 5 °C; regeneração ≥ 70 °C; aves ≥ 74 °C; galantina pochada 65 °C internos."
-            )
-        ),
-        BrochureGuideSpec(
-            id = "eixo-2-fundos-emulsoes-v2.pdf",
-            axisNumber = 2,
-            fileNameRef = "eixo-2-fundos-molhos-laticinios-v2.pdf",
-            title = "Eixo 2 — Fundos Clássicos, Emulsões & Laticínios Swissmilk",
-            summary = "Extração de colágeno (Brauner Kalbsfond), glacês, ligações por amido (~80% amilopectina / ~20% amilose) e queijos AOP.",
-            keyBulletRules = listOf(
-                "Brauner Kalbsfond: dourar ossos em Rôtissoire sem queimar, pinçar extrato de tomate e deglaçar 2–3x até glace antes de cobrir com água fria.",
-                "Emulsões frias e quentes: Salsa verde estabilizada por lecitina de gema pasteurizada; fondue estabilizado por ácido tartárico (vinho branco) + amido.",
-                "Fritura por imersão (ex.: Malakoff, batatas): pré-fritar a 140 °C e dourar a 165–175 °C (teto estrito de 175 °C contra formação de acrilamida)."
-            )
-        ),
-        BrochureGuideSpec(
-            id = "eixo-3-carnes-gartechniken-v2.pdf",
-            axisNumber = 3,
-            fileNameRef = "eixo-3-anatomia-rind-gartechniken-v2.pdf",
-            title = "Eixo 3 — Anatomia Bovina Suíça (Rind A–H) & Klassische Gartechniken",
-            summary = "Mapeamento de tecido conjuntivo dos 8 quartos bovinos e regras estritas das 14 técnicas clássicas de cocção.",
-            keyBulletRules = listOf(
-                "Cortes magros de baixo colágeno (Nierstück: Filet, Roastbeef, Huft) → Sautieren em Sautoir/Lyoner Pfanne ou Grillieren.",
-                "Cortes ricos em colágeno (Schulter, Federstück, Brust, Schenkel) → Sieden (82–90 °C, ex.: Berner Platte) ou Schmoren em Braisière.",
-                "Poelieren: assar tampado em Braisière/Rondeau sobre matignon aromático a 140–160 °C SEM adição de líquido."
-            )
-        ),
-        BrochureGuideSpec(
-            id = "eixo-4-sousvide-charcutaria-v2.pdf",
-            axisNumber = 4,
-            fileNameRef = "eixo-4-sous-vide-galantinas-charcutaria-v2.pdf",
-            title = "Eixo 4 — Spezielle Gartechniken: Sous-Vide, Salmoura & Galantinas",
-            summary = "Transferência térmica a vácuo, pré-salmoura osmótica, Cook-and-Chill e charcutaria fina de aves.",
-            keyBulletRules = listOf(
-                "Salmoura Sous-vide (5% a 10% = 50–100 g/L): 10 min para peixes (evita albumina coagulada) e 3–4 h para carnes grandes.",
-                "Ajuste térmico do termocirculador: +0,5 a +1,0 °C acima da temperatura alvo de centro; espessura máxima da peça: 7 cm sem ossos.",
-                "Geflügelgalantine: farce mousseline batida sobre gelo e passada em tamis; pochar até exatos 65 °C no centro geométrico."
-            )
-        ),
-        BrochureGuideSpec(
-            id = "eixo-5-patisserie-teige-v2.pdf",
-            axisNumber = 5,
-            fileNameRef = "eixo-5-teige-patisserie-cordon-bleu-v2.pdf",
-            title = "Eixo 5 — Massas Laminadas (Teige), Caldas & Sobremesas Clássicas",
-            summary = "Laminação suíça (Deutscher, Halbblätterteig, Blitz), estágios do açúcar (116–145 °C), suflês e cremes pochados.",
-            keyBulletRules = listOf(
-                "Deutscher Blätterteig: 4 dobras duplas (256 camadas); Halbblätterteig: 3 dobras duplas (64 camadas). Nunca estocar crua longo tempo a 5 °C.",
-                "Caldas Le Cordon Bleu: Bala mole 116–118 °C (merengue italiano/parfait), Bala dura 125 °C, Casca mole 134 °C, Casca dura 145 °C.",
-                "Gestürzte Karamellcreme: pochar coberta com filme em banho-maria a 80 °C (evita bolhas por ebulição das proteínas do ovo) + 12 h de maturação fria."
-            )
-        ),
-        BrochureGuideSpec(
-            id = "eixo-6-gestao-nutricao-brigada-v2.pdf",
-            axisNumber = 6,
-            fileNameRef = "eixo-6-fachrechnen-ernaehrung-brigada-v2.pdf",
-            title = "Eixo 6 — Fachrechnen, BAB/BeBu, Nutrição (Ernaehrung) & Brigada",
-            summary = "Cálculo reverso de perdas em cascata, precificação suíça MWST 8%, meta de fibras (≥ 30 g/dia) e 13 postos clássicos.",
-            keyBulletRules = listOf(
-                "Fachrechnen: Compra = Porção Líquida / ∏(1 - perda_i). Nunca somar percentuais de descasque e cocção linearmente!",
-                "Ernaehrung: ≥ 30 g/dia de Nahrungsfasern sequestram ácidos biliares no intestino, forçando o fígado a consumir colesterol sérico.",
-                "Betriebsorganisation: 13 cargos (incluindo Diätkoch na hospitalar/hotelaria e Mitarbeiterkoch p/ refeitório interno)."
-            )
-        )
-    )
+    val brochures: List<BrochureGuideSpec>
+        get() = CourseJsonDatasetLoader.dataset.brochures
+
+    val weeks: List<CourseWeek>
+        get() = CourseJsonDatasetLoader.dataset.weeks
+
+    val blankMepTemplateMarkdown: String = """
+        # MODELO EM BRANCO — FICHA TÉCNICA MEP (8 BLOCOS) • ATELIER GASTRONOMIA 24S (v4/v5)
+        - **Fluxo Oficial de Consulta no App:** Preencher **Frente (Blocos 1–4)** antes de acender o fogo (AVOR) e **Verso (Blocos 5–8)** durante e após a execução.
+        - **Preparação:** ______________________________________ | **Semana:** ____ | **Praça da Brigada:** __________________
+        - **Rendimento Base:** ____ porções | **Alvo Escalonado:** ____ porções (`FC Escala = Alvo ÷ Base`)
+        - **Quebra Térmica Estimada (%):** ______% | **Meta CMV (%):** ______% | **Preço Sugerido (BVP / EVP c/ MWST 8%):** ____________
+
+        ## 1. Identificação do Treino & Escala da Receita (Frente)
+        - Trilha (`base_global` | `swissmilk_23` | `chefkoch_step_by_step`) e Peso da porção pós-cocção (g):
+
+        ## 2. Mapa de Insumos, Cortes & Rendimento (`PB = PL × FC`)
+        | Insumo | Setor PVPS | Unid. | PL Escalonado | FC (`1 / (1 - apara)`) | PB Compra | Custo Unit. | Custo Linha |
+        | :--- | :--- | :---: | :---: | :---: | :---: | :---: | :---: |
+        | 1. | | | | | | | |
+        | 2. | | | | | | | |
+        | 3. | | | | | | | |
+
+        ## 3. Bateria de Cozinha, Equipamentos & Pré-Aquecimento (`Kochgeschirrarten`)
+        - Panelas / Caçarolas (atenção: antiaderente obrigatório p/ vegetais ricos em Vit. C; Sautoir/Rondeau p/ molhos):
+        - Cutelaria & Precisão (`Chefmesser`, `Rüstmesser`, `Tamis`, Termômetro de Sonda):
+
+        ## 4. Pré-Preparo, Padronização de Cortes (`Schnittarten`) & AVOR
+        - Cortes milimétricos (`Brunoise` 1,5 mm, `Jardinière` 5 mm, `Julienne` 1×30 mm / 3 mm George Bento, `Bâtonnets` 5×30 mm):
+        - Salmouras (5–10%), Marinadas (≤ 5 °C) ou Hidratação de Hidrocoloides:
+
+        ## 5. Sequência Cronológica & Controle Térmico / PCC (Verso)
+        - Método (`Concentração` vs. `Expansão`, `Poelieren` 140–160 °C, Fritura ≤ 175 °C, Alfa-amilase 98–100 °C, Anglaise ≤ 80 °C):
+        - Centro térmico obrigatório (°C) e resfriamento rápido em 2 estágios (60→21 °C ≤ 2h; 21→5 °C ≤ +4h):
+
+        ## 6. Montagem, Serviço, Empratamento & Aproveitamento de Aparas (`Parüren`)
+        - Temperatura do prato (°C), disposição espacial, ponto do molho (`nappé` / `vanner`) e elemento crocante:
+
+        ## 7. Segurança Sanitária (RDC 216 / APPCC / 4 POPs) & Alergênicos
+        - Higienização (99%) + antissepsia em mãos secas (99,99%), sanitização 200 ppm/15 min e alergênicos declarados:
+
+        ## 8. Degustação, Autoavaliação (`Selbstkontrolle` 1–5) & Lições Aprendidas
+        - Peso real aferido pós-cocção (g) e desvio (%):
+        - Aprendizados consolidados (`Erkenntnisse`) e Pontos abertos (`Offene Punkte`):
+    """.trimIndent()
 
     val exampleMepZurcherRosti = MepSheetEntity(
-        recipeId = "swiss_zh_zurcher_geschnetzeltes",
-        weekNumber = 7,
+        recipeId = "rec-zurcher-geschnetzeltes",
+        title = "Zürcher Geschnetzeltes com Berner Rösti (ZH • Exemplo Oficial)",
+        weekNumber = 8,
+        stationBrigade = "Saucier",
+        baseServings = 4,
         targetServings = 4,
-        block1Identification = "Zürcher Geschnetzeltes mit Rösti (Cantão ZH) | Rendimento: 4 porções (150 g vitela + 200 g Rösti/pess.)",
-        block2IngredientsPbPlFc = "Filé/Noz de vitela PL 600g × FC 1.08 = PB 648g | Batata cerosa Gschwellti PL 800g × FC 1.18 = PB 944g | Cogumelos Paris PL 200g × FC 1.12 = PB 224g | Creme 35% 250g | Vinho branco 100ml | Bratbutter 60g",
-        block3CookwareBlades = "Sautoir (vitela e redução do molho c/ deglaçagem), Lyoner Pfanne ou Antihaft-Pfanne (dourar Rösti compacto), Chefmesser afiada (iscas finas s/ esmagar fibras)",
-        block4PrePrepCuts = "Cebola e salsinha em Brunoise fina (~1,5 mm); cogumelos fatiados 3 mm; vitela em émincé transversal de 4 mm refrigerada ≤ 4 °C; batatas cozidas na véspera com casca e raladas grosso.",
-        block5ThermalFlowPcc = "Selar vitela em Bratbutter bem quente (2 lotes rápidos < 90s a 180 °C) e reservar aquecida; suar brunoise + cogumelos, deglaçar c/ vinho branco, reduzir à metade, juntar demi-glace + creme 35% (nappé a 82 °C); retornar vitela sem ferver (PCC ≥ 68 °C). Rösti dourado em chama média 12 min/lado.",
-        block6PlatingFinishing = "Prato aquecido a 55 °C: disco dourado de Rösti à direita, émincé cremoso brilhante à esquerda sem invadir a crosta crocante, salsa fresca picada na hora.",
-        block7HygieneAllergens = "Alergênicos: Lactose (creme 35%, Bratbutter), Sulfitos (vinho branco). Manter vitela crua ≤ 5 °C até o salto térmico; higienizar tábua vermelha imediatamente.",
-        block8Selbstkontrolle = "Erkenntnisse: Selar a vitela em 2 lotes impediu queda térmica e exsudação de água. Offene Punkte: Ajustar pressão na virada da Rösti com prato auxiliar."
-    )
-
-    val weeks: List<CourseWeek> = listOf(
-        CourseWeek(1, 1, "Ciclo 1: Base & Segurança", 1, "Higiene Sanitária, Facas & Schnittarten I",
-            "Zona de Perigo (5–60 °C máx. 4h), lavagem (99%) vs. desinfecção das mãos secas (99,99%) e ergonomia de bancada.",
-            "Geometria milimétrica suíça: Brunoise (1,5 mm), Jardinière (5 mm), Macédoine (8 mm) e impacto de lâminas cegas na oxidação.",
-            "Montagem do posto (pano úmido sob tábua, GN de aparas, GN de produto limpo) e execução de cortes-base.",
-            "Cronometragem de 150 g de cenoura em Brunoise e Julienne (1 mm × 3 cm) com paquímetro/régua culinária.",
-            "Registro de perdas reais (PB vs. PL) na Ficha MEP Bloco 2.",
-            "Blocos 1, 2 e 4: Identificação, Fator de Correção real e geometria de cortes.", "eixo-1-seguranca-cortes-v2.pdf"),
-        CourseWeek(2, 1, "Ciclo 1: Base & Segurança", 1, "Bateria Térmica (Kochgeschirrarten) & Salteado",
-            "Transferência de calor em inox multicamadas, ferro (Lyoner Pfanne) e antiaderente (Poêle antiadhésif).",
-            "Por que frigideiras de aço puro oxidam e destroem a vitamina C de vegetais e não servem para redução ácida.",
-            "Execução de vegetais salteados crocantes (Rhomben e Paysanne) em antiaderente e batatas Gschwellti.",
-            "Controle de chama e movimento na Sauteuse sem esmagar bordas celulares.",
-            "Mapeamento do inventário de equipamentos Níveis 1 e 2.",
-            "Bloco 3: Seleção correta da bateria por reação físico-química.", "eixo-1-seguranca-cortes-v2.pdf"),
-        CourseWeek(3, 1, "Ciclo 1: Base & Segurança", 2, "Fundos Clássicos & Brauner Kalbsfond",
-            "Extração de gelatina a partir do colágeno ósseo, reação de Maillard controlada e pincage do extrato de tomate.",
-            "Fluxo do Brauner Kalbsfond (5 L): Rôtissoire no forno, deglaçagens sucessivas 2–3x até ponto de glace.",
-            "Cozimento em fervura branda (simmer 88–92 °C, nunca ebulição violenta para não emulsificar gordura) por 3h.",
-            "Clarificação mecânica por passagem em étamine/pano úmido e resfriamento rápido (< 2h até ≤ 21 °C, depois ≤ 5 °C).",
-            "Cálculo de rendimento líquido de fundo e custo por litro.",
-            "Bloco 5: Curva de resfriamento rápido Cook-and-Chill e PCC.", "eixo-2-fundos-emulsoes-v2.pdf"),
-        CourseWeek(4, 1, "Ciclo 1: Base & Segurança", 2, "Ligações de Amido, Sopas Suíças & Cevada",
-            "Estrutura dos amidos (trigo, milho e batata: ~80% amilopectina / ~20% amilose), gelatinização e retrogradação.",
-            "Clássico Grisões: Bündner Gerstensuppe (cevada perolada, Brunoise de legumes e Bündnerfleisch) e Basler Mehlsuppe.",
-            "Torra controlada de farinha (roux escuro sem queimar) e hidratação progressiva sem grumos.",
-            "Ajuste de viscosidade nappé leve e equilíbrio de sal/umami de carnes curadas alpinas.",
-            "Síntese das proporções de roux claro, louro e escuro por litro.",
-            "Bloco 2 e 5: Hidratação de grãos e temperatura de serviço ≥ 65 °C.", "eixo-2-fundos-emulsoes-v2.pdf"),
-        CourseWeek(5, 1, "Ciclo 1: Base & Segurança", 2, "Ovos, Laticínios & Clássicos de Queijo AOP",
-            "Coagulação das proteínas da clara (62–65 °C) e gema (68–70 °C); ciência da fusão de Gruyère AOP e Vacherin Fribourgeois.",
-            "Fondue Moitié-Moitié (FR), Cholera do Valais (VS) e Älplermagronen (OW/NW) com cebola dourada.",
-            "Prevenção de separação lipídica no fondue via acidez (vinho branco/limão) e amido de milho.",
-            "Diagnóstico de falhas: recuperação de emulsão quebrada na caquelon.",
-            "Tabela de queijos suíços duros, semiduros e alpinos.",
-            "Bloco 7: Gestão de alergênicos lácteos e controle de temperatura.", "eixo-2-fundos-emulsoes-v2.pdf"),
-        CourseWeek(6, 1, "Ciclo 1: Base & Segurança", 2, "Fritura por Imersão, Acrilamida & Rösti",
-            "Termodinâmica da fritura profunda: evaporação superficial, reação de Maillard vs. formação de acrilamida acima de 175 °C.",
-            "Duplo banho térmico (140 °C branqueamento em óleo → 165–175 °C crocância) aplicado a Malakoff (VD) e Bâtonnets.",
-            "Execução da Berner/Zürcher Rösti perfeita a partir de batatas cozidas na véspera (retrogradação parcial do amido).",
-            "Teste sensorial de crocância externa e umidade interna macia.",
-            "Fechamento do Ciclo 1 e primeira auditoria Selbstkontrolle.",
-            "Bloco 5: Teto rígido de 175 °C em frituras e monitoramento do óleo.", "eixo-2-fundos-emulsoes-v2.pdf"),
-        CourseWeek(7, 2, "Ciclo 2: Intermediário & Clássicos", 3, "Salteado Rápido em Sautoir & Zürcher Geschnetzeltes",
-            "Sautieren de proteínas tenras: alta carga térmica inicial, lotes pequenos, deglaçagem e montagem de molho na Sautoir.",
-            "Estudo integral da ficha exemplo: Zürcher Geschnetzeltes mit Rösti (ZH) e Leberspiessli (SH).",
-            "Corte em émincé uniforme, selagem relâmpago em Bratbutter (manteiga clarificada suíça) e redução de creme 35%.",
-            "Empratamento clássico com separação nítida entre molho brilhante e guarnição crocante.",
-            "Comparação Sautoir vs. Sauteuse vs. Lyoner Pfanne.",
-            "Espelho completo dos 8 Blocos da Ficha MEP (modelo Zurique).", "eixo-3-carnes-gartechniken-v2.pdf"),
-        CourseWeek(8, 2, "Ciclo 2: Intermediário & Clássicos", 3, "Massas Frescas Alpinas, Spätzli, Pizzoccheri & Capuns",
-            "Rede de glúten por batimento mecânico (Spätzli/Knöpfli) vs. farinha de trigo-sarraceno sem glúten (Pizzoccheri Poschiavo).",
-            "Envelopamento em folhas de acelga branqueadas: Capuns (GR) cozidos em caldo + leite.",
-            "Branqueamento verde vibrante com choque térmico imediato em gelo e corte de presunto alpino.",
-            "Padronização de gramatura unitária dos Capuns (45 g/unid.).",
-            "Controle de perdas de cocção em massas úmidas.",
-            "Bloco 4 e 6: Padronização de porcionamento e apresentação alpina.", "eixo-3-carnes-gartechniken-v2.pdf"),
-        CourseWeek(9, 2, "Ciclo 2: Intermediário & Clássicos", 3, "Peixes Dulcícolas Suíços, Poissonnière & Meunière",
-            "Estrutura muscular curta de peixes (colágeno desnatura a 50–55 °C), pochê em court-bouillon e Filets de Perche Meunière (GE/NE).",
-            "Uso da Poissonnière para peças inteiras e empanamento leve à la française seguido de beurre noisette.",
-            "Limpeza de filés delicados, controle de espuma da manteiga avelã (150 °C) e finalização com salsa e limão.",
-            "Execução de Zuger Rötel (truta alpina) e Filets de Perche.",
-            "Quadro de temperaturas internas seguras para pescados (63 °C).",
-            "Bloco 5: Ponto translúcido vs. ressecamento proteico.", "eixo-3-carnes-gartechniken-v2.pdf"),
-        CourseWeek(10, 2, "Ciclo 2: Intermediário & Clássicos", 3, "Cocção por Submersão Branda (Sieden) & Berner Platte",
-            "Hidrólise lenta do colágeno em meio líquido sub-ebulição (82–90 °C): diferença entre iniciar em água fria (caldo) vs. quente (Siedfleisch).",
-            "Ficha Chefkoch v4: Berner Platte (BE) — coordenação de 5 tempos distintos (língua 120m, Hohrücken 90m, bacon 60m, costeleta/Zungenwurst 82 °C).",
-            "Vagens secas/frescas branqueadas e estufadas com segurelha (Bohnenkraut) e chucrute perfumado com zimbro.",
-            "Sincronização de múltiplos cronômetros para serviço simultâneo quente.",
-            "Revisão dos cortes bovinos Federstück, Brust e Schulter.",
-            "Bloco 5: Escalonamento reverso de cronograma (retro-planning).", "eixo-3-carnes-gartechniken-v2.pdf"),
-        CourseWeek(11, 2, "Ciclo 2: Intermediário & Clássicos", 3, "Bollito Misto Ticinese, Emulsões Herbáceas & Braseados",
-            "Tradição ítalo-suíça (Ticino/Piemonte): Bollito misto mit Salsa verde e Brasato al Merlot com Polenta.",
-            "Corte Huftdeckel, ombro de vitela, língua, Zampone e ave pochada; emulsão a frio com gema pasteurizada, alcaparra e aliche.",
-            "Selagem e braseamento longo em Braisière tampada (Schmoren) com redução brilhante do líquido.",
-            "Equilíbrio ácido-salgado-umami na Salsa verde cortada na faca (sem oxidar no liquidificador).",
-            "Quadro comparativo Sieden vs. Dämpfen vs. Schmoren.",
-            "Bloco 7: Uso obrigatório de gema pasteurizada em molhos crus.", "eixo-3-carnes-gartechniken-v2.pdf"),
-        CourseWeek(12, 2, "Ciclo 2: Intermediário & Clássicos", 3, "Mapa Bovino Suíço (Rind A–H), Caça & Bison-Mignons",
-            "Domínio completo dos 8 grandes cortes suíços (Stotzen, Nierstück, Lempen, Rücken, Schulter, Federstück, Brust, Hals).",
-            "Ficha Chefkoch v4: Bison-Mignons mit Thymiankruste — incisão em grade de 2 mm, crosta de ervas e Wild-Demi-glace com gin.",
-            "Cocção saignant precisa (52–54 °C internos + repouso de redistribuição de sucos sobre grelha aquecida).",
-            "Purê sedoso de cebolinhas reduzidas no vinho tinto.",
-            "Fechamento do Ciclo 2 e simulado de anatomia Rind.",
-            "Bloco 5 e 6: Repouso térmico pós-selagem e precisão de ponto.", "eixo-3-carnes-gartechniken-v2.pdf"),
-        CourseWeek(13, 3, "Ciclo 3: Avançado, Pâtisserie & Sous-Vide", 3, "Poelieren, Assados em Massa & Papet Vaudois",
-            "Regra áurea do Poelieren: cocção tampada em Braisière/Rondeau sobre matignon aromático a 140–160 °C SEM líquido adicionado.",
-            "Saucisson Vaudois IGP com Papet Vaudois (alho-poró e batata) e Filet im Teig (filé envolto em massa).",
-            "Controle de vapor interno na caçarola e deglaçagem final do matignon caramelizado.",
-            "Teste de sonda eletrônica para não ultrapassar o ponto rosado no centro.",
-            "Diferenciação técnica Braten vs. Poelieren vs. Glasieren.",
-            "Bloco 3 e 5: Vedação da Braisière e controle de forno 140–160 °C.", "eixo-3-carnes-gartechniken-v2.pdf"),
-        CourseWeek(14, 3, "Ciclo 3: Avançado, Pâtisserie & Sous-Vide", 5, "Massas Folhadas Suíças (Teige) & 13 Formatos",
-            "Física da laminação: camadas alternadas de détrempe (farinha T400 + malte) e beurrage impermeável que expandem pelo vapor.",
-            "Ficha Chefkoch v4: Deutscher Blätterteig (4 dobras duplas), Halbblätterteig (3 dobras duplas) e Blitzblätterteig + 13 formatos de Konfekt.",
-            "Execução de dobras duplas precisas a 14–16 °C com descansos ≥ 30 min e prevenção de encolhimento no forno.",
-            "Modelagem de Pastetli (Luzerner Chügelipastete), Fleurons e Palmiers.",
-            "Alerta sanitário/qualidade: proibição de estocar crua longo tempo a 5 °C (oxidação acinzentada).",
-            "Bloco 4 e 7: Controle de temperatura da manteiga e congelamento técnico.", "eixo-5-patisserie-teige-v2.pdf"),
-        CourseWeek(15, 3, "Ciclo 3: Avançado, Pâtisserie & Sous-Vide", 5, "Tortas Cantonais: Nusstorte, Rüeblitorte & Zuger Kirschtorte",
-            "Massas quebradiças (Mürbeteig / Sablée suíça por sablage vs. crémage), massas batidas aeradas e merengue japonês.",
-            "Engadiner Nusstorte (GR — caramelo + creme + nozes), Aargauer Rüeblitorte (AG) e Solothurner/Zuger Torte.",
-            "Controle do ponto de caramelo claro para recheio de nozes sem amargor e embebição equilibrada com Kirsch.",
-            "Acabamento de confeitaria limpa: glaçagem de damasco, marzipã e bordas de amêndoas laminadas tostadas.",
-            "Balanço de açúcar, gordura e estrutura em confeitaria alpina.",
-            "Bloco 2 e 6: Pesagem de precisão em gramas (0,1 g) e acabamento.", "eixo-5-patisserie-teige-v2.pdf"),
-        CourseWeek(16, 3, "Ciclo 3: Avançado, Pâtisserie & Sous-Vide", 5, "Suflês Quentes, Cremes Pochados & Caldas Le Cordon Bleu",
-            "Expansão térmica de ar aprisionado em claras batidas (Vanilleauflauf) vs. rede delicada de ovoproteínas a 80 °C (Karamellcreme).",
-            "Fichas Chefkoch v4: Vanilleauflauf (200 °C / 15–20m após pré-aquecimento em banho-maria) e Gestürzte Karamellcreme (80 °C c/ filme + 12h frio).",
-            "Domínio da escala de caldas de açúcar: Bala mole (116–118 °C), Bala dura (125 °C), Casca mole (134 °C) e Casca dura (145 °C).",
-            "Untar ramequins em pinceladas verticais com manteiga e farinha T550 para subida reta do suflê.",
-            "Diagnóstico de creme empolado (> 85 °C) e suflê colapsado.",
-            "Bloco 5: Termometria de calda e banho-maria controlado a 80 °C.", "eixo-5-patisserie-teige-v2.pdf"),
-        CourseWeek(17, 3, "Ciclo 3: Avançado, Pâtisserie & Sous-Vide", 4, "Galantina Clássica (65 °C) & Protocolos Sous-Vide",
-            "Emulsão cárnea mousseline (proteínas miofibrilares solubilizadas pelo sal a < 4 °C) e transferência térmica a vácuo.",
-            "Fichas Chefkoch v4: Geflügelgalantine (desossa dorsal íntegra, tamis sobre gelo, 65 °C internos) + Bacalhau (55 °C/2h30), Salmão (57,5 °C/125m) e Peito de Vitela (62 °C/15h).",
-            "Aplicação de salmoura prévia 5–10% (10 min peixes vs. 3h vitela) e ajuste do banho +0,5 a +1,0 °C acima do centro.",
-            "Resfriamento imediato em água + gelo (Cook-and-Chill) e prensagem uniforme da galantina.",
-            "Validação de PCC e vida útil sob vácuo refrigerado ≤ 3 °C.",
-            "Bloco 5 e 7: Auditoria rigorosa de vácuo, salmoura e centro 65 °C.", "eixo-4-sousvide-charcutaria-v2.pdf"),
-        CourseWeek(18, 3, "Ciclo 3: Avançado, Pâtisserie & Sous-Vide", 5, "Sobremesas Geladas, Parfaits, Sorbet & Vermicelles",
-            "Controle de cristais de gelo por sólidos solúveis, gordura e ar incorporado (Bomba/Pâte à bombe a 118 °C).",
-            "Parfait glacé com calda bala mole (116–118 °C), St. Galler Bürli/Schüblig salgado + Vermicelles de castanha portuguesa (TI/Suíça).",
-            "Equilíbrio Brix/álcool em sorbets para textura espatulável a -14 °C.",
-            "Montagem de sobremesa empratada de restaurante com contraste térmico e crocante.",
-            "Fechamento do Ciclo 3 e revisão global de confeitaria.",
-            "Bloco 6: Logística de passe frio (Garde-manger / Pâtissier).", "eixo-5-patisserie-teige-v2.pdf"),
-        CourseWeek(19, 4, "Ciclo 4: Chefkoch, Nutrição & Gestão", 6, "Gastronomia Brasileira & Mediterrânea sob Rigor MEP",
-            "Aplicação da matriz suíça de precisão (PB/PL/FC, PCC e cortes) às matrizes brasileiras (mandioca, dendê, tucupi, moqueca) e mediterrâneas.",
-            "Padronização de Moqueca Capixaba/Baiana e Arroz Caldoso de Polvo com controle exato de colágeno e redução.",
-            "Construção de fundos de crustáceos/peixes sem amargor (máx. 25–30 min de extração).",
-            "Ficha técnica completa para replicação consistente por qualquer cozinheiro da linha.",
-            "Comparativo de emulsões com azeite extravirgem vs. manteiga.",
-            "Bloco 1 a 8: Tradução de receitas tradicionais para padrão Chefkoch.", "eixo-6-gestao-nutricao-brigada-v2.pdf"),
-        CourseWeek(20, 4, "Ciclo 4: Chefkoch, Nutrição & Gestão", 6, "Nutrição Aplicada (Ernaehrung), Carboidratos & Fibras",
-            "Metabolismo de carboidratos, índice glicêmico, estrutura do amido e papel fisiológico das Nahrungsfasern (meta ≥ 30 g/dia).",
-            "Como as fibras solúveis sequestram ácidos biliares no intestino e reduzem o colesterol sérico; tabela de equivalências para 10 g de fibra.",
-            "Desenvolvimento de menu completo equilibrado atingindo ≥ 12 g de fibras numa única refeição gastronômica saborosa.",
-            "adaptação de preparações pelo Diätkoch (hipossódica, celíaca, cardioprotetora) sem perda hedônica.",
-            "Revisão de preservação vitamínica nos métodos de cocção (Dämpfen vs. Sieden).",
-            "Bloco 7: Declaração nutricional funcional e adaptação dietética.", "eixo-6-gestao-nutricao-brigada-v2.pdf"),
-        CourseWeek(21, 4, "Ciclo 4: Chefkoch, Nutrição & Gestão", 6, "Fachrechnen: Perdas em Cascata & Engenharia de Compras",
-            "Matemática culinária suíça: erro de somar perdas vs. fórmula multiplicativa Compra = Porção / ∏(1 - perda_i).",
-            "Simulação real de desossa + apara + perda térmica de assado e consolidação de compras semanais com FIFO/PEPS.",
-            "Resolução de problemas inversos (calcular peso bruto necessário para banquete de 85 convidados com 22% apara e 18% cocção).",
-            "Auditoria de desperdício na bancada e aproveitamento integral em fundos/farces.",
-            "Validação cruzada com a Calculadora Fachrechnen do app.",
-            "Bloco 2: Domínio absoluto de PB, PL, FC e rendimento líquido.", "eixo-6-gestao-nutricao-brigada-v2.pdf"),
-        CourseWeek(22, 4, "Ciclo 4: Chefkoch, Nutrição & Gestão", 6, "Precificação Suíça (BAB/BeBu), MWST 8% & Ponto de Equilíbrio",
-            "Estrutura de custos KATAG/BeBu: Warenkosten, Personalkosten, Prime-Cost, Bruttoergebnis 1 (BE1), Betriebsergebnis 2 (BE2), BVP e EVP (MWST 8%).",
-            "Cálculo do Ponto de Equilíbrio operacional x_cr = Kf / (p - kv) e matriz de engenharia de cardápio.",
-            "Precificação completa de um menu de 3 tempos (entrada, principal suíço, sobremesa) mantendo Prime-Cost ≤ 62%.",
-            "Simulação de sensibilidade a alta de insumos proteicos e ajuste de porção/preço.",
-            "Síntese dos indicadores financeiros essenciais para o Küchenchef.",
-            "Integração custo por porção + margem de contribuição.", "eixo-6-gestao-nutricao-brigada-v2.pdf"),
-        CourseWeek(23, 4, "Ciclo 4: Chefkoch, Nutrição & Gestão", 6, "Organização de Brigada (13 Postos) & 3 Organogramas",
-            "A brigada clássica de Escoffier atualizada pela formação suíça: responsabilidades exatas dos 13 cargos operacionais.",
-            "Comparação estrutural dos 3 organogramas: Grande Hotel, Restaurante Gastronômico Independente e Restauração Coletiva/Hospitalar.",
-            "Papel estratégico do Tournant, Diätkoch, Mitarbeiterkoch e formação dual de Lernender EFZ/EBA.",
-            "Elaboração de escala de praças, fluxo de comandas no passe e comunicação limpa ('Oui, Chef!').",
-            "Checklist de liderança (Führung) e briefing pré-serviço de 5 minutos.",
-            "Bloco 3 e 8: Divisão de praças e liderança operacional.", "eixo-6-gestao-nutricao-brigada-v2.pdf"),
-        CourseWeek(24, 4, "Ciclo 4: Chefkoch, Nutrição & Gestão", 6, "Prova Prática Final Chefkoch (Menu 3 Tempos + Dossier)",
-            "Planejamento autônomo de exame prático: menu autoral de 3 tempos unindo corte padronizado, proteína c/ molho clássico, guarnição de amido e sobremesa técnica.",
-            "Cronograma regressivo minuto a minuto de 180 minutos de bancada com PCCs auditados.",
-            "Execução completa com registro fotográfico das 4 categorias no Portfólio/Mural (prato_final, cortes_mep, ficha_preenchida, resumo_esquema).",
-            "Submissão à auditoria multimodal do Chef IA e geração do Card PNG de conclusão.",
-            "Exportação do Dossier Lernreflexion completo das 24 semanas.",
-            "Consolidação magistral dos 8 Blocos MEP + Selbstkontrolle final.", "eixo-6-gestao-nutricao-brigada-v2.pdf")
+        portionWeightGrams = 350.0,
+        cookingShrinkagePercent = 14.0,
+        targetCmvPercent = 27.0,
+        directLaborCost = 9.5,
+        pccTargetTempC = 68,
+        plateTempC = 55,
+        allergensCsv = "Lactose, Glúten, Sulfitos",
+        actualBenchYieldGrams = 1415.0,
+        executionScore1To5 = 5,
+        isCustomSheet = false,
+        block1Identification = "Zürcher Geschnetzeltes com Berner Rösti (Exemplo Oficial de Consulta • Semana 8) | Rendimento: 4 porções (600 g vitela + Rösti Gschwellti)",
+        block2IngredientsPbPlFc = "Vitela em tiras (Kalbsgeschnetzeltes) PL 600g × FC 1,05 = PB 630g | Cogumelos de Paris PL 200g × FC 1,10 = PB 220g | Vinho branco seco 100ml + Caldo 100ml | Creme integral Vollrahm 200ml | Manteiga clarificada Bratbutter 25g",
+        block3CookwareBlades = "Caçarola rasa Sautoir / Flachkasserolle (selagem por concentração em 2 lotes e molho de deglaçagem), frigideira antiaderente ou Lyoner Pfanne (disco dourado de Berner Rösti), Chefmesser afiada",
+        block4PrePrepCuts = "Cebola e salsinha lisa em brunoise fina (~1,5 mm); cogumelos fatiados regulares; raspa fina de ½ limão no Zestenmesser; tiras de vitela bem secas em papel-toalha polvilhadas com 1 c. sopa de farinha na hora.",
+        block5ThermalFlowPcc = "Selar a vitela em 2 porções pequenas em Bratbutter bem quente (~1 min/lote, Maillard sem soltar água) e reservar aquecida; suar cebola + cogumelos, deglaçar com 100 ml de vinho branco + caldo reduzindo à metade; juntar 200 ml de Vollrahm com 1 c. chá de amido até nappé aveludado (82 °C); retornar a vitela apenas para reaquecer SEM ferver (PCC ≥ 68 °C).",
+        block6PlatingFinishing = "Prato aquecido a 55 °C: disco dourado e crocante de Berner Rösti à direita, Zürcher Geschnetzeltes brilhante à esquerda preservando a crocância da batata, salsinha fresca salpicada.",
+        block7HygieneAllergens = "Alergênicos: Lactose (Vollrahm, Bratbutter), Glúten (farinha de polvilhamento), Sulfitos (vinho branco). Cadeia fria ≤ 4 °C até a selagem; higienização (99%) + antissepsia das mãos secas (99,99%).",
+        block8Selbstkontrolle = "Erkenntnisse: Saltear em 2 lotes manteve a Sautoir acima de 160 °C sem cozinhar a vitela no vapor. Offene Punkte: Sincronizar a virada da Berner Rösti exatamente com o início da deglaçagem do vinho."
     )
 }

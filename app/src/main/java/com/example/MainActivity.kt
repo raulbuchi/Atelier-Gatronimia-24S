@@ -87,6 +87,7 @@ import com.example.ui.theme.SwissRed
 import com.example.ui.theme.SwissRedContainer
 import com.example.ui.viewmodel.AtelierViewModel
 import com.example.ui.viewmodel.CommunityAiViewModel
+import com.example.ui.viewmodel.StreamUiState
 import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.auth.auth
@@ -168,6 +169,15 @@ private fun AuthenticatedAtelierShell(user: FirebaseUser) {
         localBanner?.let {
             snackbarHostState.showSnackbar(it)
             atelierVm.clearBanner()
+        }
+    }
+
+    val myMepLinksState by communityVm.myMepLinksState.collectAsStateWithLifecycle()
+
+    LaunchedEffect(myMepLinksState) {
+        val state = myMepLinksState
+        if (state is StreamUiState.Success) {
+            atelierVm.syncCloudMepLinksIntoLocal(state.data)
         }
     }
 
@@ -330,10 +340,19 @@ private fun AuthenticatedAtelierShell(user: FirebaseUser) {
                             )
                             2 -> RecipesKitchenMepScreen(
                                 atelierVm = atelierVm,
-                                onNavigateToPhotoRegister = { currentTab = 5 }
+                                communityVm = communityVm,
+                                onNavigateToPhotoRegister = { currentTab = 5 },
+                                onNavigateToChefSos = {
+                                    atelierVm.exitKitchenMode()
+                                    currentTab = 5
+                                }
                             )
                             3 -> ShoppingEquipmentScreen(atelierVm = atelierVm)
-                            4 -> AssessmentCalculatorsScreen(atelierVm = atelierVm)
+                            4 -> AssessmentCalculatorsScreen(
+                                atelierVm = atelierVm,
+                                onOpenMepSheet = { currentTab = 2 },
+                                onCreateNewMepSheet = { currentTab = 2 }
+                            )
                             5 -> CommunityChefAiScreen(
                                 atelierVm = atelierVm,
                                 communityVm = communityVm,

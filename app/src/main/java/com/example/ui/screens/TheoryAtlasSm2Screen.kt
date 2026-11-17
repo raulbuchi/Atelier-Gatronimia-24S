@@ -17,10 +17,12 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.MenuBook
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Stop
 import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -34,7 +36,9 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.SecondaryScrollableTabRow
 import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -79,15 +83,27 @@ fun TheoryAtlasSm2Screen(
     val selectedWeekNum by atelierVm.selectedWeekNumber.collectAsStateWithLifecycle()
     val timersMap by atelierVm.timersMap.collectAsStateWithLifecycle()
     val sm2Map by atelierVm.sm2Map.collectAsStateWithLifecycle()
+    val selectedLibraryAxis by atelierVm.selectedLibraryAxis.collectAsStateWithLifecycle()
+    val requestedSubTab by atelierVm.requestedAtlasSubTab.collectAsStateWithLifecycle()
+    val sm2AxisFilter by atelierVm.sm2AxisFilter.collectAsStateWithLifecycle()
 
     var subTab by rememberSaveable { mutableIntStateOf(0) }
+    LaunchedEffect(requestedSubTab) {
+        requestedSubTab?.let { target ->
+            subTab = target.coerceIn(0, 7)
+            atelierVm.consumeAtlasSubTabRequest()
+        }
+    }
+
     val subTabs = listOf(
-        "Aula 80 min",
-        "Schnittarten (12)",
-        "Bateria PT/DE/FR",
-        "Anatomia Rind A–H",
-        "Swissmilk & Eixos",
-        "Flashcards SM-2"
+        "Aula (80 min)",
+        "Cortes Clássicos (12)",
+        "Bateria & Cutelaria",
+        "Cortes Bovinos (A–H)",
+        "Atlas Cultural (IT • BR • Mundo)",
+        "Biblioteca Didática (6 Eixos)",
+        "Clássicos Swissmilk (23)",
+        "Cartões SM-2 (60)"
     )
 
     val currentWeek = CurriculumWeeksAndGuides.weeks.find { it.weekNumber == selectedWeekNum }
@@ -131,9 +147,22 @@ fun TheoryAtlasSm2Screen(
                 1 -> SchnittartenSection()
                 2 -> KochgeschirrartenSection()
                 3 -> SwissBeefAnatomySection()
-                4 -> BrochuresAndSwissmilkCantonsSection(onJumpToRecipe = onJumpToRecipe)
-                5 -> Sm2FlashcardsTrainerSection(
+                4 -> CulturalAtlasV5Section()
+                5 -> DidacticLibrarySection(
+                    selectedAxisNumber = selectedLibraryAxis,
+                    selectedWeekNumber = selectedWeekNum,
+                    onSelectAxis = { atelierVm.selectLibraryAxis(it) },
+                    onPracticeAxisInSm2 = { axisNum -> atelierVm.practiceAxisInSm2(axisNum) }
+                )
+                6 -> SwissmilkCantonsSection(
+                    onJumpToRecipe = onJumpToRecipe,
+                    onOpenBrochureAxis = { axisNum -> atelierVm.openDidacticLibraryAxis(axisNum) }
+                )
+                7 -> Sm2FlashcardsTrainerSection(
+                    currentWeek = currentWeek,
                     sm2Map = sm2Map,
+                    selectedAxisFilter = sm2AxisFilter,
+                    onSelectAxisFilter = { atelierVm.setSm2AxisFilter(it) },
                     onGrade = { cardId, grade -> atelierVm.gradeFlashcard(cardId, grade) }
                 )
             }
@@ -167,8 +196,13 @@ private fun Lesson80MinSection(
         border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline)
     ) {
         Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-            TagPill("SEMANA ${currentWeek.weekNumber} • ${currentWeek.cycleName}", SwissRedContainer, OnSwissRedContainer)
+            TagPill("SEMANA ${currentWeek.weekNumber} • ${currentWeek.cycleName} • ${currentWeek.levelName}", SwissRedContainer, OnSwissRedContainer)
             Text(currentWeek.title, style = MaterialTheme.typography.titleLarge)
+            if (currentWeek.theoryTopics.isNotEmpty()) {
+                currentWeek.theoryTopics.forEach { topic ->
+                    Text("• $topic", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
+            }
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -251,8 +285,8 @@ private fun SchnittartenSection() {
                     Text(cut.name, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
                     TagPill(cut.dimensionSwiss, SwissRedContainer, OnSwissRedContainer)
                 }
-                Text("Lâmina oficial: ${cut.bladeTool}", style = MaterialTheme.typography.labelLarge, color = InfoBlue)
-                Text("Aplicações suíças: ${cut.typicalApplications}", style = MaterialTheme.typography.bodyMedium)
+                Text("Lâmina indicada: ${cut.bladeTool}", style = MaterialTheme.typography.labelLarge, color = InfoBlue)
+                Text("Aplicações clássicas: ${cut.typicalApplications}", style = MaterialTheme.typography.bodyMedium)
             }
         }
     }
@@ -264,13 +298,13 @@ private fun KochgeschirrartenSection() {
 
     SmartKitchenAlertBanner(
         alertType = SmartKitchenAlertType.NON_STICK_VITAMIN_C,
-        message = "Regra Kochgeschirrarten: NUNCA saltear vegetais ricos em vitamina C em Lyoner Pfanne (aço puro), pois íons metálicos oxidam e destroem a vitamina C. Exija Poêle antiadhésif (Antihaft-Pfanne)."
+        message = "Regra de Bateria de Cozinha: NUNCA saltear vegetais ricos em vitamina C em frigideira de aço carbono (Lyoner Pfanne), pois os íons metálicos oxidam e destroem a vitamina C. Exija frigideira antiaderente."
     )
 
     OutlinedTextField(
         value = query,
         onValueChange = { query = it },
-        label = { Text("Buscar em Português, Alemão ou Francês (ex.: Sautoir, Flachkasserolle)") },
+        label = { Text("Buscar utensílio em Português, Francês ou Alemão (ex.: Sautoir, Tamis)") },
         leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
         singleLine = true,
         modifier = Modifier
@@ -324,7 +358,7 @@ private fun SwissBeefAnatomySection() {
         ?: TechnicalAtlasCatalog.swissBeefPrimals.first()
 
     Text(
-        text = "MAPA INTERATIVO BOVINO SUÍÇO (RIND A–H)",
+        text = "MAPA COMPARATIVO DE AÇOUGUE BOVINO (BRASIL × EUROPA A–H)",
         style = MaterialTheme.typography.titleMedium
     )
     FlowRow(
@@ -359,15 +393,15 @@ private fun SwissBeefAnatomySection() {
     ) {
         Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
             TagPill("QUARTO ${selectedPrimal.code} • FR: ${selectedPrimal.nameFr}", SwissRedContainer, OnSwissRedContainer)
-            Text("${selectedPrimal.nameDe} — ${selectedPrimal.namePt}", style = MaterialTheme.typography.titleLarge)
-            Text("Tecido conectivo: ${selectedPrimal.connectiveTissueTier}", style = MaterialTheme.typography.labelLarge, color = PccAmber)
+            Text("${selectedPrimal.namePt} (${selectedPrimal.nameDe})", style = MaterialTheme.typography.titleLarge)
+            Text("Perfil de colágeno: ${selectedPrimal.connectiveTissueTier}", style = MaterialTheme.typography.labelLarge, color = PccAmber)
 
-            Text("Subcortes Oficiais Suíços:", fontWeight = FontWeight.Bold)
+            Text("Cortes equivalentes no açougue brasileiro:", fontWeight = FontWeight.Bold)
             selectedPrimal.subcuts.forEach { sub ->
                 Text("• $sub", style = MaterialTheme.typography.bodyMedium)
             }
 
-            Text("Técnicas de Cocção Ideais (Gartechniken):", fontWeight = FontWeight.Bold)
+            Text("Métodos de cocção indicados:", fontWeight = FontWeight.Bold)
             FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
                 selectedPrimal.idealTechniques.forEach { tech ->
                     TagPill(tech, PccGreenBg, PccGreen)
@@ -379,17 +413,60 @@ private fun SwissBeefAnatomySection() {
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-private fun BrochuresAndSwissmilkCantonsSection(onJumpToRecipe: (String) -> Unit) {
+private fun SwissmilkCantonsSection(
+    onJumpToRecipe: (String) -> Unit,
+    onOpenBrochureAxis: (Int) -> Unit
+) {
     var selectedCanton by rememberSaveable { mutableStateOf("TODOS") }
     val cantons = remember {
-        listOf("TODOS") + SwissmilkAndBaseRecipesCatalog.allRecipes
-            .map { it.cantonCode }
-            .filter { it.isNotBlank() }
-            .distinct()
-            .sorted()
+        listOf("TODOS") + SwissmilkAndBaseRecipesCatalog.availableCantons
     }
 
-    Text("FILTRAR CLÁSSICOS REGIONAIS SWISSMILK POR CANTÃO", style = MaterialTheme.typography.titleSmall)
+    Text(
+        text = "ATALHOS PARA A BIBLIOTECA DIDÁTICA (OS 6 EIXOS — CONSULTA NO APP)",
+        style = MaterialTheme.typography.titleSmall,
+        fontWeight = FontWeight.Bold
+    )
+    CurriculumWeeksAndGuides.brochures.forEach { brochure ->
+        Card(
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+            border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable { onOpenBrochureAxis(brochure.axisNumber) }
+                .testTag("atlas_brochure_${brochure.axisNumber}")
+        ) {
+            Row(
+                modifier = Modifier.padding(12.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(10.dp)
+            ) {
+                Icon(Icons.AutoMirrored.Filled.MenuBook, contentDescription = null, tint = SwissRed)
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(brochure.title, style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold)
+                    Text(
+                        "Eixo ${brochure.axisNumber} • Consulta interativa no app (tabelas, PCCs e cartões)",
+                        style = MaterialTheme.typography.labelSmall,
+                        fontFamily = JetBrainsMonoFamily,
+                        color = InfoBlue
+                    )
+                }
+            }
+        }
+    }
+
+    Spacer(Modifier.height(6.dp))
+    val swissmilkRecipes = remember(selectedCanton) {
+        SwissmilkAndBaseRecipesCatalog.allRecipes
+            .filter { it.isSwissmilkClassic && (selectedCanton == "TODOS" || it.cantonCode == selectedCanton) }
+            .sortedBy { it.swissmilkNum ?: 99 }
+    }
+
+    Text(
+        text = "CATÁLOGO DOS 23 CLÁSSICOS SWISSMILK POR CANTÃO (AG A ZH) • EXIBINDO ${swissmilkRecipes.size}",
+        style = MaterialTheme.typography.titleSmall,
+        fontWeight = FontWeight.Bold
+    )
     Row(
         modifier = Modifier.horizontalScroll(rememberScrollState()),
         horizontalArrangement = Arrangement.spacedBy(6.dp)
@@ -399,14 +476,10 @@ private fun BrochuresAndSwissmilkCantonsSection(onJumpToRecipe: (String) -> Unit
                 selected = selectedCanton == canton,
                 onClick = { selectedCanton = canton },
                 label = { Text(canton, fontFamily = JetBrainsMonoFamily) },
-                modifier = Modifier.height(48.dp)
+                modifier = Modifier
+                    .height(48.dp)
+                    .testTag("swissmilk_canton_$canton")
             )
-        }
-    }
-
-    val swissmilkRecipes = remember(selectedCanton) {
-        SwissmilkAndBaseRecipesCatalog.allRecipes.filter {
-            it.isSwissmilkClassic && (selectedCanton == "TODOS" || it.cantonCode == selectedCanton)
         }
     }
 
@@ -420,6 +493,7 @@ private fun BrochuresAndSwissmilkCantonsSection(onJumpToRecipe: (String) -> Unit
         ) {
             Column(modifier = Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
                 FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                    rec.swissmilkNum?.let { TagPill("#$it", PccGreenBg, PccGreen) }
                     TagPill("CANTÃO ${rec.cantonCode}", SwissRedContainer, OnSwissRedContainer)
                     TagPill("SEMANA ${rec.weekNumber}", InfoBlueBg, InfoBlue)
                 }
@@ -433,12 +507,21 @@ private fun BrochuresAndSwissmilkCantonsSection(onJumpToRecipe: (String) -> Unit
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun Sm2FlashcardsTrainerSection(
+    currentWeek: com.example.domain.model.CourseWeek,
     sm2Map: Map<String, com.example.data.local.Sm2ProgressEntity>,
+    selectedAxisFilter: Int,
+    onSelectAxisFilter: (Int) -> Unit,
     onGrade: (String, Int) -> Unit
 ) {
     val todayEpochDay = System.currentTimeMillis() / 86_400_000L
-    val sortedCards = remember(sm2Map) {
-        TechnicalAtlasCatalog.flashcards.sortedBy { card ->
+    var filterOnlyWeek by rememberSaveable { mutableStateOf(false) }
+    val sortedCards = remember(sm2Map, filterOnlyWeek, selectedAxisFilter, currentWeek.weekNumber) {
+        val pool = when {
+            selectedAxisFilter in 1..6 -> TechnicalAtlasCatalog.flashcards.filter { it.axisId == selectedAxisFilter }
+            filterOnlyWeek && currentWeek.flashcardIds.isNotEmpty() -> TechnicalAtlasCatalog.flashcards.filter { it.id in currentWeek.flashcardIds }
+            else -> TechnicalAtlasCatalog.flashcards
+        }.ifEmpty { TechnicalAtlasCatalog.flashcards }
+        pool.sortedBy { card ->
             val st = sm2Map[card.id]
             if (st == null || st.nextReviewEpochDay <= todayEpochDay) 0L else st.nextReviewEpochDay
         }
@@ -446,6 +529,49 @@ private fun Sm2FlashcardsTrainerSection(
 
     var currentIdx by rememberSaveable { mutableIntStateOf(0) }
     var isAnswerRevealed by rememberSaveable { mutableStateOf(false) }
+
+    Row(
+        modifier = Modifier.horizontalScroll(rememberScrollState()),
+        horizontalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        FilterChip(
+            selected = !filterOnlyWeek && selectedAxisFilter == 0,
+            onClick = {
+                filterOnlyWeek = false
+                onSelectAxisFilter(0)
+                currentIdx = 0
+                isAnswerRevealed = false
+            },
+            label = { Text("Banco Completo (${TechnicalAtlasCatalog.flashcards.size})") },
+            modifier = Modifier.height(48.dp)
+        )
+        FilterChip(
+            selected = filterOnlyWeek && selectedAxisFilter == 0,
+            onClick = {
+                filterOnlyWeek = true
+                onSelectAxisFilter(0)
+                currentIdx = 0
+                isAnswerRevealed = false
+            },
+            label = { Text("Semana S${"%02d".format(currentWeek.weekNumber)} (${currentWeek.flashcardIds.size})") },
+            modifier = Modifier.height(48.dp)
+        )
+        (1..6).forEach { ax ->
+            FilterChip(
+                selected = selectedAxisFilter == ax,
+                onClick = {
+                    filterOnlyWeek = false
+                    onSelectAxisFilter(ax)
+                    currentIdx = 0
+                    isAnswerRevealed = false
+                },
+                label = { Text("Eixo $ax") },
+                modifier = Modifier
+                    .height(48.dp)
+                    .testTag("sm2_axis_chip_$ax")
+            )
+        }
+    }
 
     val activeCard = sortedCards[currentIdx % sortedCards.size]
     val cardState = sm2Map[activeCard.id]
@@ -460,16 +586,16 @@ private fun Sm2FlashcardsTrainerSection(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 modifier = Modifier.fillMaxWidth()
             ) {
-                TagPill("${activeCard.category} • S${"%02d".format(activeCard.weekNumber)}", SwissRedContainer, OnSwissRedContainer)
+                TagPill("${activeCard.id} • EIXO ${activeCard.axisId} • ${activeCard.category}", SwissRedContainer, OnSwissRedContainer)
                 TagPill(
-                    text = if (cardState == null) "NOVO CARD" else "EF ${"%.2f".format(cardState.easinessFactor)} • Int ${cardState.intervalDays}d",
+                    text = if (cardState == null) "NOVO CARTÃO" else "Fator ${"%.2f".format(cardState.easinessFactor)} • Intervalo ${cardState.intervalDays}d",
                     containerColor = InfoBlueBg,
                     contentColor = InfoBlue
                 )
             }
 
             Text(
-                text = "Card ${(currentIdx % sortedCards.size) + 1} de ${sortedCards.size}",
+                text = "Cartão ${(currentIdx % sortedCards.size) + 1} de ${sortedCards.size}",
                 style = MaterialTheme.typography.labelMedium,
                 fontFamily = JetBrainsMonoFamily
             )
@@ -506,7 +632,7 @@ private fun Sm2FlashcardsTrainerSection(
                 }
 
                 Text(
-                    text = "Avalie sua retenção (Algoritmo SuperMemo SM-2: 0 = Branco total → 5 = Domínio imediato):",
+                    text = "Avalie sua fixação técnica (Repetição Espaçada: 0 = Branco total → 5 = Domínio imediato):",
                     style = MaterialTheme.typography.labelMedium
                 )
                 FlowRow(

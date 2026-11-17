@@ -12,7 +12,14 @@ data class CourseWeek(
     val practice15Min: String,
     val synthesis5Min: String,
     val mepFocus: String,
-    val brochureId: String
+    val brochureId: String,
+    val levelName: String = "",
+    val axesIds: List<Int> = listOf(axisId),
+    val theoryTopics: List<String> = emptyList(),
+    val practicalRecipeIds: List<String> = emptyList(),
+    val flashcardIds: List<String> = emptyList(),
+    val supportBrochureIds: List<String> = listOf(brochureId),
+    val cycleDeliverables: List<String> = emptyList()
 )
 
 data class IngredientSpec(
@@ -20,18 +27,21 @@ data class IngredientSpec(
     val netAmountPl: Double,
     val unit: String,
     val correctionFactorFc: Double = 1.0,
-    val sector: String // Hortifrúti, Açougue & Peixaria, Laticínios & Ovos, Mercearia Seca, Especiarias & Fundos
+    val sector: String
 )
 
 enum class SmartKitchenAlertType {
     NONE,
-    NON_STICK_VITAMIN_C,    // Proibição de aço puro p/ vegetais (preservar vitamina C)
-    DEEP_FRY_ACRYLAMIDE,    // 140 °C pré-fritura / 165-175 °C teto rígido contra acrilamida
-    POELIEREN_MATIGNON,     // 140-160 °C tampado sobre matignon sem líquido adicionado
-    SOUS_VIDE_PROTOCOL,     // Salmoura 5-10% + banho +0.5 a +1.0 °C acima do centro térmico
-    GALANTINE_PCC_65C,      // Centro térmico de 65 °C na galantina + farce sobre gelo
-    PUFF_PASTRY_OXIDATION,  // Alerta contra repouso longo a 5 °C (acinzentamento/acidificação)
-    PARALLEL_POACHING_82C   // Controle paralelo Berner Platte / Bollito misto (~82 °C)
+    NON_STICK_VITAMIN_C,        // Proibição de aço puro p/ vegetais (preservar vitamina C)
+    DEEP_FRY_ACRYLAMIDE,        // 140 °C pré-fritura / 165-175 °C teto rígido contra acrilamida
+    POELIEREN_MATIGNON,         // 140-160 °C tampado sobre matignon sem líquido adicionado
+    SOUS_VIDE_PROTOCOL,         // Salmoura 5-10% + banho +0.5 a +1.0 °C acima do centro térmico
+    GALANTINE_PCC_65C,          // Centro térmico de 65 °C na galantina + farce sobre gelo
+    PUFF_PASTRY_OXIDATION,      // Alerta contra repouso longo a 5 °C (acinzentamento/acidificação)
+    PARALLEL_POACHING_82C,      // Controle paralelo Berner Platte / Bollito misto (~82 °C)
+    CONCENTRATION_VS_EXPANSION, // Institut Paul Bocuse: concentração (calor/líquido quente) vs. expansão (água fria)
+    STARCH_AMYLASE_CREAMS,      // Canella-Rawls: fervura 98-100 °C p/ alfa-amilase (gema+amido) vs. anglaise <= 79-80 °C
+    MODERNIST_HYDROCOLLOIDS     // James Peterson: xantana 0,1-0,5%, lecitina 1-2%, alginato PG 0,3-0,9%, fluid gel ágar
 }
 
 data class CookingStepSpec(
@@ -59,7 +69,56 @@ data class RecipeSpec(
     val requiredEquipmentIds: List<String>,
     val pccTargetSummary: String,
     val ingredients: List<IngredientSpec>,
-    val steps: List<CookingStepSpec>
+    val steps: List<CookingStepSpec>,
+    val sourceRef: String = "",
+    val difficultyLevel: String = "",
+    val altScaleServings: Int? = null,
+    val yieldUnit: String = "porções",
+    val prepTimeMin: Int = 0,
+    val totalTimeMin: Int = 0,
+    val caloriesKcal: Int? = null,
+    val proteinG: Double? = null,
+    val carbsG: Double? = null,
+    val fatG: Double? = null,
+    val swissmilkNum: Int? = null,
+    val cantonFullLabel: String = "",
+    val sousVideSummary: String = "",
+    val equipmentNames: List<String> = emptyList(),
+    val weeksAppearing: List<Int> = listOf(weekNumber)
+) {
+    val recipeTrack: String
+        get() = when {
+            isChefkochV4 -> "chefkoch_step_by_step"
+            isSwissmilkClassic -> "swissmilk_23"
+            else -> "base_global"
+        }
+}
+
+data class EquipmentTierItemSpec(
+    val id: String,
+    val tierNumber: Int,
+    val tierTitle: String,
+    val name: String,
+    val category: String
+)
+
+data class EquipmentTierSpec(
+    val tierNumber: Int,
+    val title: String,
+    val items: List<EquipmentTierItemSpec>
+)
+
+data class SousVideTargetSpec(
+    val item: String,
+    val thickness: String,
+    val tempC: Double,
+    val time: String
+)
+
+data class SugarStageSpec(
+    val stage: String,
+    val tempC: String,
+    val uses: String
 )
 
 data class SwissCutSpec(
@@ -75,13 +134,13 @@ data class CookwareBladeSpec(
     val namePt: String,
     val nameDe: String,
     val nameFr: String,
-    val category: String, // "Bateria Térmica" | "Lâminas & Corte" | "Confeitaria & Precisão"
-    val tierLevel: Int,   // 1 (Essencial) a 4 (Chefkoch Profissional)
+    val category: String,
+    val tierLevel: Int,
     val kitchenRule: String
 )
 
 data class SwissBeefPrimalSpec(
-    val code: String, // A..H
+    val code: String,
     val nameDe: String,
     val nameFr: String,
     val namePt: String,
@@ -96,7 +155,9 @@ data class BrochureGuideSpec(
     val fileNameRef: String,
     val title: String,
     val summary: String,
-    val keyBulletRules: List<String>
+    val keyBulletRules: List<String>,
+    val weeksCovered: List<Int> = emptyList(),
+    val keyDiagrams: List<String> = emptyList()
 )
 
 data class FlashcardSpec(
@@ -104,7 +165,8 @@ data class FlashcardSpec(
     val weekNumber: Int,
     val category: String,
     val frontQuestion: String,
-    val backAnswer: String
+    val backAnswer: String,
+    val axisId: Int = 1
 )
 
 data class FiberEquivalentSpec(
@@ -128,4 +190,36 @@ data class OrgChartModelSpec(
     val hierarchySummary: String,
     val keyStationsActive: List<String>,
     val operationalTradeOff: String
+)
+
+data class ItalianFoundationRuleSpec(
+    val id: String,
+    val pillarTitle: String,
+    val italianTerm: String,
+    val technicalPrinciple: String,
+    val benchErrorToAvoid: String
+)
+
+data class BrazilRegionMatrixSpec(
+    val regionName: String,
+    val signatureIngredients: String,
+    val derivedProducts: String,
+    val emblemRecipes: String,
+    val technicalControlNote: String
+)
+
+data class WorldAromaticBaseSpec(
+    val id: String,
+    val name: String,
+    val originSchool: String,
+    val proportionAndIngredients: String,
+    val fatAndThermalMethod: String
+)
+
+data class WorldSpiceBlendSpec(
+    val id: String,
+    val name: String,
+    val region: String,
+    val coreSpices: String,
+    val culinaryApplication: String
 )

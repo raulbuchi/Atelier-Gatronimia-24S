@@ -31,6 +31,8 @@ service cloud.firestore {
              data.userId == request.auth.uid &&
              data.displayName is string && data.displayName.size() >= 1 && data.displayName.size() <= 80 &&
              (!('avatarUrl' in data) || data.avatarUrl == null || (data.avatarUrl is string && data.avatarUrl.size() <= 500)) &&
+             (!('avatarBase64' in data) || data.avatarBase64 == null || (data.avatarBase64 is string && data.avatarBase64.size() <= 60000)) &&
+             (!('defaultVisibility' in data) || data.defaultVisibility == null || (data.defaultVisibility is string && (data.defaultVisibility == 'private' || data.defaultVisibility == 'public'))) &&
              (!('bio' in data) || data.bio == null || (data.bio is string && data.bio.size() <= 240)) &&
              data.currentWeek is int && data.currentWeek >= 1 && data.currentWeek <= 24 &&
              data.cantonFocus is string && data.cantonFocus.size() >= 2 && data.cantonFocus.size() <= 10 &&
@@ -51,9 +53,9 @@ service cloud.firestore {
                          'specialtyBadge', 'createdAt', 'updatedAt'
                        ]) &&
                        incoming().keys().hasOnly([
-                         'userId', 'displayName', 'avatarUrl', 'bio',
-                         'currentWeek', 'cantonFocus', 'specialtyBadge',
-                         'createdAt', 'updatedAt'
+                         'userId', 'displayName', 'avatarUrl', 'avatarBase64',
+                         'defaultVisibility', 'bio', 'currentWeek', 'cantonFocus',
+                         'specialtyBadge', 'createdAt', 'updatedAt'
                        ]) &&
                        isValidUserProfile(incoming());
 
@@ -64,8 +66,8 @@ service cloud.firestore {
                        incoming().userId == existing().userId &&
                        incoming().createdAt == existing().createdAt &&
                        incoming().diff(existing()).affectedKeys().hasOnly([
-                         'displayName', 'avatarUrl', 'bio', 'currentWeek',
-                         'cantonFocus', 'specialtyBadge', 'updatedAt'
+                         'displayName', 'avatarUrl', 'avatarBase64', 'defaultVisibility',
+                         'bio', 'currentWeek', 'cantonFocus', 'specialtyBadge', 'updatedAt'
                        ]);
 
       allow delete: if isSignedIn() && isValidId(userId) && request.auth.uid == userId;
@@ -75,6 +77,7 @@ service cloud.firestore {
     function isValidPortfolioPostShape(data) {
       return data.userId is string && data.userId.size() >= 1 && data.userId.size() <= 128 &&
              data.authorName is string && data.authorName.size() >= 1 && data.authorName.size() <= 80 &&
+             (!('authorAvatarBase64' in data) || data.authorAvatarBase64 == null || (data.authorAvatarBase64 is string && data.authorAvatarBase64.size() <= 60000)) &&
              data.visibility is string && (data.visibility == 'private' || data.visibility == 'public') &&
              data.weekNumber is int && data.weekNumber >= 1 && data.weekNumber <= 24 &&
              data.cycleNumber is int && data.cycleNumber >= 1 && data.cycleNumber <= 4 &&
@@ -92,9 +95,14 @@ service cloud.firestore {
              data.cantonCode is string && data.cantonCode.size() <= 10 &&
              data.caption is string && data.caption.size() >= 1 && data.caption.size() <= 1000 &&
              data.mepSummary is string && data.mepSummary.size() <= 1500 &&
+             (!('selbstkontrolleScore' in data) || data.selbstkontrolleScore == null || (data.selbstkontrolleScore is int && data.selbstkontrolleScore >= 0 && data.selbstkontrolleScore <= 5)) &&
+             (!('erkenntnisse' in data) || data.erkenntnisse == null || (data.erkenntnisse is string && data.erkenntnisse.size() <= 600)) &&
+             (!('offenePunkte' in data) || data.offenePunkte == null || (data.offenePunkte is string && data.offenePunkte.size() <= 600)) &&
              data.aiFeedback is string && data.aiFeedback.size() <= 2500 &&
              data.thumbnailBase64 is string && data.thumbnailBase64.size() <= 80000 &&
+             (!('imageLink' in data) || data.imageLink == null || (data.imageLink is string && data.imageLink.size() <= 300)) &&
              data.reactedUserIds is list && data.reactedUserIds.size() <= 500 &&
+             data.reactedUserIds.toSet().size() == data.reactedUserIds.size() &&
              (data.reactedUserIds.size() == 0 || (data.reactedUserIds[0] is string && data.reactedUserIds[0].size() <= 128)) &&
              data.reactionCount is int && data.reactionCount >= 0 && data.reactionCount == data.reactedUserIds.size() &&
              data.commentCount is int && data.commentCount >= 0 &&
@@ -114,7 +122,7 @@ service cloud.firestore {
     }
 
     match /portfolio_posts/{postId} {
-      allow get: if isSignedIn() && isValidId(postId) &&
+      allow get: if isSignedIn() && isValidId(postId) && resource != null &&
                     (existing().visibility == 'public' || existing().userId == request.auth.uid);
 
       allow list: if isSignedIn() &&
@@ -131,11 +139,13 @@ service cloud.firestore {
                          'reactionCount', 'commentCount', 'createdAt', 'updatedAt'
                        ]) &&
                        incoming().keys().hasOnly([
-                         'userId', 'authorName', 'visibility', 'weekNumber', 'cycleNumber',
-                         'axisId', 'materialType', 'recipeId', 'recipeTitle',
-                         'isSwissmilkClassic', 'isChefkochV4', 'cantonCode', 'caption',
-                         'mepSummary', 'aiFeedback', 'thumbnailBase64', 'reactedUserIds',
-                         'reactionCount', 'commentCount', 'createdAt', 'updatedAt'
+                         'userId', 'authorName', 'authorAvatarBase64', 'visibility',
+                         'weekNumber', 'cycleNumber', 'axisId', 'materialType',
+                         'recipeId', 'recipeTitle', 'isSwissmilkClassic', 'isChefkochV4',
+                         'cantonCode', 'caption', 'mepSummary', 'selbstkontrolleScore',
+                         'erkenntnisse', 'offenePunkte', 'aiFeedback', 'thumbnailBase64',
+                         'imageLink', 'reactedUserIds', 'reactionCount', 'commentCount',
+                         'createdAt', 'updatedAt'
                        ]) &&
                        incoming().commentCount == 0 &&
                        isValidPortfolioPostShape(incoming());
@@ -145,19 +155,35 @@ service cloud.firestore {
                        isValidPortfolioPostShape(incoming()) &&
                        incoming().userId == existing().userId &&
                        incoming().createdAt == existing().createdAt && (
-                         // Action 1: Owner edits post content, visibility, or Chef IA feedback
+                         // Action 1: Owner edits post content, visibility, reflections, imageLink, or Chef IA feedback
                          (
                            existing().userId == request.auth.uid &&
                            incoming().diff(existing()).affectedKeys().hasOnly([
-                             'visibility', 'caption', 'mepSummary', 'aiFeedback', 'updatedAt'
+                             'visibility', 'caption', 'mepSummary', 'selbstkontrolleScore',
+                             'erkenntnisse', 'offenePunkte', 'aiFeedback', 'imageLink',
+                             'authorAvatarBase64', 'updatedAt'
                            ])
                          ) ||
-                         // Action 2: Community reaction toggle on accessible post
+                         // Action 2: Community reaction toggle on accessible post (caller can only add/remove own UID)
                          (
                            (existing().visibility == 'public' || existing().userId == request.auth.uid) &&
                            incoming().diff(existing()).affectedKeys().hasOnly([
                              'reactedUserIds', 'reactionCount', 'updatedAt'
-                           ])
+                           ]) &&
+                           (
+                             (
+                               !(request.auth.uid in existing().reactedUserIds) &&
+                               (request.auth.uid in incoming().reactedUserIds) &&
+                               incoming().reactionCount == existing().reactionCount + 1 &&
+                               incoming().reactedUserIds.hasAll(existing().reactedUserIds)
+                             ) ||
+                             (
+                               (request.auth.uid in existing().reactedUserIds) &&
+                               !(request.auth.uid in incoming().reactedUserIds) &&
+                               incoming().reactionCount == existing().reactionCount - 1 &&
+                               existing().reactedUserIds.hasAll(incoming().reactedUserIds)
+                             )
+                           )
                          ) ||
                          // Action 3: Atomic comment counter increment when adding a comment
                          (
@@ -166,10 +192,19 @@ service cloud.firestore {
                            incoming().diff(existing()).affectedKeys().hasOnly([
                              'commentCount', 'updatedAt'
                            ])
+                         ) ||
+                         // Action 4: Atomic comment counter decrement when deleting a comment
+                         (
+                           (existing().visibility == 'public' || existing().userId == request.auth.uid) &&
+                           existing().commentCount > 0 &&
+                           incoming().commentCount == existing().commentCount - 1 &&
+                           incoming().diff(existing()).affectedKeys().hasOnly([
+                             'commentCount', 'updatedAt'
+                           ])
                          )
                        );
 
-      allow delete: if isSignedIn() && isValidId(postId) && existing().userId == request.auth.uid;
+      allow delete: if isSignedIn() && isValidId(postId) && resource != null && existing().userId == request.auth.uid;
 
       match /comments/{commentId} {
         allow get: if isSignedIn() && isValidId(postId) && isValidId(commentId) &&
@@ -222,7 +257,7 @@ service cloud.firestore {
     }
 
     match /portfolio_media/{postId} {
-      allow get: if isSignedIn() && isValidId(postId) &&
+      allow get: if isSignedIn() && isValidId(postId) && resource != null &&
                     (existing().visibility == 'public' || existing().userId == request.auth.uid);
 
       allow list: if false;
@@ -245,7 +280,68 @@ service cloud.firestore {
                        incoming().createdAt == existing().createdAt &&
                        incoming().diff(existing()).affectedKeys().hasOnly(['visibility', 'updatedAt']);
 
-      allow delete: if isSignedIn() && isValidId(postId) && existing().userId == request.auth.uid;
+      allow delete: if isSignedIn() && isValidId(postId) && resource != null && existing().userId == request.auth.uid;
+    }
+
+    // 5. MepSheetCloudLink Validation (Owner-isolated Ficha Técnica with CameraX Creation Image Link)
+    function isValidMepSheetCloudLink(data) {
+      return data.userId is string && data.userId.size() >= 1 && data.userId.size() <= 128 &&
+             data.userId == request.auth.uid &&
+             data.recipeId is string && data.recipeId.size() >= 1 && data.recipeId.size() <= 80 &&
+             data.title is string && data.title.size() >= 1 && data.title.size() <= 120 &&
+             data.weekNumber is int && data.weekNumber >= 1 && data.weekNumber <= 24 &&
+             data.stationBrigade is string && data.stationBrigade.size() >= 1 && data.stationBrigade.size() <= 40 &&
+             data.targetServings is int && data.targetServings >= 1 && data.targetServings <= 500 &&
+             data.pccTargetTempC is int && data.pccTargetTempC >= -30 && data.pccTargetTempC <= 250 &&
+             data.executionScore1To5 is int && data.executionScore1To5 >= 1 && data.executionScore1To5 <= 5 &&
+             data.mediaId is string && data.mediaId.size() >= 1 && data.mediaId.size() <= 128 &&
+             data.mediaId.matches('^[a-zA-Z0-9_\\-]+$') &&
+             data.imageLink is string && data.imageLink.size() >= 25 && data.imageLink.size() <= 300 &&
+             data.imageLink == ('firestore://portfolio_media/' + data.mediaId) &&
+             data.thumbnailBase64 is string && data.thumbnailBase64.size() >= 1 && data.thumbnailBase64.size() <= 80000 &&
+             (!('localPhotoUri' in data) || data.localPhotoUri == null || (data.localPhotoUri is string && data.localPhotoUri.size() <= 500)) &&
+             data.createdAt is timestamp && data.createdAt <= request.time &&
+             data.updatedAt is timestamp && data.updatedAt <= request.time;
+    }
+
+    match /mep_sheets/{sheetDocId} {
+      allow get: if isSignedIn() && isValidId(sheetDocId) && resource != null && existing().userId == request.auth.uid;
+
+      allow list: if isSignedIn() && existing().userId == request.auth.uid;
+
+      allow create: if isSignedIn() &&
+                       isValidId(sheetDocId) &&
+                       incoming().keys().hasAll([
+                         'userId', 'recipeId', 'title', 'weekNumber', 'stationBrigade',
+                         'targetServings', 'pccTargetTempC', 'executionScore1To5',
+                         'mediaId', 'imageLink', 'thumbnailBase64', 'createdAt', 'updatedAt'
+                       ]) &&
+                       incoming().keys().hasOnly([
+                         'userId', 'recipeId', 'title', 'weekNumber', 'stationBrigade',
+                         'targetServings', 'pccTargetTempC', 'executionScore1To5',
+                         'mediaId', 'imageLink', 'thumbnailBase64', 'localPhotoUri',
+                         'createdAt', 'updatedAt'
+                       ]) &&
+                       isValidMepSheetCloudLink(incoming()) &&
+                       existsAfter(/databases/$(database)/documents/portfolio_media/$(incoming().mediaId)) &&
+                       getAfter(/databases/$(database)/documents/portfolio_media/$(incoming().mediaId)).data.userId == request.auth.uid;
+
+      allow update: if isSignedIn() &&
+                       isValidId(sheetDocId) &&
+                       isValidMepSheetCloudLink(incoming()) &&
+                       existing().userId == request.auth.uid &&
+                       incoming().userId == existing().userId &&
+                       incoming().recipeId == existing().recipeId &&
+                       incoming().createdAt == existing().createdAt &&
+                       incoming().diff(existing()).affectedKeys().hasOnly([
+                         'title', 'weekNumber', 'stationBrigade', 'targetServings',
+                         'pccTargetTempC', 'executionScore1To5', 'mediaId', 'imageLink',
+                         'thumbnailBase64', 'localPhotoUri', 'updatedAt'
+                       ]) &&
+                       existsAfter(/databases/$(database)/documents/portfolio_media/$(incoming().mediaId)) &&
+                       getAfter(/databases/$(database)/documents/portfolio_media/$(incoming().mediaId)).data.userId == request.auth.uid;
+
+      allow delete: if isSignedIn() && isValidId(sheetDocId) && resource != null && existing().userId == request.auth.uid;
     }
   }
 }

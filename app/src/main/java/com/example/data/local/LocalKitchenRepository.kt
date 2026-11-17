@@ -1,5 +1,6 @@
 package com.example.data.local
 
+import com.example.domain.calculators.MepCalculationSummary
 import org.json.JSONArray
 import org.json.JSONObject
 
@@ -8,6 +9,7 @@ class LocalKitchenRepository(private val dao: AtelierDao) {
     val allTimers = dao.observeAllTimers()
     val sm2Progress = dao.observeSm2Progress()
     val mepSheets = dao.observeAllMepSheets()
+    val mepLines = dao.observeAllMepLines()
     val shoppingItems = dao.observeAllShoppingItems()
     val ownedEquipment = dao.observeOwnedEquipment()
     val selfEvaluations = dao.observeSelfEvaluations()
@@ -15,6 +17,9 @@ class LocalKitchenRepository(private val dao: AtelierDao) {
     suspend fun upsertTimer(entity: StudyTimerEntity) = dao.upsertTimer(entity)
     suspend fun upsertSm2(entity: Sm2ProgressEntity) = dao.upsertSm2(entity)
     suspend fun upsertMepSheet(sheet: MepSheetEntity) = dao.upsertMepSheet(sheet)
+    suspend fun saveMepComplete(sheet: MepSheetEntity, lines: List<MepIngredientLineEntity>) =
+        dao.saveMepSheetWithLines(sheet, lines)
+    suspend fun deleteMepComplete(recipeId: String) = dao.deleteMepSheetComplete(recipeId)
     suspend fun upsertShoppingItem(item: ShoppingFifoEntity) = dao.upsertShoppingItem(item)
     suspend fun replaceWeekShopping(weekNumber: Int, items: List<ShoppingFifoEntity>) {
         dao.clearShoppingForWeek(weekNumber)
@@ -26,7 +31,7 @@ class LocalKitchenRepository(private val dao: AtelierDao) {
 
     suspend fun exportBackupJson(): String {
         val root = JSONObject()
-        root.put("schemaVersion", "atelier-gastronomia-24s-v4")
+        root.put("schemaVersion", "atelier-gastronomia-24s-v4.2")
         root.put("exportedAtEpochMs", System.currentTimeMillis())
 
         val sm2Arr = JSONArray()
@@ -49,8 +54,21 @@ class LocalKitchenRepository(private val dao: AtelierDao) {
             mepArr.put(
                 JSONObject().apply {
                     put("recipeId", m.recipeId)
+                    put("title", m.title)
                     put("weekNumber", m.weekNumber)
+                    put("stationBrigade", m.stationBrigade)
+                    put("baseServings", m.baseServings)
                     put("targetServings", m.targetServings)
+                    put("portionWeightGrams", m.portionWeightGrams)
+                    put("cookingShrinkagePercent", m.cookingShrinkagePercent)
+                    put("targetCmvPercent", m.targetCmvPercent)
+                    put("directLaborCost", m.directLaborCost)
+                    put("pccTargetTempC", m.pccTargetTempC)
+                    put("plateTempC", m.plateTempC)
+                    put("allergensCsv", m.allergensCsv)
+                    put("actualBenchYieldGrams", m.actualBenchYieldGrams)
+                    put("executionScore1To5", m.executionScore1To5)
+                    put("isCustomSheet", m.isCustomSheet)
                     put("block1Identification", m.block1Identification)
                     put("block2IngredientsPbPlFc", m.block2IngredientsPbPlFc)
                     put("block3CookwareBlades", m.block3CookwareBlades)
@@ -59,10 +77,32 @@ class LocalKitchenRepository(private val dao: AtelierDao) {
                     put("block6PlatingFinishing", m.block6PlatingFinishing)
                     put("block7HygieneAllergens", m.block7HygieneAllergens)
                     put("block8Selbstkontrolle", m.block8Selbstkontrolle)
+                    put("localPhotoUri", m.localPhotoUri)
+                    put("cloudImageLink", m.cloudImageLink)
+                    put("cloudMediaId", m.cloudMediaId)
+                    put("photoThumbnailBase64", m.photoThumbnailBase64)
                 }
             )
         }
         root.put("mepSheets", mepArr)
+
+        val linesArr = JSONArray()
+        dao.getAllMepLinesOnce().forEach { l ->
+            linesArr.put(
+                JSONObject().apply {
+                    put("recipeId", l.recipeId)
+                    put("sortOrder", l.sortOrder)
+                    put("name", l.name)
+                    put("sector", l.sector)
+                    put("unit", l.unit)
+                    put("baseNetPl", l.baseNetPl)
+                    put("trimLossPercent", l.trimLossPercent)
+                    put("correctionFactorFc", l.correctionFactorFc)
+                    put("unitCostPerKgOrL", l.unitCostPerKgOrL)
+                }
+            )
+        }
+        root.put("mepIngredientLines", linesArr)
 
         val eqArr = JSONArray()
         dao.getAllEquipmentOnce().forEach { e ->
@@ -139,8 +179,21 @@ class LocalKitchenRepository(private val dao: AtelierDao) {
                 val o = arr.getJSONObject(i)
                 MepSheetEntity(
                     recipeId = o.getString("recipeId"),
+                    title = o.optString("title", ""),
                     weekNumber = o.optInt("weekNumber", 1),
+                    stationBrigade = o.optString("stationBrigade", "Saucier"),
+                    baseServings = o.optInt("baseServings", 4),
                     targetServings = o.optInt("targetServings", 4),
+                    portionWeightGrams = o.optDouble("portionWeightGrams", 220.0),
+                    cookingShrinkagePercent = o.optDouble("cookingShrinkagePercent", 12.0),
+                    targetCmvPercent = o.optDouble("targetCmvPercent", 28.0),
+                    directLaborCost = o.optDouble("directLaborCost", 8.0),
+                    pccTargetTempC = o.optInt("pccTargetTempC", 70),
+                    plateTempC = o.optInt("plateTempC", 55),
+                    allergensCsv = o.optString("allergensCsv", ""),
+                    actualBenchYieldGrams = o.optDouble("actualBenchYieldGrams", 0.0),
+                    executionScore1To5 = o.optInt("executionScore1To5", 4),
+                    isCustomSheet = o.optBoolean("isCustomSheet", false),
                     block1Identification = o.optString("block1Identification"),
                     block2IngredientsPbPlFc = o.optString("block2IngredientsPbPlFc"),
                     block3CookwareBlades = o.optString("block3CookwareBlades"),
@@ -148,11 +201,37 @@ class LocalKitchenRepository(private val dao: AtelierDao) {
                     block5ThermalFlowPcc = o.optString("block5ThermalFlowPcc"),
                     block6PlatingFinishing = o.optString("block6PlatingFinishing"),
                     block7HygieneAllergens = o.optString("block7HygieneAllergens"),
-                    block8Selbstkontrolle = o.optString("block8Selbstkontrolle")
+                    block8Selbstkontrolle = o.optString("block8Selbstkontrolle"),
+                    localPhotoUri = o.optString("localPhotoUri", ""),
+                    cloudImageLink = o.optString("cloudImageLink", ""),
+                    cloudMediaId = o.optString("cloudMediaId", ""),
+                    photoThumbnailBase64 = o.optString("photoThumbnailBase64", "")
                 )
             }
             dao.upsertAllMepSheets(list)
             restoredCount += list.size
+        }
+
+        root.optJSONArray("mepIngredientLines")?.let { arr ->
+            val grouped = (0 until arr.length()).map { i ->
+                val o = arr.getJSONObject(i)
+                MepIngredientLineEntity(
+                    recipeId = o.getString("recipeId"),
+                    sortOrder = o.optInt("sortOrder", i),
+                    name = o.getString("name"),
+                    sector = o.optString("sector", "Mercearia Seca"),
+                    unit = o.optString("unit", "g"),
+                    baseNetPl = o.optDouble("baseNetPl", 100.0),
+                    trimLossPercent = o.optDouble("trimLossPercent", 0.0),
+                    correctionFactorFc = o.optDouble("correctionFactorFc", 1.0),
+                    unitCostPerKgOrL = o.optDouble("unitCostPerKgOrL", 28.0)
+                )
+            }.groupBy { it.recipeId }
+            grouped.forEach { (recId, lines) ->
+                dao.deleteMepLinesForSheet(recId)
+                dao.insertMepLines(lines)
+            }
+            restoredCount += grouped.values.sumOf { it.size }
         }
 
         root.optJSONArray("equipmentOwned")?.let { arr ->
@@ -212,26 +291,74 @@ class LocalKitchenRepository(private val dao: AtelierDao) {
         val evals = dao.getAllSelfEvaluationsOnce().sortedBy { it.weekNumber }
         val meps = dao.getAllMepSheetsOnce()
         return buildString {
-            appendLine("# Dossier Lernreflexion — Atelier Gastronomia 24S (v4)")
+            appendLine("# Dossiê de Evolução Técnica — Atelier Gastronomia 24S")
             appendLine()
             if (evals.isEmpty()) {
-                appendLine("Nenhuma autoavaliação (Selbstkontrolle) registrada até o momento.")
+                appendLine("Nenhuma autoavaliação técnica de bancada registrada até o momento.")
             } else {
                 evals.forEach { ev ->
                     val avg = (ev.scoreMiseEnPlace + ev.scoreTechnique + ev.scoreHygienePcc + ev.scoreSensory) / 4.0
-                    appendLine("## Semana ${ev.weekNumber} — Média Selbstkontrolle: ${"%.2f".format(avg)} / 5.0")
-                    appendLine("- Organização & MEP: ${ev.scoreMiseEnPlace}/5 | Técnica: ${ev.scoreTechnique}/5 | Higiene/PCC: ${ev.scoreHygienePcc}/5 | Sensorial: ${ev.scoreSensory}/5")
-                    appendLine("- **Erkenntnisse (Aprendizados):** ${ev.erkenntnisse.ifBlank { "—" }}")
-                    appendLine("- **Offene Punkte (Pontos em Aberto):** ${ev.offenePunkte.ifBlank { "—" }}")
+                    appendLine("## Semana ${ev.weekNumber} — Média da Autoavaliação: ${"%.2f".format(avg)} / 5,0")
+                    appendLine("- Mise en Place & Organização: ${ev.scoreMiseEnPlace}/5 | Técnica & Cortes: ${ev.scoreTechnique}/5 | Boas Práticas & PCC: ${ev.scoreHygienePcc}/5 | Análise Sensorial: ${ev.scoreSensory}/5")
+                    appendLine("- **Aprendizados Consolidados:** ${ev.erkenntnisse.ifBlank { "—" }}")
+                    appendLine("- **Pontos de Melhoria para o Próximo Turno:** ${ev.offenePunkte.ifBlank { "—" }}")
                     appendLine()
                 }
             }
             if (meps.isNotEmpty()) {
-                appendLine("## Fichas MEP Preenchidas (${meps.size})")
+                appendLine("## Fichas Técnicas de Preparo Gravadas (${meps.size})")
                 meps.forEach { m ->
-                    appendLine("- **${m.recipeId}** (Sem. ${m.weekNumber}, ${m.targetServings} porções): PCC `${m.block5ThermalFlowPcc.take(120)}`")
+                    val label = m.title.ifBlank { m.recipeId }
+                    val linkNote = if (m.cloudImageLink.isNotBlank()) " • Foto Firestore: `${m.cloudImageLink}`" else ""
+                    appendLine("- **$label** (Sem. ${m.weekNumber} • Praça ${m.stationBrigade} • ${m.targetServings} porções • PCC ≥ ${m.pccTargetTempC} °C$linkNote): `${m.block5ThermalFlowPcc.take(120)}`")
                 }
             }
+        }
+    }
+
+    companion object {
+        fun formatSingleMepSheetMarkdown(
+            sheet: MepSheetEntity,
+            summary: MepCalculationSummary
+        ): String = buildString {
+            val heading = sheet.title.ifBlank { sheet.recipeId }
+            appendLine("# FICHA TÉCNICA MEP (8 BLOCOS) — $heading")
+            appendLine("- **Identificador:** `${sheet.recipeId}` | **Semana:** ${sheet.weekNumber} | **Praça da Brigada:** ${sheet.stationBrigade}")
+            appendLine("- **Rendimento Escalonado:** ${sheet.targetServings} porções (Base ${sheet.baseServings} • Fator de Escala ${"%.2f".format(summary.scaleFactor)}x)")
+            appendLine("- **Rendimento Pós-Cocção (${"%.0f".format(sheet.cookingShrinkagePercent)}% de quebra térmica):** ${"%.0f".format(summary.theoreticalCookedYieldGrams)} g total (${"%.0f".format(summary.theoreticalPortionCookedGrams)} g/porção)")
+            appendLine("- **CMV / Porção:** R$ ${"%.2f".format(summary.foodCostPerPortionChf)} | **Preço Líquido Sugerido:** R$ ${"%.2f".format(summary.pricingPerPortion.netSellingPriceBvpChf)} | **Preço de Cardápio (c/ taxas 8%):** R$ ${"%.2f".format(summary.pricingPerPortion.grossMenuPriceEvpChf)}")
+            if (sheet.cloudImageLink.isNotBlank()) {
+                appendLine("- **Registro Fotográfico da Criação (Firestore):** `${sheet.cloudImageLink}`")
+            }
+            appendLine()
+            appendLine("## 1. Identificação, Praça & Rendimento")
+            appendLine(sheet.block1Identification)
+            appendLine()
+            appendLine("## 2. Matriz de Insumos (PB = PL × FC)")
+            summary.lines.forEach { l ->
+                appendLine("- **${l.source.name}** (${l.source.sector}): PL ${"%.1f".format(l.scaledPl)} ${l.source.unit} | FC ${"%.2f".format(l.effectiveFc)} (${"%.0f".format(l.effectiveTrimLossPercent)}% apara) | PB **${"%.1f".format(l.scaledPb)} ${l.source.unit}** | R$ ${"%.2f".format(l.lineCostChf)}")
+            }
+            appendLine()
+            appendLine("## 3. Bateria de Cozinha & Cutelaria")
+            appendLine(sheet.block3CookwareBlades)
+            appendLine()
+            appendLine("## 4. Pré-preparo & Padronização de Cortes")
+            appendLine(sheet.block4PrePrepCuts)
+            appendLine()
+            appendLine("## 5. Fluxo Térmico Cronometrado & PCC (Alvo ≥ ${sheet.pccTargetTempC} °C)")
+            appendLine(sheet.block5ThermalFlowPcc)
+            appendLine()
+            appendLine("## 6. Empratamento, Finalização & Passe (${sheet.plateTempC} °C)")
+            appendLine(sheet.block6PlatingFinishing)
+            appendLine()
+            appendLine("## 7. Boas Práticas (RDC 216 / APPCC) & Alergênicos (${sheet.allergensCsv.ifBlank { "Nenhum declarado" }})")
+            appendLine(sheet.block7HygieneAllergens)
+            appendLine()
+            appendLine("## 8. Autoavaliação de Bancada & Auditoria de Rendimento (${sheet.executionScore1To5}/5)")
+            summary.benchYieldDeviationPercent?.let { dev ->
+                appendLine("- Peso Pós-Cocção Aferido na Balança: ${"%.0f".format(sheet.actualBenchYieldGrams)} g (Desvio sobre o teórico: ${"%+.1f".format(dev)}%)")
+            }
+            appendLine(sheet.block8Selbstkontrolle.ifBlank { "Sem observações pós-produção." })
         }
     }
 }

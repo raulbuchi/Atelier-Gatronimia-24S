@@ -82,7 +82,7 @@ fun ShoppingEquipmentScreen(
             Tab(
                 selected = subTab == 0,
                 onClick = { subTab = 0 },
-                text = { Text("Compras & Despensa FIFO", fontWeight = FontWeight.Bold) },
+                text = { Text("Compras & Estoque PVPS", fontWeight = FontWeight.Bold) },
                 modifier = Modifier
                     .height(48.dp)
                     .testTag("shopping_tab_fifo")
@@ -90,7 +90,7 @@ fun ShoppingEquipmentScreen(
             Tab(
                 selected = subTab == 1,
                 onClick = { subTab = 1 },
-                text = { Text("Bateria & Lâminas (4 Níveis)", fontWeight = FontWeight.Bold) },
+                text = { Text("Bateria & Cutelaria (4 Níveis)", fontWeight = FontWeight.Bold) },
                 modifier = Modifier
                     .height(48.dp)
                     .testTag("shopping_tab_equipment")
@@ -154,9 +154,9 @@ private fun ShoppingFifoSection(
         border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline)
     ) {
         Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-            TagPill("ENGENHARIA DE COMPRAS • PB = PL × FC + PEPS/FIFO", SwissRedContainer, OnSwissRedContainer)
+            TagPill("REQUISIÇÃO DE COMPRAS • PB = PL × FC • GIRO PVPS/PEPS", SwissRedContainer, OnSwissRedContainer)
             Text(
-                "Consolida automaticamente todos os insumos das receitas da Semana $selectedWeekNum agrupados por setor de recebimento.",
+                "Consolida automaticamente todos os insumos das fichas técnicas da Semana $selectedWeekNum agrupados por setor de recebimento.",
                 style = MaterialTheme.typography.bodyMedium
             )
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -165,14 +165,14 @@ private fun ShoppingFifoSection(
                     border = BorderStroke(if (scaleMultiplier == 1.0) 2.dp else 1.dp, if (scaleMultiplier == 1.0) SwissRed else MaterialTheme.colorScheme.outline),
                     modifier = Modifier.height(48.dp)
                 ) {
-                    Text("Base 1.0x (4 porções)")
+                    Text("Base 1,0x (4 porções)")
                 }
                 OutlinedButton(
                     onClick = { scaleMultiplier = 2.5 },
                     border = BorderStroke(if (scaleMultiplier == 2.5) 2.dp else 1.dp, if (scaleMultiplier == 2.5) SwissRed else MaterialTheme.colorScheme.outline),
                     modifier = Modifier.height(48.dp)
                 ) {
-                    Text("Escala 2.5x (10 porções)")
+                    Text("Escala 2,5x (10 porções)")
                 }
             }
             Button(
@@ -185,7 +185,7 @@ private fun ShoppingFifoSection(
             ) {
                 Icon(Icons.Default.ShoppingCart, contentDescription = null)
                 Spacer(Modifier.width(8.dp))
-                Text("Gerar Compras da Semana $selectedWeekNum (${scaleMultiplier}x)", fontWeight = FontWeight.Bold)
+                Text("Gerar Requisição da Semana $selectedWeekNum (${scaleMultiplier}x)", fontWeight = FontWeight.Bold)
             }
         }
     }
@@ -197,7 +197,7 @@ private fun ShoppingFifoSection(
             modifier = Modifier.fillMaxWidth()
         ) {
             Text(
-                text = "Toque em 'Gerar Compras da Semana $selectedWeekNum' para calcular Peso Líquido (PL), Fator de Correção (FC), Peso Bruto (PB) e lotes FIFO/PEPS.",
+                text = "Toque em 'Gerar Requisição da Semana $selectedWeekNum' para apurar Peso Líquido (PL), Fator de Correção (FC), Peso Bruto de Compra (PB) e controle de validade PVPS/PEPS.",
                 style = MaterialTheme.typography.bodyMedium,
                 color = InfoBlue,
                 modifier = Modifier.padding(14.dp)
@@ -245,7 +245,7 @@ private fun ShoppingFifoSection(
                                     batch = it
                                     onUpdateFifo(item, it, expiry)
                                 },
-                                label = { Text("Lote Entrada") },
+                                label = { Text("Lote de Entrada") },
                                 singleLine = true,
                                 modifier = Modifier.weight(1f)
                             )
@@ -255,7 +255,7 @@ private fun ShoppingFifoSection(
                                     expiry = it
                                     onUpdateFifo(item, batch, it)
                                 },
-                                label = { Text("Validade PEPS/FIFO") },
+                                label = { Text("Validade PVPS/PEPS") },
                                 singleLine = true,
                                 modifier = Modifier.weight(1f)
                             )
@@ -275,12 +275,12 @@ private fun EquipmentTiersChecklistSection(
     onToggleOwned: (String) -> Unit
 ) {
     val weekRequiredIds = remember(selectedWeekNum) {
-        SwissmilkAndBaseRecipesCatalog.allRecipes
-            .filter { it.weekNumber == selectedWeekNum }
+        SwissmilkAndBaseRecipesCatalog.recipesForWeek(selectedWeekNum)
             .flatMap { it.requiredEquipmentIds }
             .toSet()
     }
     val missingForWeek = weekRequiredIds.filterNot { it in ownedIds }
+    val totalCatalogItems = TechnicalAtlasCatalog.allEquipmentTierItems.size
 
     Card(
         colors = CardDefaults.cardColors(
@@ -294,75 +294,65 @@ private fun EquipmentTiersChecklistSection(
                 Icon(Icons.Default.Build, contentDescription = null, tint = if (missingForWeek.isEmpty()) PccGreen else PccAmber)
                 Text(
                     text = if (missingForWeek.isEmpty()) {
-                        "Bateria pronta para a Semana $selectedWeekNum!"
+                        "Enxoval pronto para a Semana $selectedWeekNum!"
                     } else {
-                        "Atenção Semana $selectedWeekNum: ${missingForWeek.size} utensílio(s) pendente(s) no inventário"
+                        "Atenção Semana $selectedWeekNum: ${missingForWeek.size} equipamento(s) pendente(s) no inventário"
                     },
                     fontWeight = FontWeight.Bold
                 )
             }
             Text(
-                text = "Marque abaixo as peças que você já possui na sua cozinha (${ownedIds.size}/${TechnicalAtlasCatalog.cookwareAndBlades.size}).",
+                text = "Marque abaixo os equipamentos que você já possui na sua cozinha (${ownedIds.size}/$totalCatalogItems nos 4 ciclos oficiais).",
                 style = MaterialTheme.typography.bodySmall
             )
         }
     }
 
-    val tierNames = mapOf(
-        1 to "Nível 1 — Base Essencial de Bancada",
-        2 to "Nível 2 — Bateria Clássica Suíça (Sautoir / Braisière / Lyoner)",
-        3 to "Nível 3 — Lâminas Especializadas & Rondeau / Tamis",
-        4 to "Nível 4 — Precisão Chefkoch (Sous-Vide & Poissonnière)"
-    )
-
-    (1..4).forEach { tier ->
+    TechnicalAtlasCatalog.equipmentTiers.forEach { tierSpec ->
         Text(
-            text = tierNames[tier].orEmpty(),
+            text = "Nível ${tierSpec.tierNumber} — ${tierSpec.title} (${tierSpec.items.size} itens)",
             style = MaterialTheme.typography.titleSmall,
             color = SwissRed,
             fontWeight = FontWeight.Bold
         )
-        TechnicalAtlasCatalog.cookwareAndBlades
-            .filter { it.tierLevel == tier }
-            .forEach { eq ->
-                val isOwned = eq.id in ownedIds
-                val isNeededThisWeek = eq.id in weekRequiredIds
-                Card(
-                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-                    border = BorderStroke(
-                        if (isNeededThisWeek && !isOwned) 1.5.dp else 1.dp,
-                        if (isNeededThisWeek && !isOwned) PccAmber else MaterialTheme.colorScheme.outline
-                    ),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clickable { onToggleOwned(eq.id) }
-                        .testTag("equipment_item_${eq.id}")
+        tierSpec.items.forEach { eq ->
+            val isOwned = eq.id in ownedIds
+            val isNeededThisWeek = eq.id in weekRequiredIds
+            Card(
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                border = BorderStroke(
+                    if (isNeededThisWeek && !isOwned) 1.5.dp else 1.dp,
+                    if (isNeededThisWeek && !isOwned) PccAmber else MaterialTheme.colorScheme.outline
+                ),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable { onToggleOwned(eq.id) }
+                    .testTag("equipment_item_${eq.id}")
+            ) {
+                Row(
+                    modifier = Modifier.padding(12.dp),
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Row(
-                        modifier = Modifier.padding(12.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Checkbox(
-                            checked = isOwned,
-                            onCheckedChange = { onToggleOwned(eq.id) }
-                        )
-                        Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                            FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                                Text(eq.namePt, style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold)
-                                if (isNeededThisWeek) {
-                                    TagPill("EXIGIDO S${"%02d".format(selectedWeekNum)}", SwissRedContainer, OnSwissRedContainer)
-                                }
+                    Checkbox(
+                        checked = isOwned,
+                        onCheckedChange = { onToggleOwned(eq.id) }
+                    )
+                    Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                        FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                            Text(eq.name, style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold)
+                            if (isNeededThisWeek) {
+                                TagPill("EXIGIDO S${"%02d".format(selectedWeekNum)}", SwissRedContainer, OnSwissRedContainer)
                             }
-                            Text(
-                                "DE: ${eq.nameDe} • FR: ${eq.nameFr}",
-                                style = MaterialTheme.typography.labelSmall,
-                                fontFamily = JetBrainsMonoFamily,
-                                color = InfoBlue
-                            )
-                            Text(eq.kitchenRule, style = MaterialTheme.typography.bodySmall)
                         }
+                        Text(
+                            "ID: ${eq.id} • Categoria: ${eq.category}",
+                            style = MaterialTheme.typography.labelSmall,
+                            fontFamily = JetBrainsMonoFamily,
+                            color = InfoBlue
+                        )
                     }
                 }
             }
+        }
     }
 }

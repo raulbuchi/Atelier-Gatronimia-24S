@@ -97,9 +97,16 @@ object ShareableCardGenerator {
                 textSize = 24f
                 typeface = Typeface.create(Typeface.MONOSPACE, Typeface.NORMAL)
             }
-            val cantonBadge = if (cantonCode.isNotBlank()) " • CANTÃO $cantonCode" else ""
+            val cantonBadge = if (cantonCode.isNotBlank()) " • ORIGEM $cantonCode" else ""
+            val materialLabel = when (materialType) {
+                "prato_final" -> "PRATO FINALIZADO"
+                "cortes_mep" -> "CORTES & MISE EN PLACE"
+                "ficha_preenchida" -> "FICHA TÉCNICA"
+                "resumo_esquema" -> "MAPA TÉCNICO"
+                else -> materialType.replace('_', ' ').uppercase()
+            }
             canvas.drawText(
-                "SEMANA $weekNumber$cantonBadge • ${materialType.uppercase()}",
+                "SEMANA $weekNumber$cantonBadge • $materialLabel",
                 192f,
                 154f,
                 subBrandPaint
@@ -139,7 +146,7 @@ object ShareableCardGenerator {
                     typeface = Typeface.create(Typeface.MONOSPACE, Typeface.BOLD)
                 }
                 canvas.drawText(
-                    "REGISTRO TÉCNICO MEP • BANCADA SUÍÇA",
+                    "REGISTRO DE PRODUÇÃO • FICHA TÉCNICA & MISE EN PLACE",
                     width / 2f,
                     photoRect.centerY(),
                     placeholderPaint
@@ -195,7 +202,7 @@ object ShareableCardGenerator {
                 typeface = Typeface.create(Typeface.MONOSPACE, Typeface.NORMAL)
             }
             canvas.drawText(
-                "PRECISÃO SUÍÇA • CHEFKOCH STEP-BY-STEP • SWISSMILK • LE CORDON BLEU",
+                "ALTA GASTRONOMIA • PASSO A PASSO • SWISSMILK • LE CORDON BLEU",
                 56f,
                 1298f,
                 footerPaint
@@ -224,7 +231,7 @@ object ShareableCardGenerator {
                     )
                     addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
                 }
-                val chooser = Intent.createChooser(shareIntent, "Compartilhar Card PNG").apply {
+                val chooser = Intent.createChooser(shareIntent, "Compartilhar Cartão Técnico").apply {
                     addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                 }
                 context.startActivity(chooser)

@@ -103,7 +103,7 @@ fun AuthScreen(
                     verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
                     TagPill(
-                        text = "EDIÇÃO PROFISSIONAL V4 • SUÍÇA",
+                        text = "EDIÇÃO PROFISSIONAL • ALTA GASTRONOMIA",
                         containerColor = SwissRedContainer,
                         contentColor = OnSwissRedContainer
                     )
@@ -113,15 +113,15 @@ fun AuthScreen(
                     )
 
                     Text(
-                        text = "Formação técnica autoguiada em 24 semanas unindo cortes padronizados (Schnittarten), bateria trilíngue, 23 Clássicos Swissmilk, 8 fichas Chefkoch Step-by-Step, Ficha MEP digital de 8 blocos, calculadoras Fachrechnen/Sous-vide e Chef Instrutor IA multimodal.",
+                        text = "Formação técnica autoguiada em 24 semanas unindo padronização milimétrica de cortes, dicionário trilíngue de bateria e cutelaria, 23 Clássicos Regionais, 8 fichas Passo a Passo de alta precisão, Ficha Técnica de Preparo (8 blocos), calculadoras de rendimento, custos e sous-vide e Chef Instrutor IA multimodal.",
                         style = MaterialTheme.typography.bodyLarge,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
 
                     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                         listOf(
-                            "Alto contraste claro de bancada + modo baixo toque (≥ 56 dp)",
-                            "Cronômetros paralelos (Berner Platte) + alertas de acrilamida (175 °C) e vitamina C",
+                            "Alto contraste claro de bancada + botões amplos para baixo toque (≥ 56 dp)",
+                            "Cronômetros paralelos de cocção + alertas de acrilamida (175 °C) e vitamina C",
                             "Mural Comunitário sincronizado na nuvem + avaliação visual de pratos e cortes"
                         ).forEach { feature ->
                             Row(

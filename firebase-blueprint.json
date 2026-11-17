@@ -2,7 +2,7 @@
   "entities": {
     "UserProfile": {
       "title": "UserProfile",
-      "description": "Public culinary student profile without PII (email/phone excluded).",
+      "description": "Public culinary student profile without PII (email/phone excluded), including default post visibility and optional 400px compressed avatar.",
       "type": "object",
       "properties": {
         "userId": {
@@ -17,6 +17,15 @@
           "type": "string",
           "description": "Optional profile photo URL."
         },
+        "avatarBase64": {
+          "type": "string",
+          "description": "Optional 400px EXIF-stripped JPEG avatar Base64 (<= 60KB) on white background."
+        },
+        "defaultVisibility": {
+          "type": "string",
+          "enum": ["private", "public"],
+          "description": "Default visibility preference when publishing culinary records."
+        },
         "bio": {
           "type": "string",
           "description": "Short culinary bio or station specialty."
@@ -27,11 +36,11 @@
         },
         "cantonFocus": {
           "type": "string",
-          "description": "Preferred Swiss canton code (AG to ZH)."
+          "description": "Preferred culinary region or canton code."
         },
         "specialtyBadge": {
           "type": "string",
-          "description": "Active station or Chefkoch badge."
+          "description": "Active brigade station badge."
         },
         "createdAt": {
           "type": "string",
@@ -56,7 +65,7 @@
     },
     "PortfolioPost": {
       "title": "PortfolioPost",
-      "description": "Denormalized culinary portfolio and community mural post metadata with lightweight thumbnail.",
+      "description": "Denormalized culinary portfolio and community mural post metadata with lightweight thumbnail, author avatar, Selbstkontrolle reflections, and optional Firestore image link.",
       "type": "object",
       "properties": {
         "userId": {
@@ -66,6 +75,10 @@
         "authorName": {
           "type": "string",
           "description": "Denormalized author display name."
+        },
+        "authorAvatarBase64": {
+          "type": "string",
+          "description": "Optional denormalized 400px compressed author avatar Base64 to avoid O(N) profile lookups."
         },
         "visibility": {
           "type": "string",
@@ -91,7 +104,7 @@
         },
         "recipeId": {
           "type": "string",
-          "description": "Associated recipe or preparation identifier."
+          "description": "Associated recipe or Ficha Técnica identifier."
         },
         "recipeTitle": {
           "type": "string",
@@ -99,15 +112,15 @@
         },
         "isSwissmilkClassic": {
           "type": "boolean",
-          "description": "True if recipe belongs to the 23 Swissmilk cantonal classics."
+          "description": "True if recipe belongs to the 23 Swissmilk classics."
         },
         "isChefkochV4": {
           "type": "boolean",
-          "description": "True if recipe belongs to the v4 Chefkoch step-by-step dossier."
+          "description": "True if recipe belongs to the step-by-step dossier."
         },
         "cantonCode": {
           "type": "string",
-          "description": "Canton code badge if applicable (e.g. ZH, BE, VD)."
+          "description": "Origin code badge if applicable."
         },
         "caption": {
           "type": "string",
@@ -115,7 +128,19 @@
         },
         "mepSummary": {
           "type": "string",
-          "description": "Summary of MEP PCC temperatures, FC, and Erkenntnisse."
+          "description": "Summary of Ficha Técnica PCC temperatures, FC, and self-assessment."
+        },
+        "selbstkontrolleScore": {
+          "type": "integer",
+          "description": "Optional bench self-assessment score (0-5)."
+        },
+        "erkenntnisse": {
+          "type": "string",
+          "description": "Optional consolidated bench learnings (Erkenntnisse)."
+        },
+        "offenePunkte": {
+          "type": "string",
+          "description": "Optional improvement targets for next execution (Offene Punkte)."
         },
         "aiFeedback": {
           "type": "string",
@@ -124,6 +149,10 @@
         "thumbnailBase64": {
           "type": "string",
           "description": "Compact EXIF-stripped JPEG thumbnail Base64 (<80KB) for fast feed reads."
+        },
+        "imageLink": {
+          "type": "string",
+          "description": "Optional canonical Firestore resource link (firestore://portfolio_media/{mediaId}) to the full creation image."
         },
         "reactedUserIds": {
           "type": "array",
@@ -174,7 +203,7 @@
     },
     "PortfolioMedia": {
       "title": "PortfolioMedia",
-      "description": "On-demand high-resolution compressed image payload (max 1200px JPEG 0.80 without EXIF).",
+      "description": "On-demand high-resolution compressed image payload (max 1200px JPEG without EXIF) captured via CameraX or Photo Picker.",
       "type": "object",
       "properties": {
         "userId": {
@@ -215,6 +244,86 @@
         "imageBase64",
         "width",
         "height",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "MepSheetCloudLink": {
+      "title": "MepSheetCloudLink",
+      "description": "Owner-scoped Ficha Técnica cloud record associating a CameraX creation photo link with a specific technical sheet.",
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string",
+          "description": "Owner Firebase Auth UID."
+        },
+        "recipeId": {
+          "type": "string",
+          "description": "Identifier of the associated Ficha Técnica in Room."
+        },
+        "title": {
+          "type": "string",
+          "description": "Title of the Ficha Técnica."
+        },
+        "weekNumber": {
+          "type": "integer",
+          "description": "Curriculum week number (1-24)."
+        },
+        "stationBrigade": {
+          "type": "string",
+          "description": "Brigade station (e.g. Saucier, Garde-manger)."
+        },
+        "targetServings": {
+          "type": "integer",
+          "description": "Scaled target servings."
+        },
+        "pccTargetTempC": {
+          "type": "integer",
+          "description": "Critical Control Point target temperature in Celsius."
+        },
+        "executionScore1To5": {
+          "type": "integer",
+          "description": "Bench self-assessment score (1-5)."
+        },
+        "mediaId": {
+          "type": "string",
+          "description": "Referenced document ID in /portfolio_media/{mediaId}."
+        },
+        "imageLink": {
+          "type": "string",
+          "description": "Canonical Firestore image link (firestore://portfolio_media/{mediaId}) for the Ficha Técnica creation photo."
+        },
+        "thumbnailBase64": {
+          "type": "string",
+          "description": "Compact 320px EXIF-stripped JPEG preview Base64 (<80KB) for single-read synchronization."
+        },
+        "localPhotoUri": {
+          "type": "string",
+          "description": "Optional device-local FileProvider URI captured by CameraX."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server creation timestamp via FieldValue.serverTimestamp()."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server update timestamp via FieldValue.serverTimestamp()."
+        }
+      },
+      "required": [
+        "userId",
+        "recipeId",
+        "title",
+        "weekNumber",
+        "stationBrigade",
+        "targetServings",
+        "pccTargetTempC",
+        "executionScore1To5",
+        "mediaId",
+        "imageLink",
+        "thumbnailBase64",
         "createdAt",
         "updatedAt"
       ]
@@ -278,6 +387,10 @@
     "/portfolio_media/{postId}": {
       "schema": "PortfolioMedia",
       "description": "Segregated compressed 1200px image payloads fetched on demand."
+    },
+    "/mep_sheets/{sheetDocId}": {
+      "schema": "MepSheetCloudLink",
+      "description": "Owner-isolated Ficha Técnica documents storing CameraX creation photo links and compact previews."
     },
     "/portfolio_posts/{postId}/comments/{commentId}": {
       "schema": "PostComment",

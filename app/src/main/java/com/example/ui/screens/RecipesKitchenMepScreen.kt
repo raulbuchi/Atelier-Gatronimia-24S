@@ -20,11 +20,10 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.filled.AddAlarm
-import androidx.compose.material.icons.filled.CameraAlt
-import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.AutoAwesome
+import androidx.compose.material.icons.filled.Calculate
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.PlayArrow
-import androidx.compose.material.icons.filled.Save
 import androidx.compose.material.icons.filled.Stop
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -36,7 +35,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.SecondaryTabRow
 import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
@@ -58,12 +56,13 @@ import com.example.R
 import com.example.data.curriculum.CurriculumWeeksAndGuides
 import com.example.data.curriculum.SwissmilkAndBaseRecipesCatalog
 import com.example.data.curriculum.TechnicalAtlasCatalog
-import com.example.data.local.MepSheetEntity
 import com.example.domain.model.RecipeSpec
 import com.example.ui.components.KeepScreenOnEffect
+import com.example.ui.components.MepWeeklyCostChartCard
 import com.example.ui.components.SmartKitchenAlertBanner
 import com.example.ui.components.TagPill
 import com.example.ui.components.formatSecondsMmSs
+import com.example.ui.theme.AtelierCharcoal
 import com.example.ui.theme.InfoBlue
 import com.example.ui.theme.InfoBlueBg
 import com.example.ui.theme.JetBrainsMonoFamily
@@ -77,28 +76,49 @@ import com.example.ui.theme.PccGreenBg
 import com.example.ui.theme.SwissRed
 import com.example.ui.theme.SwissRedContainer
 import com.example.ui.viewmodel.AtelierViewModel
+import com.example.ui.viewmodel.CommunityAiViewModel
 import com.example.ui.viewmodel.ParallelKitchenTimer
+import com.example.ui.viewmodel.StreamUiState
 
 @OptIn(ExperimentalLayoutApi::class, ExperimentalMaterial3Api::class)
 @Composable
 fun RecipesKitchenMepScreen(
     atelierVm: AtelierViewModel,
-    onNavigateToPhotoRegister: () -> Unit
+    communityVm: CommunityAiViewModel,
+    onNavigateToPhotoRegister: () -> Unit,
+    onNavigateToChefSos: () -> Unit = {}
 ) {
     val selectedRecipeId by atelierVm.selectedRecipeId.collectAsStateWithLifecycle()
+    val activeMepSheetId by atelierVm.activeMepSheetId.collectAsStateWithLifecycle()
     val targetServings by atelierVm.targetServings.collectAsStateWithLifecycle()
     val isKitchenMode by atelierVm.isKitchenModeActive.collectAsStateWithLifecycle()
     val activeStepIdx by atelierVm.activeCookingStepIndex.collectAsStateWithLifecycle()
     val parallelTimers by atelierVm.parallelTimers.collectAsStateWithLifecycle()
     val ownedEquipmentIds by atelierVm.ownedEquipmentIds.collectAsStateWithLifecycle()
     val mepSheetsMap by atelierVm.mepSheetsMap.collectAsStateWithLifecycle()
+    val persistedMepSheets by atelierVm.persistedMepSheetsList.collectAsStateWithLifecycle()
+    val mepLinesMap by atelierVm.mepLinesByRecipeMap.collectAsStateWithLifecycle()
+    val costAnalytics by atelierVm.weeklyMepCostAnalytics.collectAsStateWithLifecycle()
+    val myMepLinksState by communityVm.myMepLinksState.collectAsStateWithLifecycle()
+    val isSyncingMepPhoto by communityVm.isSyncingMepPhoto.collectAsStateWithLifecycle()
+    val fullMediaCache by communityVm.loadedFullMediaCache.collectAsStateWithLifecycle()
 
-    var filterMode by rememberSaveable { mutableIntStateOf(0) } // 0 Todos, 1 Chefkoch v4, 2 Swissmilk
-    var subViewTab by rememberSaveable { mutableIntStateOf(0) } // 0 Receita & Escala, 1 Ficha MEP 8 Blocos
+    var filterMode by rememberSaveable { mutableIntStateOf(0) } // 0 Todas, 1 Passo a Passo (10), 2 Swissmilk (23), 3 Base & Mundo (12)
+    var filterCanton by rememberSaveable { mutableStateOf("TODOS") }
+    var filterWeek by rememberSaveable { mutableIntStateOf(0) } // 0 = Todas Semanas
+    var subViewTab by rememberSaveable { mutableIntStateOf(0) } // 0 Receita & Escala, 1 Calculadora Ficha MEP 8 Blocos
 
     val activeRecipe = remember(selectedRecipeId) {
         SwissmilkAndBaseRecipesCatalog.allRecipes.find { it.id == selectedRecipeId }
             ?: SwissmilkAndBaseRecipesCatalog.allRecipes.first()
+    }
+
+    val catalogRecipeForMep = remember(activeMepSheetId) {
+        SwissmilkAndBaseRecipesCatalog.allRecipes.find { it.id == activeMepSheetId }
+    }
+
+    val initialLinesForActiveMep = remember(activeMepSheetId, mepLinesMap) {
+        mepLinesMap[activeMepSheetId] ?: atelierVm.resolveSeedLinesForSheet(activeMepSheetId)
     }
 
     if (isKitchenMode) {
@@ -113,16 +133,30 @@ fun RecipesKitchenMepScreen(
             onStartTimer = { id, label, mins -> atelierVm.addOrRestartParallelTimer(id, label, mins) },
             onToggleTimer = { atelierVm.toggleParallelTimer(it) },
             onRemoveTimer = { atelierVm.removeParallelTimer(it) },
+            onRequestChefSos = { currentStep ->
+                atelierVm.requestChefSos(
+                    weekNumber = activeRecipe.weekNumber,
+                    contextSummary = "Modo Cozinha: ${activeRecipe.title} ($targetServings porções) • Etapa ${currentStep.stepNumber}: ${currentStep.title} (${currentStep.cookwareDeFrPt})",
+                    prefilledPrompt = "Chef, estou na Etapa ${currentStep.stepNumber} (${currentStep.title}) de ${activeRecipe.title} para $targetServings porções. Qual o diagnóstico rápido e controle crítico para não errar o ponto?"
+                )
+                onNavigateToChefSos()
+            },
             onExit = { atelierVm.exitKitchenMode() }
         )
         return
     }
 
-    val filteredRecipes = remember(filterMode) {
-        when (filterMode) {
-            1 -> SwissmilkAndBaseRecipesCatalog.allRecipes.filter { it.isChefkochV4 }
-            2 -> SwissmilkAndBaseRecipesCatalog.allRecipes.filter { it.isSwissmilkClassic }
-            else -> SwissmilkAndBaseRecipesCatalog.allRecipes
+    val filteredRecipes = remember(filterMode, filterCanton, filterWeek) {
+        SwissmilkAndBaseRecipesCatalog.allRecipes.filter { rec ->
+            val trackOk = when (filterMode) {
+                1 -> rec.isChefkochV4
+                2 -> rec.isSwissmilkClassic
+                3 -> rec.recipeTrack == "base_global"
+                else -> true
+            }
+            val cantonOk = filterCanton == "TODOS" || rec.cantonCode == filterCanton
+            val weekOk = filterWeek == 0 || filterWeek in rec.weeksAppearing || rec.weekNumber == filterWeek
+            trackOk && cantonOk && weekOk
         }
     }
 
@@ -130,7 +164,8 @@ fun RecipesKitchenMepScreen(
         if (ownedEquipmentIds.isEmpty()) emptyList()
         else activeRecipe.requiredEquipmentIds.mapNotNull { id ->
             if (id in ownedEquipmentIds) null
-            else TechnicalAtlasCatalog.cookwareAndBlades.find { it.id == id }?.namePt
+            else TechnicalAtlasCatalog.allEquipmentTierItems.find { it.id == id }?.name
+                ?: TechnicalAtlasCatalog.cookwareAndBlades.find { it.id == id }?.namePt
         }
     }
 
@@ -142,7 +177,7 @@ fun RecipesKitchenMepScreen(
             Tab(
                 selected = subViewTab == 0,
                 onClick = { subViewTab = 0 },
-                text = { Text("Receita & Escala FC", fontWeight = FontWeight.Bold) },
+                text = { Text("Receita & Escala", fontWeight = FontWeight.Bold) },
                 modifier = Modifier
                     .height(48.dp)
                     .testTag("recipes_tab_spec")
@@ -150,7 +185,7 @@ fun RecipesKitchenMepScreen(
             Tab(
                 selected = subViewTab == 1,
                 onClick = { subViewTab = 1 },
-                text = { Text("Ficha MEP (8 Blocos)", fontWeight = FontWeight.Bold) },
+                text = { Text("Ficha Técnica (8 Blocos)", fontWeight = FontWeight.Bold) },
                 modifier = Modifier
                     .height(48.dp)
                     .testTag("recipes_tab_mep8")
@@ -164,18 +199,52 @@ fun RecipesKitchenMepScreen(
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(14.dp)
         ) {
-            // Recipe Selector Bar
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            // Recipe Track Filter Row (45 Total = 10 Step-by-Step + 23 Swissmilk + 12 Base & Mundo)
+            Row(
+                modifier = Modifier.horizontalScroll(rememberScrollState()),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
                 listOf(
                     0 to "Todas (${SwissmilkAndBaseRecipesCatalog.allRecipes.size})",
-                    1 to "Chefkoch v4 (8)",
-                    2 to "Swissmilk (23)"
+                    1 to "Passo a Passo (10)",
+                    2 to "Swissmilk (23)",
+                    3 to "Base & Mundo (12)"
                 ).forEach { (idx, label) ->
                     FilterChip(
                         selected = filterMode == idx,
                         onClick = { filterMode = idx },
                         label = { Text(label) },
-                        modifier = Modifier.height(48.dp)
+                        modifier = Modifier
+                            .height(48.dp)
+                            .testTag("recipe_track_filter_$idx")
+                    )
+                }
+            }
+
+            // Canton & Week Quick Filters
+            Row(
+                modifier = Modifier.horizontalScroll(rememberScrollState()),
+                horizontalArrangement = Arrangement.spacedBy(6.dp)
+            ) {
+                (listOf("TODOS") + SwissmilkAndBaseRecipesCatalog.availableCantons).forEach { canton ->
+                    FilterChip(
+                        selected = filterCanton == canton,
+                        onClick = { filterCanton = canton },
+                        label = { Text(if (canton == "TODOS") "Cantão: Todos" else canton, fontFamily = JetBrainsMonoFamily) },
+                        modifier = Modifier.height(44.dp)
+                    )
+                }
+            }
+            Row(
+                modifier = Modifier.horizontalScroll(rememberScrollState()),
+                horizontalArrangement = Arrangement.spacedBy(6.dp)
+            ) {
+                (listOf(0) + (1..24).toList()).forEach { wk ->
+                    FilterChip(
+                        selected = filterWeek == wk,
+                        onClick = { filterWeek = wk },
+                        label = { Text(if (wk == 0) "Sem.: Todas" else "S${"%02d".format(wk)}", fontFamily = JetBrainsMonoFamily) },
+                        modifier = Modifier.height(44.dp)
                     )
                 }
             }
@@ -185,7 +254,7 @@ fun RecipesKitchenMepScreen(
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 filteredRecipes.forEach { rec ->
-                    val isSel = rec.id == activeRecipe.id
+                    val isSel = if (subViewTab == 1) rec.id == activeMepSheetId else rec.id == activeRecipe.id
                     OutlinedButton(
                         onClick = { atelierVm.selectRecipe(rec.id) },
                         border = BorderStroke(if (isSel) 2.dp else 1.dp, if (isSel) SwissRed else MaterialTheme.colorScheme.outline),
@@ -207,20 +276,86 @@ fun RecipesKitchenMepScreen(
                     targetServings = targetServings,
                     missingTools = missingTools,
                     onServingsChange = { atelierVm.setTargetServings(it) },
-                    onEnterKitchenMode = { atelierVm.enterKitchenMode(activeRecipe) }
+                    onEnterKitchenMode = { atelierVm.enterKitchenMode(activeRecipe) },
+                    onOpenMepCalculator = {
+                        atelierVm.selectRecipe(activeRecipe.id)
+                        subViewTab = 1
+                    }
                 )
             } else {
-                MepEightBlocksEditorSection(
-                    recipe = activeRecipe,
-                    targetServings = targetServings,
-                    savedSheet = mepSheetsMap[activeRecipe.id],
+                val activeCloudLink = (myMepLinksState as? StreamUiState.Success)
+                    ?.data
+                    ?.firstOrNull { it.recipeId == activeMepSheetId }
+
+                MepWeeklyCostChartCard(
+                    analytics = costAnalytics,
+                    onOpenSheetById = { atelierVm.selectMepSheet(it) },
+                    onCreateNewSheet = { atelierVm.createCustomMepSheet() }
+                )
+
+                MepCalculatorWorkstation(
+                    activeSheetId = activeMepSheetId,
+                    catalogRecipe = catalogRecipeForMep,
+                    targetServingsFromVm = targetServings,
+                    savedSheet = mepSheetsMap[activeMepSheetId],
+                    cloudSheetLink = activeCloudLink,
+                    isSyncingPhoto = isSyncingMepPhoto,
+                    fullMediaCache = fullMediaCache,
+                    persistedRoomSheets = persistedMepSheets,
+                    initialLines = initialLinesForActiveMep,
+                    onSelectSheet = { atelierVm.selectMepSheet(it) },
+                    onCreateCustomSheet = { atelierVm.createCustomMepSheet() },
                     onLoadZurcherExample = {
                         atelierVm.selectRecipe(CurriculumWeeksAndGuides.exampleMepZurcherRosti.recipeId)
                     },
-                    onSaveSheet = { atelierVm.saveMepSheet(it) },
-                    onRegisterTrainingPhoto = { sheet ->
-                        atelierVm.preparePhotoTransferFromMep(activeRecipe, sheet)
+                    onResetLinesToCatalog = {
+                        val rec = catalogRecipeForMep ?: return@MepCalculatorWorkstation emptyList()
+                        rec.ingredients.mapIndexed { idx, ing ->
+                            val fc = ing.correctionFactorFc.coerceAtLeast(1.0)
+                            com.example.data.local.MepIngredientLineEntity(
+                                recipeId = rec.id,
+                                sortOrder = idx,
+                                name = ing.name,
+                                sector = ing.sector,
+                                unit = ing.unit,
+                                baseNetPl = ing.netAmountPl,
+                                trimLossPercent = if (fc > 1.0) ((1.0 - (1.0 / fc)) * 100.0) else 0.0,
+                                correctionFactorFc = fc,
+                                unitCostPerKgOrL = AtelierViewModel.defaultUnitCostForSector(ing.sector, ing.unit)
+                            )
+                        }
+                    },
+                    onSaveComplete = { sheet, lines -> atelierVm.saveMepComplete(sheet, lines) },
+                    onDeleteSheet = { sheetId -> atelierVm.deleteMepSheet(sheetId) },
+                    onCaptureOrLinkPhoto = { ctx, uri, sheet, lines ->
+                        communityVm.captureAndLinkPhotoToMepSheet(
+                            context = ctx,
+                            uri = uri,
+                            sheet = sheet,
+                            onLinked = { localUriStr, cloudLink ->
+                                atelierVm.attachCreationPhotoToMepSheet(
+                                    sheet = sheet,
+                                    lines = lines,
+                                    localPhotoUri = localUriStr,
+                                    cloudLink = cloudLink
+                                )
+                            }
+                        )
+                    },
+                    onLoadFullResolutionPhoto = { mediaId ->
+                        communityVm.loadFullResolutionPhoto(mediaId)
+                    },
+                    onRegisterTrainingPhoto = { sheet, _ ->
+                        atelierVm.preparePhotoTransferFromMep(catalogRecipeForMep, sheet)
                         onNavigateToPhotoRegister()
+                    },
+                    onRequestChefSos = { sheet ->
+                        atelierVm.requestChefSos(
+                            weekNumber = sheet.weekNumber,
+                            contextSummary = "Ficha MEP: ${sheet.title} | Praça ${sheet.stationBrigade} | ${sheet.targetServings} porções | PCC ≥ ${sheet.pccTargetTempC} °C",
+                            prefilledPrompt = "Chef, preciso de socorro técnico na Ficha MEP \"${sheet.title}\" (${sheet.targetServings} porções, praça ${sheet.stationBrigade}, PCC ≥ ${sheet.pccTargetTempC} °C). Como corrigir textura/emulsão/rendimento sem comprometer o passe?"
+                        )
+                        onNavigateToChefSos()
                     }
                 )
             }
@@ -235,7 +370,8 @@ private fun RecipeDetailAndScalerSection(
     targetServings: Int,
     missingTools: List<String>,
     onServingsChange: (Int) -> Unit,
-    onEnterKitchenMode: () -> Unit
+    onEnterKitchenMode: () -> Unit,
+    onOpenMepCalculator: () -> Unit
 ) {
     val conversionFactor = targetServings.toDouble() / recipe.baseServings.coerceAtLeast(1)
 
@@ -246,14 +382,42 @@ private fun RecipeDetailAndScalerSection(
     ) {
         Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
             FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                TagPill("SEMANA ${recipe.weekNumber}", SwissRedContainer, OnSwissRedContainer)
+                TagPill("SEMANA ${recipe.weeksAppearing.joinToString("/") { "S%02d".format(it) }}", SwissRedContainer, OnSwissRedContainer)
                 if (recipe.cantonCode.isNotBlank()) TagPill("CANTÃO ${recipe.cantonCode}", InfoBlueBg, InfoBlue)
-                if (recipe.isChefkochV4) TagPill("CHEFKOCH STEP-BY-STEP V4", PccAmberBg, PccAmber)
-                if (recipe.isSwissmilkClassic) TagPill("CLÁSSICO SWISSMILK", PccGreenBg, PccGreen)
+                if (recipe.isChefkochV4) TagPill("CHEFKOCH PASSO A PASSO", PccAmberBg, PccAmber)
+                if (recipe.isSwissmilkClassic) {
+                    val smLabel = recipe.swissmilkNum?.let { "SWISSMILK #$it" } ?: "CLÁSSICO SWISSMILK"
+                    TagPill(smLabel, PccGreenBg, PccGreen)
+                }
             }
             Text(recipe.title, style = MaterialTheme.typography.headlineSmall)
             Text(recipe.subtitle, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
             Text("PCC & Controle Crítico: ${recipe.pccTargetSummary}", fontWeight = FontWeight.SemiBold, color = SwissRed)
+
+            if (recipe.sousVideSummary.isNotBlank()) {
+                Card(
+                    colors = CardDefaults.cardColors(containerColor = InfoBlueBg),
+                    border = BorderStroke(1.dp, InfoBlue)
+                ) {
+                    Text(
+                        text = "Parâmetros Sous-Vide Validados: ${recipe.sousVideSummary}",
+                        style = MaterialTheme.typography.bodySmall,
+                        fontWeight = FontWeight.SemiBold,
+                        color = InfoBlue,
+                        modifier = Modifier.padding(10.dp)
+                    )
+                }
+            }
+
+            if (recipe.caloriesKcal != null) {
+                val macros = buildString {
+                    append("Nutrição/porção: ${recipe.caloriesKcal} kcal")
+                    recipe.proteinG?.let { append(" • Prot ${"%.0f".format(it)}g") }
+                    recipe.carbsG?.let { append(" • Carb ${"%.0f".format(it)}g") }
+                    recipe.fatG?.let { append(" • Lip ${"%.0f".format(it)}g") }
+                }
+                TagPill(macros, PccGreenBg, PccGreen)
+            }
 
             if (missingTools.isNotEmpty()) {
                 Card(
@@ -268,32 +432,33 @@ private fun RecipeDetailAndScalerSection(
                 }
             }
 
-            // Quick 4 vs 10 Servings + FC Toggle
+            val baseScaleOption = recipe.baseServings
+            val altScaleOption = recipe.altScaleServings ?: if (baseScaleOption == 10) 4 else 10
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
                 modifier = Modifier.fillMaxWidth()
             ) {
                 OutlinedButton(
-                    onClick = { onServingsChange(4) },
-                    border = BorderStroke(if (targetServings == 4) 2.dp else 1.dp, if (targetServings == 4) SwissRed else MaterialTheme.colorScheme.outline),
+                    onClick = { onServingsChange(baseScaleOption) },
+                    border = BorderStroke(if (targetServings == baseScaleOption) 2.dp else 1.dp, if (targetServings == baseScaleOption) SwissRed else MaterialTheme.colorScheme.outline),
                     modifier = Modifier
                         .height(48.dp)
                         .testTag("servings_4_button")
                 ) {
-                    Text("4 Porções (Casa)", fontWeight = FontWeight.Bold)
+                    Text("$baseScaleOption ${recipe.yieldUnit} (Base)", fontWeight = FontWeight.Bold)
                 }
                 OutlinedButton(
-                    onClick = { onServingsChange(10) },
-                    border = BorderStroke(if (targetServings == 10) 2.dp else 1.dp, if (targetServings == 10) SwissRed else MaterialTheme.colorScheme.outline),
+                    onClick = { onServingsChange(altScaleOption) },
+                    border = BorderStroke(if (targetServings == altScaleOption) 2.dp else 1.dp, if (targetServings == altScaleOption) SwissRed else MaterialTheme.colorScheme.outline),
                     modifier = Modifier
                         .height(48.dp)
                         .testTag("servings_10_button")
                 ) {
-                    Text("10 Porções (Chefkoch)", fontWeight = FontWeight.Bold)
+                    Text("$altScaleOption ${recipe.yieldUnit} (Produção)", fontWeight = FontWeight.Bold)
                 }
                 TagPill(
-                    text = "FC Escala = ${"%.2f".format(conversionFactor)}x",
+                    text = "Escala = ${"%.2f".format(conversionFactor)}x",
                     containerColor = InfoBlueBg,
                     contentColor = InfoBlue
                 )
@@ -310,6 +475,19 @@ private fun RecipeDetailAndScalerSection(
                 Icon(Icons.Default.PlayArrow, contentDescription = null)
                 Spacer(Modifier.width(8.dp))
                 Text("ABRIR MODO COZINHA (BAIXO TOQUE • TELA ATIVA)", fontWeight = FontWeight.Bold)
+            }
+
+            Button(
+                onClick = onOpenMepCalculator,
+                colors = ButtonDefaults.buttonColors(containerColor = AtelierCharcoal),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(56.dp)
+                    .testTag("open_mep_calculator_button")
+            ) {
+                Icon(Icons.Default.Calculate, contentDescription = null)
+                Spacer(Modifier.width(8.dp))
+                Text("CALCULADORA DE FICHA TÉCNICA (8 BLOCOS)", fontWeight = FontWeight.Bold)
             }
         }
     }
@@ -355,7 +533,7 @@ private fun RecipeDetailAndScalerSection(
                     Text("Etapa ${step.stepNumber}: ${step.title}", style = MaterialTheme.typography.titleMedium)
                     step.targetTempC?.let { TagPill("$it °C", PccDangerBg, PccDanger) }
                 }
-                Text("Bateria/Lâmina: ${step.cookwareDeFrPt}", style = MaterialTheme.typography.labelMedium, color = InfoBlue)
+                Text("Utensílio / Cutelaria: ${step.cookwareDeFrPt}", style = MaterialTheme.typography.labelMedium, color = InfoBlue)
                 Text(step.instruction, style = MaterialTheme.typography.bodyMedium)
                 SmartKitchenAlertBanner(alertType = step.alertType, message = step.alertBannerMessage)
             }
@@ -373,6 +551,7 @@ private fun LowTouchKitchenModeView(
     onStartTimer: (String, String, Int) -> Unit,
     onToggleTimer: (String) -> Unit,
     onRemoveTimer: (String) -> Unit,
+    onRequestChefSos: (com.example.domain.model.CookingStepSpec) -> Unit,
     onExit: () -> Unit
 ) {
     val step = recipe.steps.getOrElse(stepIndex) { recipe.steps.first() }
@@ -404,7 +583,6 @@ private fun LowTouchKitchenModeView(
 
         Text("${recipe.title} ($targetServings porções)", style = MaterialTheme.typography.headlineSmall)
 
-        // Parallel Kitchen Timers Bar (essential for Berner Platte 120m / 90m / 60m / 20m)
         if (parallelTimers.isNotEmpty()) {
             Card(
                 colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
@@ -428,11 +606,11 @@ private fun LowTouchKitchenModeView(
                             IconButton(onClick = { onToggleTimer(t.id) }) {
                                 Icon(
                                     imageVector = if (t.isRunning) Icons.Default.Stop else Icons.Default.PlayArrow,
-                                    contentDescription = "Pausar ou retomar timer paralelo"
+                                    contentDescription = "Pausar ou retomar cronômetro paralelo"
                                 )
                             }
                             IconButton(onClick = { onRemoveTimer(t.id) }) {
-                                Icon(Icons.Default.Close, contentDescription = "Remover timer")
+                                Icon(Icons.Default.Close, contentDescription = "Remover cronômetro")
                             }
                         }
                     }
@@ -469,13 +647,12 @@ private fun LowTouchKitchenModeView(
                     ) {
                         Icon(Icons.Default.AddAlarm, contentDescription = null)
                         Spacer(Modifier.width(8.dp))
-                        Text("Disparar Timer Paralelo ($mins min)", fontWeight = FontWeight.Bold)
+                        Text("Acionar Cronômetro Paralelo ($mins min)", fontWeight = FontWeight.Bold)
                     }
                 }
             }
         }
 
-        // Giant Low-Touch Navigation Buttons (>= 60 dp)
         Row(horizontalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.fillMaxWidth()) {
             OutlinedButton(
                 onClick = { onStepChange(stepIndex - 1) },
@@ -503,109 +680,18 @@ private fun LowTouchKitchenModeView(
                 Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = "Próximo passo")
             }
         }
-    }
-}
 
-@Composable
-private fun MepEightBlocksEditorSection(
-    recipe: RecipeSpec,
-    targetServings: Int,
-    savedSheet: MepSheetEntity?,
-    onLoadZurcherExample: () -> Unit,
-    onSaveSheet: (MepSheetEntity) -> Unit,
-    onRegisterTrainingPhoto: (MepSheetEntity) -> Unit
-) {
-    var b1 by remember(recipe.id, savedSheet) {
-        mutableStateOf(savedSheet?.block1Identification ?: "${recipe.title} | Semana ${recipe.weekNumber} | $targetServings porções")
-    }
-    var b2 by remember(recipe.id, savedSheet) {
-        mutableStateOf(
-            savedSheet?.block2IngredientsPbPlFc ?: recipe.ingredients.joinToString(" | ") {
-                "${it.name}: PL ${it.netAmountPl}${it.unit} × FC ${it.correctionFactorFc}"
-            }
-        )
-    }
-    var b3 by remember(recipe.id, savedSheet) {
-        mutableStateOf(savedSheet?.block3CookwareBlades ?: recipe.steps.joinToString("; ") { it.cookwareDeFrPt })
-    }
-    var b4 by remember(recipe.id, savedSheet) {
-        mutableStateOf(savedSheet?.block4PrePrepCuts ?: "Cortes geométricos verificados com Chefmesser afiada.")
-    }
-    var b5 by remember(recipe.id, savedSheet) {
-        mutableStateOf(savedSheet?.block5ThermalFlowPcc ?: recipe.pccTargetSummary)
-    }
-    var b6 by remember(recipe.id, savedSheet) {
-        mutableStateOf(savedSheet?.block6PlatingFinishing ?: "Prato aquecido 55 °C, bordas limpas, altura e brilho nappé.")
-    }
-    var b7 by remember(recipe.id, savedSheet) {
-        mutableStateOf(savedSheet?.block7HygieneAllergens ?: "Cadeia fria ≤ 5 °C respeitada; higienização e desinfecção 99,99%.")
-    }
-    var b8 by remember(recipe.id, savedSheet) {
-        mutableStateOf(savedSheet?.block8Selbstkontrolle ?: "")
-    }
-
-    fun currentEntity() = MepSheetEntity(
-        recipeId = recipe.id,
-        weekNumber = recipe.weekNumber,
-        targetServings = targetServings,
-        block1Identification = b1,
-        block2IngredientsPbPlFc = b2,
-        block3CookwareBlades = b3,
-        block4PrePrepCuts = b4,
-        block5ThermalFlowPcc = b5,
-        block6PlatingFinishing = b6,
-        block7HygieneAllergens = b7,
-        block8Selbstkontrolle = b8
-    )
-
-    OutlinedButton(
-        onClick = onLoadZurcherExample,
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(48.dp)
-            .testTag("load_zurcher_mep_example")
-    ) {
-        Icon(Icons.Default.Check, contentDescription = null)
-        Spacer(Modifier.width(8.dp))
-        Text("Carregar Modelo Preenchido: Zürcher Geschnetzeltes + Rösti")
-    }
-
-    OutlinedTextField(b1, { b1 = it }, label = { Text("Bloco 1 — Identificação & Rendimento") }, modifier = Modifier.fillMaxWidth())
-    OutlinedTextField(b2, { b2 = it }, label = { Text("Bloco 2 — Insumos (PB, PL & Fator de Correção)") }, modifier = Modifier.fillMaxWidth())
-    OutlinedTextField(b3, { b3 = it }, label = { Text("Bloco 3 — Bateria & Lâminas (PT/DE/FR)") }, modifier = Modifier.fillMaxWidth())
-    OutlinedTextField(b4, { b4 = it }, label = { Text("Bloco 4 — Pré-preparo & Geometria Schnittarten") }, modifier = Modifier.fillMaxWidth())
-    OutlinedTextField(b5, { b5 = it }, label = { Text("Bloco 5 — Fluxo Térmico Cronometrado & PCCs") }, modifier = Modifier.fillMaxWidth())
-    OutlinedTextField(b6, { b6 = it }, label = { Text("Bloco 6 — Empratamento & Acabamento Sensorial") }, modifier = Modifier.fillMaxWidth())
-    OutlinedTextField(b7, { b7 = it }, label = { Text("Bloco 7 — Higiene Crítica & Alergênicos") }, modifier = Modifier.fillMaxWidth())
-    OutlinedTextField(b8, { b8 = it }, label = { Text("Bloco 8 — Selbstkontrolle Pós-Prática (Erkenntnisse / Offene Punkte)") }, modifier = Modifier.fillMaxWidth())
-
-    Row(horizontalArrangement = Arrangement.spacedBy(10.dp), modifier = Modifier.fillMaxWidth()) {
-        OutlinedButton(
-            onClick = { onSaveSheet(currentEntity()) },
-            modifier = Modifier
-                .weight(1f)
-                .height(56.dp)
-                .testTag("save_mep_sheet_button")
-        ) {
-            Icon(Icons.Default.Save, contentDescription = null)
-            Spacer(Modifier.width(6.dp))
-            Text("Salvar MEP", fontWeight = FontWeight.Bold)
-        }
         Button(
-            onClick = {
-                val sheet = currentEntity()
-                onSaveSheet(sheet)
-                onRegisterTrainingPhoto(sheet)
-            },
-            colors = ButtonDefaults.buttonColors(containerColor = SwissRed),
+            onClick = { onRequestChefSos(step) },
+            colors = ButtonDefaults.buttonColors(containerColor = PccAmber),
             modifier = Modifier
-                .weight(1.3f)
+                .fillMaxWidth()
                 .height(56.dp)
-                .testTag("register_training_photo_button")
+                .testTag("sos_chef_ai_kitchen_button")
         ) {
-            Icon(Icons.Default.CameraAlt, contentDescription = null)
-            Spacer(Modifier.width(6.dp))
-            Text(stringResource(R.string.register_training_photo), fontWeight = FontWeight.Bold)
+            Icon(Icons.Default.AutoAwesome, contentDescription = null)
+            Spacer(Modifier.width(8.dp))
+            Text(stringResource(R.string.sos_chef_ai), fontWeight = FontWeight.Bold)
         }
     }
 }

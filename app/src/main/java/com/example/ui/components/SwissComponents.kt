@@ -150,7 +150,7 @@ fun SmartKitchenAlertBanner(
         SmartKitchenAlertType.NON_STICK_VITAMIN_C ->
             Triple(PccAmberBg, PccAmber, "PROTEÇÃO DE VITAMINA C • ANTIADERENTE")
         SmartKitchenAlertType.POELIEREN_MATIGNON ->
-            Triple(InfoBlueBg, InfoBlue, "PROTOCOLO POELIEREN • 140–160 °C SEM LÍQUIDO")
+            Triple(InfoBlueBg, InfoBlue, "MÉTODO POÊLER • 140–160 °C SEM LÍQUIDO")
         SmartKitchenAlertType.SOUS_VIDE_PROTOCOL ->
             Triple(InfoBlueBg, InfoBlue, "PROTOCOLO SOUS-VIDE & SALMOURA 5–10%")
         SmartKitchenAlertType.GALANTINE_PCC_65C ->
@@ -159,6 +159,12 @@ fun SmartKitchenAlertBanner(
             Triple(PccAmberBg, PccAmber, "ALERTA OXIDAÇÃO MASSA FOLHADA (5 °C)")
         SmartKitchenAlertType.PARALLEL_POACHING_82C ->
             Triple(PccGreenBg, PccGreen, "CONTROLE PARALELO DE SUB-EBULIÇÃO (~82 °C)")
+        SmartKitchenAlertType.CONCENTRATION_VS_EXPANSION ->
+            Triple(InfoBlueBg, InfoBlue, "CONCENTRAÇÃO VS. EXPANSÃO • INSTITUT PAUL BOCUSE")
+        SmartKitchenAlertType.STARCH_AMYLASE_CREAMS ->
+            Triple(PccDangerBg, PccDanger, "ALFA-AMILASE (98–100 °C) & ANGLAISE (≤ 80 °C)")
+        SmartKitchenAlertType.MODERNIST_HYDROCOLLOIDS ->
+            Triple(PccGreenBg, PccGreen, "ESTABILIZAÇÃO DE MOLHOS • JAMES PETERSON")
         SmartKitchenAlertType.NONE ->
             Triple(PccAmberBg, PccAmber, "NOTA TÉCNICA")
     }

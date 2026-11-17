@@ -1,7 +1,10 @@
 package com.example.ui.screens
 
+import android.graphics.BitmapFactory
+import android.util.Base64
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
@@ -17,6 +20,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.MenuBook
@@ -27,7 +31,6 @@ import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Restaurant
 import androidx.compose.material.icons.filled.SkipNext
 import androidx.compose.material.icons.filled.Stop
-import androidx.compose.material.icons.filled.Style
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -49,6 +52,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -58,7 +64,6 @@ import com.example.R
 import com.example.data.curriculum.CurriculumWeeksAndGuides
 import com.example.data.curriculum.SwissmilkAndBaseRecipesCatalog
 import com.example.data.local.StudyTimerEntity
-import com.example.data.remote.PortfolioPost
 import com.example.domain.model.BrochureGuideSpec
 import com.example.ui.components.AtelierFullLogoBanner
 import com.example.ui.components.KeepScreenOnEffect
@@ -91,6 +96,7 @@ fun Dashboard24SScreen(
     val timersMap by atelierVm.timersMap.collectAsStateWithLifecycle()
     val sm2Map by atelierVm.sm2Map.collectAsStateWithLifecycle()
     val selfEvalsMap by atelierVm.selfEvaluationsMap.collectAsStateWithLifecycle()
+    val mepSheetsMap by atelierVm.mepSheetsMap.collectAsStateWithLifecycle()
     val myPostsState by communityVm.myPostsState.collectAsStateWithLifecycle()
 
     val currentWeek = remember(selectedWeekNum) {
@@ -98,7 +104,6 @@ fun Dashboard24SScreen(
             ?: CurriculumWeeksAndGuides.weeks.first()
     }
     var selectedCycle by remember(currentWeek.cycleNumber) { mutableIntStateOf(currentWeek.cycleNumber) }
-    var activeBrochureModal by remember { mutableStateOf<BrochureGuideSpec?>(null) }
 
     val timerState = timersMap[selectedWeekNum] ?: StudyTimerEntity(
         weekNumber = selectedWeekNum,
@@ -110,10 +115,6 @@ fun Dashboard24SScreen(
     // Keep screen active during 80-min bench study block
     KeepScreenOnEffect(enabled = timerState.isRunning)
 
-    if (activeBrochureModal != null) {
-        BackHandler { activeBrochureModal = null }
-    }
-
     val dueCardsCount = remember(sm2Map) { atelierVm.dueFlashcardsCount() }
     val submittedPhotosCount = when (val st = myPostsState) {
         is StreamUiState.Success -> st.data.size
@@ -121,7 +122,22 @@ fun Dashboard24SScreen(
     }
     val completedWeeksCount = selfEvalsMap.size
     val weekRecipes = remember(selectedWeekNum) {
-        SwissmilkAndBaseRecipesCatalog.allRecipes.filter { it.weekNumber == selectedWeekNum }
+        SwissmilkAndBaseRecipesCatalog.recipesForWeek(selectedWeekNum)
+    }
+    val weekBrochures = remember(currentWeek.supportBrochureIds) {
+        currentWeek.supportBrochureIds.mapNotNull { id ->
+            CurriculumWeeksAndGuides.brochures.find { it.id == id }
+        }
+    }
+    val weekQuickPhotos = remember(selectedWeekNum, myPostsState, mepSheetsMap) {
+        val fromPosts = (myPostsState as? StreamUiState.Success)?.data
+            ?.filter { it.weekNumber == selectedWeekNum && it.thumbnailBase64.isNotBlank() }
+            ?.map { it.recipeTitle.ifBlank { "Registro S${"%02d".format(selectedWeekNum)}" } to it.thumbnailBase64 }
+            .orEmpty()
+        val fromMep = mepSheetsMap.values
+            .filter { it.weekNumber == selectedWeekNum && it.photoThumbnailBase64.isNotBlank() }
+            .map { it.title.ifBlank { "Ficha MEP" } to it.photoThumbnailBase64 }
+        (fromPosts + fromMep).distinctBy { it.second }.take(6)
     }
 
     Column(
@@ -143,7 +159,7 @@ fun Dashboard24SScreen(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     TagPill(
-                        text = "PLANO 24 SEMANAS • V4",
+                        text = "CRONOGRAMA 24 SEMANAS • 4 CICLOS (v5)",
                         containerColor = SwissRedContainer,
                         contentColor = OnSwissRedContainer
                     )
@@ -173,8 +189,8 @@ fun Dashboard24SScreen(
                         onClick = {}
                     )
                     KpiStatChip(
-                        label = "SM-2 Pendentes Hoje",
-                        value = "$dueCardsCount cards",
+                        label = "Revisões SM-2",
+                        value = "$dueCardsCount / 60",
                         bg = PccAmberBg,
                         fg = PccAmber,
                         onClick = onOpenTheoryTab
@@ -204,10 +220,10 @@ fun Dashboard24SScreen(
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 val cycleLabels = listOf(
-                    1 to "Ciclo 1: Base (S1–S6)",
-                    2 to "Ciclo 2: Carnes & Suíça (S7–S12)",
-                    3 to "Ciclo 3: Pâtisserie & Sous-Vide (S13–S18)",
-                    4 to "Ciclo 4: Gestão & Chefkoch (S19–S24)"
+                    1 to "Ciclo 1: Base & Segurança (S1–S6)",
+                    2 to "Ciclo 2: Carnes & Clássicos (S7–S12)",
+                    3 to "Ciclo 3: Confeitaria & Sous-Vide (S13–S18)",
+                    4 to "Ciclo 4: Chefkoch / Gestor (S19–S24)"
                 )
                 cycleLabels.forEach { (cycleNum, label) ->
                     FilterChip(
@@ -301,10 +317,30 @@ fun Dashboard24SScreen(
                     style = MaterialTheme.typography.titleLarge
                 )
                 Text(
-                    text = "Foco Ficha MEP: ${currentWeek.mepFocus}",
+                    text = "Foco da Ficha Técnica: ${currentWeek.mepFocus}",
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
+                weekBrochures.forEachIndexed { idx, brochure ->
+                    OutlinedButton(
+                        onClick = {
+                            atelierVm.openDidacticLibraryAxis(brochure.axisNumber)
+                            onOpenTheoryTab()
+                        },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(48.dp)
+                            .testTag(if (idx == 0) "current_week_brochure_v3_button" else "current_week_brochure_v3_extra_$idx")
+                    ) {
+                        Icon(Icons.AutoMirrored.Filled.MenuBook, contentDescription = null, tint = SwissRed)
+                        Spacer(Modifier.width(8.dp))
+                        Text(
+                            text = "Consultar Biblioteca • Eixo ${brochure.axisNumber}: ${brochure.title.take(30)}",
+                            fontWeight = FontWeight.Bold,
+                            maxLines = 1
+                        )
+                    }
+                }
 
                 // 80-min Phase Progress
                 val phaseLabel = AtelierViewModel.STUDY_PHASE_LABELS.getOrElse(timerState.currentPhaseIndex) {
@@ -413,10 +449,11 @@ fun Dashboard24SScreen(
                                     TagPill("CANTÃO ${recipe.cantonCode}", SwissRedContainer, OnSwissRedContainer)
                                 }
                                 if (recipe.isSwissmilkClassic) {
-                                    TagPill("CLÁSSICO SWISSMILK", InfoBlueBg, InfoBlue)
+                                    val smNum = recipe.swissmilkNum?.let { " #$it" }.orEmpty()
+                                    TagPill("SWISSMILK$smNum", InfoBlueBg, InfoBlue)
                                 }
                                 if (recipe.isChefkochV4) {
-                                    TagPill("CHEFKOCH STEP-BY-STEP V4", PccAmberBg, PccAmber)
+                                    TagPill("CHEFKOCH PASSO A PASSO", PccAmberBg, PccAmber)
                                 }
                             }
                             Row(
@@ -441,13 +478,76 @@ fun Dashboard24SScreen(
                         }
                     }
                 }
+
+                // Galeria Rápida das Últimas Fotos da Semana (v5)
+                Text(
+                    text = "GALERIA RÁPIDA DA SEMANA S${"%02d".format(currentWeek.weekNumber)}",
+                    style = MaterialTheme.typography.labelLarge,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                if (weekQuickPhotos.isEmpty()) {
+                    OutlinedButton(
+                        onClick = onOpenCommunityTab,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(48.dp)
+                            .testTag("dashboard_quick_gallery_empty_cta")
+                    ) {
+                        Icon(Icons.Default.PhotoCamera, contentDescription = null, tint = SwissRed)
+                        Spacer(Modifier.width(8.dp))
+                        Text("Nenhuma foto nesta semana — Registrar produção com CameraX")
+                    }
+                } else {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .horizontalScroll(rememberScrollState())
+                            .testTag("dashboard_quick_gallery_row"),
+                        horizontalArrangement = Arrangement.spacedBy(10.dp)
+                    ) {
+                        weekQuickPhotos.forEach { (caption, b64) ->
+                            val bmp = remember(b64) {
+                                runCatching {
+                                    val bytes = Base64.decode(b64, Base64.DEFAULT)
+                                    BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
+                                }.getOrNull()
+                            }
+                            Card(
+                                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
+                                modifier = Modifier
+                                    .width(136.dp)
+                                    .clickable { onOpenCommunityTab() }
+                            ) {
+                                Column(modifier = Modifier.padding(6.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                                    if (bmp != null) {
+                                        Image(
+                                            bitmap = bmp.asImageBitmap(),
+                                            contentDescription = caption,
+                                            contentScale = ContentScale.Crop,
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .height(84.dp)
+                                                .clip(RoundedCornerShape(8.dp))
+                                        )
+                                    }
+                                    Text(
+                                        text = caption,
+                                        style = MaterialTheme.typography.labelSmall,
+                                        maxLines = 1,
+                                        fontWeight = FontWeight.SemiBold
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
             }
         }
 
-        // Direct Shortcuts to the 6 Thematic Brochures
+        // Direct Shortcuts to the Native In-App Didactic Library (6 Eixos — Zero Downloads)
         Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
             Text(
-                text = "GUIAS DE REFERÊNCIA • 6 APOSTILAS POR EIXO",
+                text = "BIBLIOTECA DIDÁTICA • CONSULTA NATIVA DOS 6 EIXOS NO APP",
                 style = MaterialTheme.typography.labelLarge,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
@@ -460,7 +560,10 @@ fun Dashboard24SScreen(
                     ),
                     modifier = Modifier
                         .fillMaxWidth()
-                        .clickable { activeBrochureModal = brochure }
+                        .clickable {
+                            atelierVm.openDidacticLibraryAxis(brochure.axisNumber)
+                            onOpenTheoryTab()
+                        }
                         .testTag("brochure_shortcut_${brochure.axisNumber}")
                 ) {
                     Row(
@@ -474,42 +577,18 @@ fun Dashboard24SScreen(
                             tint = SwissRed
                         )
                         Column(modifier = Modifier.weight(1f)) {
-                            Text(brochure.title, style = MaterialTheme.typography.titleSmall)
+                            Text(brochure.title, style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold)
                             Text(
-                                brochure.fileNameRef,
+                                "Eixo ${brochure.axisNumber} • Leitura nativa no app (tabelas, PCCs e cartões)",
                                 style = MaterialTheme.typography.labelSmall,
                                 fontFamily = JetBrainsMonoFamily,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                                color = InfoBlue
                             )
                         }
                     }
                 }
             }
         }
-    }
-
-    activeBrochureModal?.let { brochure ->
-        AlertDialog(
-            onDismissRequest = { activeBrochureModal = null },
-            title = { Text(brochure.title, style = MaterialTheme.typography.titleMedium) },
-            text = {
-                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    TagPill(brochure.fileNameRef, InfoBlueBg, InfoBlue)
-                    Text(brochure.summary, style = MaterialTheme.typography.bodyMedium)
-                    brochure.keyBulletRules.forEach { bullet ->
-                        Text("• $bullet", style = MaterialTheme.typography.bodySmall)
-                    }
-                }
-            },
-            confirmButton = {
-                TextButton(
-                    onClick = { activeBrochureModal = null },
-                    modifier = Modifier.height(48.dp)
-                ) {
-                    Text("Fechar Apostila")
-                }
-            }
-        )
     }
 }
 

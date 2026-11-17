@@ -6,12 +6,15 @@ import android.net.Uri
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.core.media.CompressedAvatarPayload
 import com.example.core.media.CompressedMediaPayload
 import com.example.core.media.MediaCompressor
 import com.example.core.media.ShareableCardGenerator
 import com.example.data.ai.ChefAiRepository
 import com.example.data.ai.MultimodalChefAudit
+import com.example.data.local.MepSheetEntity
 import com.example.data.remote.CommunityRepository
+import com.example.data.remote.MepSheetCloudLink
 import com.example.data.remote.PortfolioMedia
 import com.example.data.remote.PortfolioPost
 import com.example.data.remote.PostComment
@@ -67,8 +70,16 @@ class CommunityAiViewModel(
         .catch { error -> emit(unwrapToErrorState(error, "Falha ao carregar Mural do Atelier")) }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000L), StreamUiState.Loading)
 
+    val myMepLinksState: StateFlow<StreamUiState<List<MepSheetCloudLink>>> = communityRepo.observeMyMepSheetLinks(currentUserId)
+        .map<List<MepSheetCloudLink>, StreamUiState<List<MepSheetCloudLink>>> { StreamUiState.Success(it) }
+        .catch { error -> emit(unwrapToErrorState(error, "Falha ao sincronizar links das Fichas Técnicas")) }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000L), StreamUiState.Loading)
+
     private val _selectedImagePayload = MutableStateFlow<CompressedMediaPayload?>(null)
     val selectedImagePayload: StateFlow<CompressedMediaPayload?> = _selectedImagePayload.asStateFlow()
+
+    private val _pendingAvatarPayload = MutableStateFlow<CompressedAvatarPayload?>(null)
+    val pendingAvatarPayload: StateFlow<CompressedAvatarPayload?> = _pendingAvatarPayload.asStateFlow()
 
     private val _chefAiState = MutableStateFlow<ChefAiUiState>(ChefAiUiState.Idle)
     val chefAiState: StateFlow<ChefAiUiState> = _chefAiState.asStateFlow()
@@ -78,6 +89,9 @@ class CommunityAiViewModel(
 
     private val _isPublishing = MutableStateFlow(false)
     val isPublishing: StateFlow<Boolean> = _isPublishing.asStateFlow()
+
+    private val _isSyncingMepPhoto = MutableStateFlow(false)
+    val isSyncingMepPhoto: StateFlow<Boolean> = _isSyncingMepPhoto.asStateFlow()
 
     private val _feedbackMessage = MutableStateFlow<String?>(null)
     val feedbackMessage: StateFlow<String?> = _feedbackMessage.asStateFlow()
@@ -97,23 +111,44 @@ class CommunityAiViewModel(
         }
     }
 
+    fun compressSelectedAvatar(context: Context, uri: Uri) {
+        viewModelScope.launch {
+            MediaCompressor.compressAvatarFromUri(context, uri)
+                .onSuccess { payload ->
+                    _pendingAvatarPayload.value = payload
+                    val sizeFmt = MediaCompressor.formatBytes(payload.compressedSizeBytes.toLong())
+                    _feedbackMessage.value =
+                        "Avatar otimizado (${payload.width}×${payload.height} px • $sizeFmt • −${payload.savingsPercent}% sem EXIF). Toque em Salvar Perfil."
+                }
+                .onFailure { err ->
+                    _feedbackMessage.value = "Falha ao otimizar avatar: ${err.localizedMessage}"
+                }
+        }
+    }
+
     fun saveProfile(
         displayName: String,
         bio: String,
+        defaultVisibility: String = "public",
         currentWeek: Int,
         cantonFocus: String,
         specialtyBadge: String
     ) {
         viewModelScope.launch {
+            val existingAvatar = (profileState.value as? StreamUiState.Success)?.data?.avatarBase64
+            val resolvedAvatar = _pendingAvatarPayload.value?.avatarBase64 ?: existingAvatar
             communityRepo.upsertProfile(
                 displayName = displayName,
                 bio = bio,
                 avatarUrl = null,
+                avatarBase64 = resolvedAvatar,
+                defaultVisibility = defaultVisibility,
                 currentWeek = currentWeek,
                 cantonFocus = cantonFocus,
                 specialtyBadge = specialtyBadge
             ).onSuccess {
-                _feedbackMessage.value = "Perfil gastronômico salvo no Firestore!"
+                _pendingAvatarPayload.value = null
+                _feedbackMessage.value = "Perfil gastronômico salvo na nuvem!"
             }.onFailure { err ->
                 _feedbackMessage.value = "Erro ao salvar perfil: ${err.localizedMessage}"
             }
@@ -125,11 +160,13 @@ class CommunityAiViewModel(
             MediaCompressor.compressFromUri(context, uri)
                 .onSuccess { payload ->
                     _selectedImagePayload.value = payload
+                    val sizeFmt = MediaCompressor.formatBytes(payload.compressedSizeBytes.toLong())
+                    val savingsLabel = if (payload.savingsPercent > 0) " • −${payload.savingsPercent}%" else ""
                     _feedbackMessage.value =
-                        "Foto comprimida sem EXIF (${payload.width}×${payload.height}px, pronta p/ Mural e Chef IA)."
+                        "Foto otimizada em fundo branco sem EXIF (${payload.width}×${payload.height} px • $sizeFmt$savingsLabel)."
                 }
                 .onFailure { err ->
-                    _feedbackMessage.value = "Falha ao comprimir imagem: ${err.localizedMessage}"
+                    _feedbackMessage.value = "Falha ao processar imagem: ${err.localizedMessage}"
                 }
         }
     }
@@ -137,6 +174,85 @@ class CommunityAiViewModel(
     fun clearSelectedPhoto() {
         _selectedImagePayload.value = null
         _chefAiState.value = ChefAiUiState.Idle
+    }
+
+    fun captureAndLinkPhotoToMepSheet(
+        context: Context,
+        uri: Uri,
+        sheet: MepSheetEntity,
+        onLinked: (String, MepSheetCloudLink) -> Unit
+    ) {
+        viewModelScope.launch {
+            _isSyncingMepPhoto.value = true
+            MediaCompressor.compressFromUri(context, uri)
+                .onSuccess { payload ->
+                    _selectedImagePayload.value = payload
+                    communityRepo.saveMepSheetCreationPhoto(
+                        recipeId = sheet.recipeId,
+                        title = sheet.title,
+                        weekNumber = sheet.weekNumber,
+                        stationBrigade = sheet.stationBrigade,
+                        targetServings = sheet.targetServings,
+                        pccTargetTempC = sheet.pccTargetTempC,
+                        executionScore1To5 = sheet.executionScore1To5,
+                        thumbnailBase64 = payload.thumbnailBase64,
+                        fullImageBase64 = payload.fullBase64,
+                        imageWidth = payload.width,
+                        imageHeight = payload.height,
+                        localPhotoUri = payload.localUriString
+                    ).onSuccess { cloudLink ->
+                        _loadedFullMediaCache.value =
+                            _loadedFullMediaCache.value + (cloudLink.mediaId to payload.fullBitmap)
+                        _isSyncingMepPhoto.value = false
+                        onLinked(payload.localUriString, cloudLink)
+                        _feedbackMessage.value =
+                            "Criação associada à Ficha Técnica e link salvo no Firestore (${cloudLink.imageLink})."
+                    }.onFailure { err ->
+                        _isSyncingMepPhoto.value = false
+                        _feedbackMessage.value =
+                            "Erro ao gravar link da imagem no Firestore: ${err.localizedMessage}"
+                    }
+                }
+                .onFailure { err ->
+                    _isSyncingMepPhoto.value = false
+                    _feedbackMessage.value =
+                        "Falha ao comprimir foto da câmera: ${err.localizedMessage}"
+                }
+        }
+    }
+
+    fun preloadTransferredMepPhoto(
+        context: Context,
+        localPhotoUri: String,
+        cloudMediaId: String,
+        thumbnailBase64: String
+    ) {
+        if (_selectedImagePayload.value != null) return
+        viewModelScope.launch {
+            if (localPhotoUri.isNotBlank()) {
+                val parsed = runCatching { Uri.parse(localPhotoUri) }.getOrNull()
+                if (parsed != null) {
+                    val localRes = MediaCompressor.compressFromUri(context, parsed)
+                    if (localRes.isSuccess) {
+                        _selectedImagePayload.value = localRes.getOrNull()
+                        return@launch
+                    }
+                }
+            }
+            if (cloudMediaId.isNotBlank()) {
+                val media = communityRepo.getFullMedia(cloudMediaId).getOrNull()
+                val bmp = media?.imageBase64?.let { MediaCompressor.decodeBase64ToBitmap(it) }
+                if (media != null && bmp != null) {
+                    _selectedImagePayload.value = CompressedMediaPayload(
+                        fullBitmap = bmp,
+                        fullBase64 = media.imageBase64,
+                        thumbnailBase64 = thumbnailBase64,
+                        width = media.width,
+                        height = media.height
+                    )
+                }
+            }
+        }
     }
 
     fun runMultimodalChefAudit(
@@ -161,11 +277,11 @@ class CommunityAiViewModel(
                 studentNotes = studentNotes
             ).onSuccess { audit ->
                 val formatted = buildString {
-                    appendLine("Nota Estimada Suíça: ${"%.1f".format(audit.swissGradeEstimate)} / 6.0")
-                    appendLine("✓ Elogio 1: ${audit.praiseOne}")
-                    appendLine("✓ Elogio 2: ${audit.praiseTwo}")
-                    appendLine("➔ Correção Prática: ${audit.practicalCorrection}")
-                    append("PCC & Geometria: ${audit.pccAndTechnicalCompliance}")
+                    appendLine("Nota Técnica Estimada: ${"%.1f".format(audit.swissGradeEstimate)} / 6,0")
+                    appendLine("✓ Ponto Forte 1: ${audit.praiseOne}")
+                    appendLine("✓ Ponto Forte 2: ${audit.praiseTwo}")
+                    appendLine("➔ Ajuste de Bancada: ${audit.practicalCorrection}")
+                    append("PCC & Padronização: ${audit.pccAndTechnicalCompliance}")
                 }
                 _chefAiState.value = ChefAiUiState.AuditReady(audit, formatted)
             }.onFailure { err ->
@@ -212,14 +328,20 @@ class CommunityAiViewModel(
         cantonCode: String,
         caption: String,
         mepSummary: String,
+        selbstkontrolleScore: Int = 0,
+        erkenntnisse: String = "",
+        offenePunkte: String = "",
         aiFeedback: String,
         onPublished: () -> Unit = {}
     ) {
         viewModelScope.launch {
             _isPublishing.value = true
             val media = _selectedImagePayload.value
+            val denormalizedAvatar = _pendingAvatarPayload.value?.avatarBase64
+                ?: (profileState.value as? StreamUiState.Success)?.data?.avatarBase64
             communityRepo.createPostWithMedia(
                 authorName = authorName,
+                authorAvatarBase64 = denormalizedAvatar,
                 visibility = visibility,
                 weekNumber = weekNumber,
                 cycleNumber = cycleNumber,
@@ -232,6 +354,9 @@ class CommunityAiViewModel(
                 cantonCode = cantonCode,
                 caption = caption,
                 mepSummary = mepSummary,
+                selbstkontrolleScore = selbstkontrolleScore,
+                erkenntnisse = erkenntnisse,
+                offenePunkte = offenePunkte,
                 aiFeedback = aiFeedback,
                 thumbnailBase64 = media?.thumbnailBase64.orEmpty(),
                 fullImageBase64 = media?.fullBase64,
@@ -281,12 +406,28 @@ class CommunityAiViewModel(
 
     fun observeCommentsForPost(post: PortfolioPost): Flow<List<PostComment>> {
         return communityRepo.observeComments(post.id, post.visibility, currentUserId)
+            .catch { error ->
+                unwrapToErrorState(error, "Falha ao carregar comentários")
+                emit(emptyList())
+            }
     }
 
     fun submitComment(post: PortfolioPost, authorName: String, text: String) {
         viewModelScope.launch {
-            communityRepo.addComment(post, authorName, text).onFailure { err ->
+            communityRepo.addComment(post, authorName, text).onSuccess {
+                _feedbackMessage.value = "Comentário técnico publicado no Mural!"
+            }.onFailure { err ->
                 _feedbackMessage.value = "Erro ao comentar: ${err.localizedMessage}"
+            }
+        }
+    }
+
+    fun deleteComment(post: PortfolioPost, comment: PostComment) {
+        viewModelScope.launch {
+            communityRepo.deleteComment(post, comment).onSuccess {
+                _feedbackMessage.value = "Comentário removido."
+            }.onFailure { err ->
+                _feedbackMessage.value = "Erro ao remover comentário: ${err.localizedMessage}"
             }
         }
     }
@@ -333,7 +474,7 @@ class CommunityAiViewModel(
                 aiFeedback = post.aiFeedback,
                 photoBitmap = fullBmp
             ).onFailure { err ->
-                _feedbackMessage.value = "Falha ao gerar Card PNG: ${err.localizedMessage}"
+                _feedbackMessage.value = "Falha ao gerar Cartão Técnico: ${err.localizedMessage}"
             }
         }
     }

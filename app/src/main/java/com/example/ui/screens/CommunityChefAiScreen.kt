@@ -6,34 +6,27 @@ import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
-import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.Comment
 import androidx.compose.material.icons.automirrored.filled.Logout
 import androidx.compose.material.icons.automirrored.filled.Send
+import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.AddPhotoAlternate
 import androidx.compose.material.icons.filled.AutoAwesome
-import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.Favorite
-import androidx.compose.material.icons.filled.Lock
-import androidx.compose.material.icons.filled.Public
-import androidx.compose.material.icons.filled.Share
-import androidx.compose.material3.AlertDialog
+import androidx.compose.material.icons.filled.CameraAlt
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -42,7 +35,6 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
@@ -50,7 +42,6 @@ import androidx.compose.material3.SecondaryScrollableTabRow
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -62,6 +53,8 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.foundation.layout.size
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
@@ -73,10 +66,15 @@ import androidx.credentials.CredentialManager
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.R
 import com.example.core.firebase.signOutGoogle
+import com.example.core.media.CompressedAvatarPayload
+import com.example.core.media.CompressedMediaPayload
 import com.example.core.media.MediaCompressor
 import com.example.data.curriculum.SwissmilkAndBaseRecipesCatalog
 import com.example.data.remote.PortfolioPost
+import com.example.data.remote.UserProfile
+import com.example.domain.model.RecipeSpec
 import com.example.ui.components.AtelierFullLogoBanner
+import com.example.ui.components.CameraXCaptureDialog
 import com.example.ui.components.TagPill
 import com.example.ui.theme.InfoBlue
 import com.example.ui.theme.InfoBlueBg
@@ -85,8 +83,6 @@ import com.example.ui.theme.OnSwissRedContainer
 import com.example.ui.theme.PccAmber
 import com.example.ui.theme.PccAmberBg
 import com.example.ui.theme.PccDanger
-import com.example.ui.theme.PccDangerBg
-import com.example.ui.theme.PccGreen
 import com.example.ui.theme.PccGreenBg
 import com.example.ui.theme.SwissRed
 import com.example.ui.theme.SwissRedContainer
@@ -95,7 +91,7 @@ import com.example.ui.viewmodel.ChefAiUiState
 import com.example.ui.viewmodel.CommunityAiViewModel
 import com.example.ui.viewmodel.StreamUiState
 
-@OptIn(ExperimentalLayoutApi::class, ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CommunityChefAiScreen(
     atelierVm: AtelierViewModel,
@@ -107,41 +103,132 @@ fun CommunityChefAiScreen(
     val credentialManager = remember(context) { CredentialManager.create(context) }
 
     val pendingTransfer by atelierVm.pendingPhotoTransfer.collectAsStateWithLifecycle()
+    val pendingSos by atelierVm.pendingChefSos.collectAsStateWithLifecycle()
+    val selectedWeekGlobal by atelierVm.selectedWeekNumber.collectAsStateWithLifecycle()
     val publicMuralState by communityVm.publicMuralState.collectAsStateWithLifecycle()
     val myPostsState by communityVm.myPostsState.collectAsStateWithLifecycle()
     val profileState by communityVm.profileState.collectAsStateWithLifecycle()
     val selectedMedia by communityVm.selectedImagePayload.collectAsStateWithLifecycle()
+    val pendingAvatar by communityVm.pendingAvatarPayload.collectAsStateWithLifecycle()
     val chefAiState by communityVm.chefAiState.collectAsStateWithLifecycle()
     val tutorChatState by communityVm.tutorChatState.collectAsStateWithLifecycle()
     val isPublishing by communityVm.isPublishing.collectAsStateWithLifecycle()
     val fullMediaCache by communityVm.loadedFullMediaCache.collectAsStateWithLifecycle()
+    val mepSheetsMap by atelierVm.mepSheetsMap.collectAsStateWithLifecycle()
 
     var subTab by rememberSaveable { mutableIntStateOf(0) }
-    var activeCommentsPost by remember { mutableStateOf<PortfolioPost?>(null) }
+    var activeCommentsPostId by rememberSaveable { mutableStateOf<String?>(null) }
     var activeZoomPost by remember { mutableStateOf<PortfolioPost?>(null) }
+    var showQuickMuralPublisher by rememberSaveable { mutableStateOf(false) }
+    var showComposerCameraX by remember { mutableStateOf(false) }
 
-    // Pre-filled Composer States (auto-populated when user taps "Registrar Foto do Treino" on MEP)
-    var postWeek by rememberSaveable { mutableIntStateOf(1) }
+    // Pre-filled Composer States (auto-populated when user taps "Registrar Foto da Produção" on MEP)
+    var postWeek by rememberSaveable { mutableIntStateOf(selectedWeekGlobal) }
     var postMaterialType by rememberSaveable { mutableStateOf("prato_final") }
     var postRecipeId by rememberSaveable { mutableStateOf(SwissmilkAndBaseRecipesCatalog.allRecipes.first().id) }
     var postCaption by rememberSaveable { mutableStateOf("") }
     var postMepSummary by rememberSaveable { mutableStateOf("") }
+    var postSelbstkontrolleScore by rememberSaveable { mutableIntStateOf(0) }
+    var postErkenntnisse by rememberSaveable { mutableStateOf("") }
+    var postOffenePunkte by rememberSaveable { mutableStateOf("") }
     var postIsPublic by rememberSaveable { mutableStateOf(true) }
+    var initializedVisibilityFromProfile by rememberSaveable { mutableStateOf(false) }
+
+    // Pre-filled Chef SOS States
+    var sosContextSummary by rememberSaveable { mutableStateOf("") }
+    var sosPrefillPrompt by rememberSaveable { mutableStateOf("") }
+
+    LaunchedEffect(profileState) {
+        val loadedProfile = (profileState as? StreamUiState.Success)?.data
+        if (loadedProfile != null && !initializedVisibilityFromProfile) {
+            postIsPublic = loadedProfile.defaultVisibility != "private"
+            initializedVisibilityFromProfile = true
+        }
+    }
 
     LaunchedEffect(pendingTransfer) {
         pendingTransfer?.let { transfer ->
             postWeek = transfer.weekNumber
             postRecipeId = transfer.recipeId
             postMepSummary = transfer.mepSummary
+            if (transfer.executionScore1To5 in 1..5) {
+                postSelbstkontrolleScore = transfer.executionScore1To5
+            }
+            if (transfer.block8Selbstkontrolle.isNotBlank()) {
+                postErkenntnisse = transfer.block8Selbstkontrolle
+            }
+            if (transfer.localPhotoUri.isNotBlank() || transfer.cloudMediaId.isNotBlank()) {
+                communityVm.preloadTransferredMepPhoto(
+                    context = context,
+                    localPhotoUri = transfer.localPhotoUri,
+                    cloudMediaId = transfer.cloudMediaId,
+                    thumbnailBase64 = transfer.photoThumbnailBase64
+                )
+            }
             subTab = 2 // Jump straight to Novo Registro + Chef IA Visual
             atelierVm.consumePhotoTransfer()
         }
     }
 
-    if (activeCommentsPost != null || activeZoomPost != null) {
+    LaunchedEffect(pendingSos) {
+        pendingSos?.let { sos ->
+            postWeek = sos.weekNumber
+            sosContextSummary = sos.contextSummary
+            sosPrefillPrompt = sos.prefilledPrompt
+            subTab = 3 // Jump straight to Tutor Chef IA
+            atelierVm.consumeChefSos()
+        }
+    }
+
+    // Resolve live PortfolioPost for active comments sheet so commentCount updates reactively
+    val activeCommentsPost: PortfolioPost? = remember(activeCommentsPostId, publicMuralState, myPostsState) {
+        val targetId = activeCommentsPostId ?: return@remember null
+        val publicMatch = (publicMuralState as? StreamUiState.Success)?.data?.find { it.id == targetId }
+        val ownMatch = (myPostsState as? StreamUiState.Success)?.data?.find { it.id == targetId }
+        publicMatch ?: ownMatch
+    }
+
+    if (showComposerCameraX) {
+        val recTitle = SwissmilkAndBaseRecipesCatalog.findById(postRecipeId)?.title
+            ?: mepSheetsMap[postRecipeId]?.title
+            ?: "Criação Semana $postWeek"
+        CameraXCaptureDialog(
+            recipeId = postRecipeId,
+            sheetTitle = recTitle,
+            onPhotoCaptured = { capturedUri ->
+                showComposerCameraX = false
+                val targetSheet = mepSheetsMap[postRecipeId]
+                if (targetSheet != null && !showQuickMuralPublisher) {
+                    val lines = atelierVm.resolveSeedLinesForSheet(postRecipeId)
+                    communityVm.captureAndLinkPhotoToMepSheet(
+                        context = context,
+                        uri = capturedUri,
+                        sheet = targetSheet,
+                        onLinked = { localUriStr, cloudLink ->
+                            atelierVm.attachCreationPhotoToMepSheet(
+                                sheet = targetSheet,
+                                lines = lines,
+                                localPhotoUri = localUriStr,
+                                cloudLink = cloudLink
+                            )
+                        }
+                    )
+                } else {
+                    communityVm.compressSelectedPhoto(context, capturedUri)
+                }
+            },
+            onDismiss = { showComposerCameraX = false }
+        )
+    }
+
+    if (activeCommentsPost != null || activeZoomPost != null || showQuickMuralPublisher) {
         BackHandler {
-            activeCommentsPost = null
-            activeZoomPost = null
+            when {
+                showComposerCameraX -> showComposerCameraX = false
+                activeCommentsPost != null -> activeCommentsPostId = null
+                activeZoomPost != null -> activeZoomPost = null
+                showQuickMuralPublisher -> showQuickMuralPublisher = false
+            }
         }
     }
 
@@ -153,13 +240,21 @@ fun CommunityChefAiScreen(
         }
     }
 
+    val avatarPickerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.PickVisualMedia()
+    ) { uri ->
+        if (uri != null) {
+            communityVm.compressSelectedAvatar(context, uri)
+        }
+    }
+
     val currentAuthorName = when (val p = profileState) {
         is StreamUiState.Success -> p.data?.displayName?.ifBlank { defaultAuthorName } ?: defaultAuthorName
         else -> defaultAuthorName
     }
 
     val tabs = listOf(
-        "Mural do Atelier",
+        "Mural Comunitário",
         "Meu Portfólio",
         "Registrar + Chef IA",
         "Tutor Chef IA",
@@ -192,19 +287,25 @@ fun CommunityChefAiScreen(
             verticalArrangement = Arrangement.spacedBy(14.dp)
         ) {
             when (subTab) {
-                0 -> PublicMuralFeedSection(
+                0 -> MuralComunitarioSection(
                     state = publicMuralState,
                     currentUserId = communityVm.currentUserId,
+                    onOpenQuickPublish = { showQuickMuralPublisher = true },
                     onReact = { communityVm.toggleReaction(it) },
-                    onOpenComments = { activeCommentsPost = it },
+                    onOpenComments = { activeCommentsPostId = it.id },
                     onZoomPhoto = {
                         communityVm.loadFullResolutionPhoto(it.id)
                         activeZoomPost = it
                     },
-                    onShareCard = { communityVm.exportShareablePngCard(context, it) }
+                    onShareCard = { communityVm.exportShareablePngCard(context, it) },
+                    onToggleVisibility = { communityVm.togglePostVisibility(it) },
+                    onDeleteOwnPost = { communityVm.deleteOwnPost(it.id) }
                 )
                 1 -> MyPortfolioSection(
                     state = myPostsState,
+                    currentUserId = communityVm.currentUserId,
+                    onReact = { communityVm.toggleReaction(it) },
+                    onOpenComments = { activeCommentsPostId = it.id },
                     onToggleVisibility = { communityVm.togglePostVisibility(it) },
                     onDelete = { communityVm.deleteOwnPost(it.id) },
                     onShareCard = { communityVm.exportShareablePngCard(context, it) },
@@ -225,11 +326,18 @@ fun CommunityChefAiScreen(
                     onCaptionChange = { postCaption = it },
                     mepSummary = postMepSummary,
                     onMepChange = { postMepSummary = it },
+                    selbstkontrolleScore = postSelbstkontrolleScore,
+                    onScoreChange = { postSelbstkontrolleScore = it },
+                    erkenntnisse = postErkenntnisse,
+                    onErkenntnisseChange = { postErkenntnisse = it },
+                    offenePunkte = postOffenePunkte,
+                    onOffenePunkteChange = { postOffenePunkte = it },
                     isPublic = postIsPublic,
                     onPublicChange = { postIsPublic = it },
                     selectedMedia = selectedMedia,
                     chefAiState = chefAiState,
                     isPublishing = isPublishing,
+                    onOpenCameraX = { showComposerCameraX = true },
                     onPickPhoto = {
                         photoPickerLauncher.launch(
                             PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
@@ -252,15 +360,21 @@ fun CommunityChefAiScreen(
                             axisId = rec?.axisId ?: 1,
                             materialType = postMaterialType,
                             recipeId = rec?.id.orEmpty(),
-                            recipeTitle = rec?.title ?: "Treino Livre Semana $postWeek",
+                            recipeTitle = rec?.title ?: "Produção Livre — Semana $postWeek",
                             isSwissmilkClassic = rec?.isSwissmilkClassic ?: false,
                             isChefkochV4 = rec?.isChefkochV4 ?: false,
                             cantonCode = rec?.cantonCode.orEmpty(),
                             caption = postCaption,
                             mepSummary = postMepSummary,
+                            selbstkontrolleScore = postSelbstkontrolleScore,
+                            erkenntnisse = postErkenntnisse,
+                            offenePunkte = postOffenePunkte,
                             aiFeedback = aiText,
                             onPublished = {
                                 postCaption = ""
+                                postErkenntnisse = ""
+                                postOffenePunkte = ""
+                                postSelbstkontrolleScore = 0
                                 subTab = if (postIsPublic) 0 else 1
                             }
                         )
@@ -269,15 +383,24 @@ fun CommunityChefAiScreen(
                 3 -> ChefTutorChatSection(
                     tutorState = tutorChatState,
                     selectedWeek = postWeek,
+                    prefilledQuestion = sosPrefillPrompt,
+                    activeContextSummary = sosContextSummary,
                     onAsk = { q ->
-                        communityVm.askChefTutor(q, "Semana $postWeek, Receita ativa ID=$postRecipeId")
+                        val ctx = sosContextSummary.ifBlank { "Semana $postWeek, Receita ativa ID=$postRecipeId" }
+                        communityVm.askChefTutor(q, ctx)
                     }
                 )
                 4 -> StudentProfileAndSignOutSection(
                     profileState = profileState,
+                    pendingAvatar = pendingAvatar,
                     defaultName = defaultAuthorName,
-                    onSave = { name, bio, w, canton, badge ->
-                        communityVm.saveProfile(name, bio, w, canton, badge)
+                    onPickAvatar = {
+                        avatarPickerLauncher.launch(
+                            PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
+                        )
+                    },
+                    onSave = { name, bio, defVis, w, canton, badge ->
+                        communityVm.saveProfile(name, bio, defVis, w, canton, badge)
                     },
                     onSignOut = {
                         signOutGoogle(credentialManager = credentialManager, scope = scope)
@@ -287,278 +410,119 @@ fun CommunityChefAiScreen(
         }
     }
 
-    // Comments Dialog
+    if (showQuickMuralPublisher && !showComposerCameraX) {
+        MuralQuickPublishDialog(
+            authorName = currentAuthorName,
+            initialWeekNumber = selectedWeekGlobal,
+            selectedMedia = selectedMedia,
+            chefAiState = chefAiState,
+            isPublishing = isPublishing,
+            onOpenCameraX = { chosenRecipeId, chosenWeek ->
+                postRecipeId = chosenRecipeId
+                postWeek = chosenWeek
+                showComposerCameraX = true
+            },
+            onPickGalleryPhoto = {
+                photoPickerLauncher.launch(
+                    PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
+                )
+            },
+            onRunChefAudit = { matType, recTitle, wk, notes ->
+                communityVm.runMultimodalChefAudit(
+                    materialType = matType,
+                    recipeTitle = recTitle,
+                    weekNumber = wk,
+                    studentNotes = notes
+                )
+            },
+            onSubmitPublicPost = { wk, matType, rec, cap, mep, aiText ->
+                communityVm.publishPortfolioPost(
+                    authorName = currentAuthorName,
+                    visibility = "public",
+                    weekNumber = wk,
+                    cycleNumber = ((wk - 1) / 6) + 1,
+                    axisId = rec?.axisId ?: 1,
+                    materialType = matType,
+                    recipeId = rec?.id ?: "livre",
+                    recipeTitle = rec?.title ?: "Preparação Autoral — Semana $wk",
+                    isSwissmilkClassic = rec?.isSwissmilkClassic ?: false,
+                    isChefkochV4 = rec?.isChefkochV4 ?: false,
+                    cantonCode = rec?.cantonCode.orEmpty(),
+                    caption = cap,
+                    mepSummary = mep,
+                    aiFeedback = aiText,
+                    onPublished = {
+                        showQuickMuralPublisher = false
+                        subTab = 0
+                    }
+                )
+            },
+            onDismiss = { showQuickMuralPublisher = false }
+        )
+    }
+
     activeCommentsPost?.let { post ->
         val comments by communityVm.observeCommentsForPost(post).collectAsStateWithLifecycle(initialValue = emptyList())
-        var newComment by remember { mutableStateOf("") }
-        AlertDialog(
-            onDismissRequest = { activeCommentsPost = null },
-            title = { Text("Comentários • ${post.recipeTitle}") },
-            text = {
-                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    if (comments.isEmpty()) {
-                        Text("Seja o primeiro a comentar com feedback construtivo.", style = MaterialTheme.typography.bodySmall)
-                    } else {
-                        comments.forEach { c ->
-                            Text("${c.authorName}: ${c.text}", style = MaterialTheme.typography.bodySmall)
-                        }
-                    }
-                    OutlinedTextField(
-                        value = newComment,
-                        onValueChange = { newComment = it },
-                        label = { Text("Adicionar comentário técnico") },
-                        singleLine = true,
-                        modifier = Modifier.fillMaxWidth()
-                    )
-                }
+        MuralCommentsDialog(
+            post = post,
+            comments = comments,
+            currentUserId = communityVm.currentUserId,
+            currentAuthorName = currentAuthorName,
+            onSubmitComment = { text ->
+                communityVm.submitComment(post, currentAuthorName, text)
             },
-            confirmButton = {
-                Button(
-                    onClick = {
-                        if (newComment.isNotBlank()) {
-                            communityVm.submitComment(post, currentAuthorName, newComment)
-                            newComment = ""
-                        }
-                    }
-                ) { Text("Enviar") }
+            onDeleteComment = { comment ->
+                communityVm.deleteComment(post, comment)
             },
-            dismissButton = {
-                TextButton(onClick = { activeCommentsPost = null }) { Text("Fechar") }
-            }
+            onDismiss = { activeCommentsPostId = null }
         )
     }
 
-    // Full-Resolution 1200px Photo Modal
     activeZoomPost?.let { post ->
-        val fullBmp = fullMediaCache[post.id] ?: remember(post.thumbnailBase64) {
-            MediaCompressor.decodeBase64ToBitmap(post.thumbnailBase64)
-        }
-        AlertDialog(
-            onDismissRequest = { activeZoomPost = null },
-            title = { Text(post.recipeTitle, style = MaterialTheme.typography.titleMedium) },
-            text = {
-                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    if (fullBmp != null) {
-                        Image(
-                            bitmap = fullBmp.asImageBitmap(),
-                            contentDescription = "Foto em alta resolução de ${post.recipeTitle}",
-                            contentScale = ContentScale.FillWidth,
-                            modifier = Modifier.fillMaxWidth()
-                        )
-                    }
-                    if (post.aiFeedback.isNotBlank()) {
-                        Text(post.aiFeedback, style = MaterialTheme.typography.bodySmall)
-                    }
-                }
-            },
-            confirmButton = {
-                TextButton(onClick = { activeZoomPost = null }) { Text("Fechar") }
-            }
+        MuralPhotoZoomDialog(
+            post = post,
+            fullBitmap = fullMediaCache[post.id],
+            onDismiss = { activeZoomPost = null }
         )
-    }
-}
-
-@OptIn(ExperimentalLayoutApi::class)
-@Composable
-private fun PublicMuralFeedSection(
-    state: StreamUiState<List<PortfolioPost>>,
-    currentUserId: String,
-    onReact: (PortfolioPost) -> Unit,
-    onOpenComments: (PortfolioPost) -> Unit,
-    onZoomPhoto: (PortfolioPost) -> Unit,
-    onShareCard: (PortfolioPost) -> Unit
-) {
-    var filterCycle by rememberSaveable { mutableIntStateOf(0) } // 0 = All
-    var filterMaterial by rememberSaveable { mutableStateOf("TODOS") }
-    var onlySwissmilk by rememberSaveable { mutableStateOf(false) }
-    var onlyChefkoch by rememberSaveable { mutableStateOf(false) }
-
-    Text("FILTROS COMBINADOS DO MURAL COMUNITÁRIO", style = MaterialTheme.typography.labelLarge)
-    Row(modifier = Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-        (0..4).forEach { c ->
-            FilterChip(
-                selected = filterCycle == c,
-                onClick = { filterCycle = c },
-                label = { Text(if (c == 0) "Todos Ciclos" else "Ciclo $c") },
-                modifier = Modifier.height(48.dp)
-            )
-        }
-        FilterChip(
-            selected = onlySwissmilk,
-            onClick = { onlySwissmilk = !onlySwissmilk },
-            label = { Text("Clássicos Swissmilk") },
-            modifier = Modifier.height(48.dp)
-        )
-        FilterChip(
-            selected = onlyChefkoch,
-            onClick = { onlyChefkoch = !onlyChefkoch },
-            label = { Text("Chefkoch Step-by-Step") },
-            modifier = Modifier.height(48.dp)
-        )
-    }
-    Row(modifier = Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-        listOf("TODOS", "prato_final", "cortes_mep", "ficha_preenchida", "resumo_esquema").forEach { m ->
-            FilterChip(
-                selected = filterMaterial == m,
-                onClick = { filterMaterial = m },
-                label = { Text(m) },
-                modifier = Modifier.height(48.dp)
-            )
-        }
-    }
-
-    when (state) {
-        is StreamUiState.Loading -> CircularProgressIndicator()
-        is StreamUiState.Error -> Text(state.message, color = PccDanger)
-        is StreamUiState.Success -> {
-            val filtered = state.data.filter { post ->
-                (filterCycle == 0 || post.cycleNumber == filterCycle) &&
-                    (filterMaterial == "TODOS" || post.materialType == filterMaterial) &&
-                    (!onlySwissmilk || post.isSwissmilkClassic) &&
-                    (!onlyChefkoch || post.isChefkochV4)
-            }
-            if (filtered.isEmpty()) {
-                Card(colors = CardDefaults.cardColors(containerColor = InfoBlueBg), modifier = Modifier.fillMaxWidth()) {
-                    Text(
-                        "Nenhum registro público para este filtro ainda. Publique seu treino na aba 'Registrar + Chef IA'!",
-                        color = InfoBlue,
-                        modifier = Modifier.padding(14.dp)
-                    )
-                }
-            }
-            filtered.forEach { post ->
-                PortfolioPostCard(
-                    post = post,
-                    isLiked = currentUserId in post.reactedUserIds,
-                    showOwnerControls = false,
-                    onReact = { onReact(post) },
-                    onComment = { onOpenComments(post) },
-                    onShareCard = { onShareCard(post) },
-                    onZoom = { onZoomPhoto(post) },
-                    onToggleVisibility = {},
-                    onDelete = {}
-                )
-            }
-        }
     }
 }
 
 @Composable
 private fun MyPortfolioSection(
     state: StreamUiState<List<PortfolioPost>>,
+    currentUserId: String,
+    onReact: (PortfolioPost) -> Unit,
+    onOpenComments: (PortfolioPost) -> Unit,
     onToggleVisibility: (PortfolioPost) -> Unit,
     onDelete: (PortfolioPost) -> Unit,
     onShareCard: (PortfolioPost) -> Unit,
     onZoomPhoto: (PortfolioPost) -> Unit
 ) {
     when (state) {
-        is StreamUiState.Loading -> CircularProgressIndicator()
+        is StreamUiState.Loading -> CircularProgressIndicator(color = SwissRed)
         is StreamUiState.Error -> Text(state.message, color = PccDanger)
         is StreamUiState.Success -> {
             if (state.data.isEmpty()) {
-                Text("Seu portfólio individual ainda está vazio. Registre fotos de pratos, cortes MEP ou fichas preenchidas.")
+                Card(colors = CardDefaults.cardColors(containerColor = InfoBlueBg), modifier = Modifier.fillMaxWidth()) {
+                    Text(
+                        text = "Seu portfólio individual ainda está vazio. Registre fotos de pratos finalizados, cortes de mise en place ou fichas técnicas preenchidas.",
+                        color = InfoBlue,
+                        modifier = Modifier.padding(14.dp)
+                    )
+                }
             }
             state.data.forEach { post ->
-                PortfolioPostCard(
+                MuralPostCard(
                     post = post,
-                    isLiked = false,
+                    isLiked = currentUserId in post.reactedUserIds,
                     showOwnerControls = true,
-                    onReact = {},
-                    onComment = {},
+                    onReact = { onReact(post) },
+                    onComment = { onOpenComments(post) },
                     onShareCard = { onShareCard(post) },
                     onZoom = { onZoomPhoto(post) },
                     onToggleVisibility = { onToggleVisibility(post) },
                     onDelete = { onDelete(post) }
                 )
-            }
-        }
-    }
-}
-
-@OptIn(ExperimentalLayoutApi::class)
-@Composable
-private fun PortfolioPostCard(
-    post: PortfolioPost,
-    isLiked: Boolean,
-    showOwnerControls: Boolean,
-    onReact: () -> Unit,
-    onComment: () -> Unit,
-    onShareCard: () -> Unit,
-    onZoom: () -> Unit,
-    onToggleVisibility: () -> Unit,
-    onDelete: () -> Unit
-) {
-    val thumbBmp = remember(post.thumbnailBase64) {
-        MediaCompressor.decodeBase64ToBitmap(post.thumbnailBase64)
-    }
-
-    Card(
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
-        modifier = Modifier.fillMaxWidth()
-    ) {
-        Column(modifier = Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                TagPill("S${"%02d".format(post.weekNumber)} • ${post.materialType}", SwissRedContainer, OnSwissRedContainer)
-                if (post.cantonCode.isNotBlank()) TagPill("CANTÃO ${post.cantonCode}", InfoBlueBg, InfoBlue)
-                if (post.isChefkochV4) TagPill("CHEFKOCH V4", PccAmberBg, PccAmber)
-                TagPill(if (post.visibility == "public") "PÚBLICO" else "PRIVADO", PccGreenBg, PccGreen)
-            }
-            Text(post.recipeTitle, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
-            Text("Brigada: ${post.authorName}", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
-
-            if (thumbBmp != null) {
-                Image(
-                    bitmap = thumbBmp.asImageBitmap(),
-                    contentDescription = "Foto de ${post.recipeTitle}",
-                    contentScale = ContentScale.Crop,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(200.dp)
-                        .clickable { onZoom() }
-                )
-            }
-
-            if (post.caption.isNotBlank()) Text(post.caption, style = MaterialTheme.typography.bodyMedium)
-            if (post.mepSummary.isNotBlank()) {
-                Text(post.mepSummary, style = MaterialTheme.typography.bodySmall, fontFamily = JetBrainsMonoFamily)
-            }
-            if (post.aiFeedback.isNotBlank()) {
-                Card(colors = CardDefaults.cardColors(containerColor = PccGreenBg)) {
-                    Text(post.aiFeedback, style = MaterialTheme.typography.bodySmall, modifier = Modifier.padding(10.dp))
-                }
-            }
-
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
-                if (!showOwnerControls) {
-                    OutlinedButton(onClick = onReact, modifier = Modifier.height(48.dp)) {
-                        Icon(Icons.Default.Favorite, contentDescription = "Aplaudir", tint = if (isLiked) SwissRed else MaterialTheme.colorScheme.onSurfaceVariant)
-                        Spacer(Modifier.width(4.dp))
-                        Text("${post.reactionCount}")
-                    }
-                    OutlinedButton(onClick = onComment, modifier = Modifier.height(48.dp)) {
-                        Icon(Icons.AutoMirrored.Filled.Comment, contentDescription = "Comentários")
-                        Spacer(Modifier.width(4.dp))
-                        Text("${post.commentCount}")
-                    }
-                } else {
-                    OutlinedButton(onClick = onToggleVisibility, modifier = Modifier.height(48.dp)) {
-                        Icon(
-                            if (post.visibility == "public") Icons.Default.Lock else Icons.Default.Public,
-                            contentDescription = "Alternar visibilidade"
-                        )
-                        Spacer(Modifier.width(4.dp))
-                        Text(if (post.visibility == "public") "Tornar Privado" else "Publicar no Mural")
-                    }
-                    IconButton(onClick = onDelete) {
-                        Icon(Icons.Default.Delete, contentDescription = "Excluir post", tint = PccDanger)
-                    }
-                }
-                OutlinedButton(onClick = onShareCard, modifier = Modifier.height(48.dp)) {
-                    Icon(Icons.Default.Share, contentDescription = stringResource(R.string.export_shareable_card))
-                    Spacer(Modifier.width(4.dp))
-                    Text("Card PNG")
-                }
             }
         }
     }
@@ -577,16 +541,28 @@ private fun ComposerAndVisualAiSection(
     onCaptionChange: (String) -> Unit,
     mepSummary: String,
     onMepChange: (String) -> Unit,
+    selbstkontrolleScore: Int,
+    onScoreChange: (Int) -> Unit,
+    erkenntnisse: String,
+    onErkenntnisseChange: (String) -> Unit,
+    offenePunkte: String,
+    onOffenePunkteChange: (String) -> Unit,
     isPublic: Boolean,
     onPublicChange: (Boolean) -> Unit,
-    selectedMedia: com.example.core.media.CompressedMediaPayload?,
+    selectedMedia: CompressedMediaPayload?,
     chefAiState: ChefAiUiState,
     isPublishing: Boolean,
+    onOpenCameraX: () -> Unit,
     onPickPhoto: () -> Unit,
     onRunChefAudit: (String) -> Unit,
-    onPublish: (com.example.domain.model.RecipeSpec?, String) -> Unit
+    onPublish: (RecipeSpec?, String) -> Unit
 ) {
-    val activeRecipe = SwissmilkAndBaseRecipesCatalog.allRecipes.find { it.id == recipeId }
+    var recipeWeekFilter by rememberSaveable { mutableIntStateOf(0) }
+    val visibleRecipes = remember(recipeWeekFilter) {
+        if (recipeWeekFilter == 0) SwissmilkAndBaseRecipesCatalog.allRecipes
+        else SwissmilkAndBaseRecipesCatalog.recipesForWeek(recipeWeekFilter)
+    }
+    val activeRecipe = SwissmilkAndBaseRecipesCatalog.findById(recipeId)
     val aiFeedbackText = (chefAiState as? ChefAiUiState.AuditReady)?.formattedText.orEmpty()
 
     Card(
@@ -594,61 +570,87 @@ private fun ComposerAndVisualAiSection(
         border = BorderStroke(1.5.dp, SwissRed)
     ) {
         Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-            TagPill("UPLOAD OTIMIZADO (≤1200px JPEG 0.82 SEM EXIF) + CHEF IA", SwissRedContainer, OnSwissRedContainer)
+            TagPill("IMAGEM OTIMIZADA (≤ 1200 px FUNDO BRANCO SEM EXIF) + CHEF IA", SwissRedContainer, OnSwissRedContainer)
 
             Row(modifier = Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                listOf(
-                    "prato_final" to "Prato Final",
-                    "cortes_mep" to "Cortes & MEP",
-                    "ficha_preenchida" to "Ficha MEP",
-                    "resumo_esquema" to "Esquema 25% Visual"
-                ).forEach { (id, label) ->
+                listOf("prato_final", "cortes_mep", "ficha_preenchida", "resumo_esquema").forEach { id ->
                     FilterChip(
                         selected = materialType == id,
                         onClick = { onMaterialChange(id) },
-                        label = { Text(label) },
+                        label = { Text(formatMuralMaterialTypePtBr(id)) },
                         modifier = Modifier.height(48.dp)
                     )
                 }
             }
 
             Row(modifier = Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                SwissmilkAndBaseRecipesCatalog.allRecipes.take(16).forEach { r ->
+                (listOf(0) + (1..24).toList()).forEach { wk ->
+                    FilterChip(
+                        selected = recipeWeekFilter == wk,
+                        onClick = { recipeWeekFilter = wk },
+                        label = { Text(if (wk == 0) "Todas (45)" else "S${"%02d".format(wk)}", fontFamily = JetBrainsMonoFamily) },
+                        modifier = Modifier.height(44.dp)
+                    )
+                }
+            }
+
+            Row(modifier = Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                visibleRecipes.forEach { r ->
                     FilterChip(
                         selected = recipeId == r.id,
                         onClick = {
                             onRecipeChange(r.id)
                             onWeekChange(r.weekNumber)
                         },
-                        label = { Text("S${"%02d".format(r.weekNumber)} ${r.title.take(18)}") },
+                        label = { Text("S${"%02d".format(r.weekNumber)} ${r.title.take(22)}") },
                         modifier = Modifier.height(48.dp)
                     )
                 }
             }
 
-            OutlinedButton(
-                onClick = onPickPhoto,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(56.dp)
-                    .testTag("pick_culinary_photo_button")
-            ) {
-                Icon(Icons.Default.AddPhotoAlternate, contentDescription = null)
-                Spacer(Modifier.width(8.dp))
-                Text(if (selectedMedia == null) "Selecionar Foto (Photo Picker Seguro)" else "Trocar Foto (${selectedMedia.width}×${selectedMedia.height}px)")
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
+                Button(
+                    onClick = onOpenCameraX,
+                    colors = ButtonDefaults.buttonColors(containerColor = SwissRed),
+                    modifier = Modifier
+                        .weight(1.3f)
+                        .height(56.dp)
+                        .testTag("camerax_composer_button")
+                ) {
+                    Icon(Icons.Default.CameraAlt, contentDescription = null)
+                    Spacer(Modifier.width(8.dp))
+                    Text(stringResource(R.string.capture_camerax_mep), fontWeight = FontWeight.Bold)
+                }
+                OutlinedButton(
+                    onClick = onPickPhoto,
+                    modifier = Modifier
+                        .weight(1f)
+                        .height(56.dp)
+                        .testTag("pick_culinary_photo_button")
+                ) {
+                    Icon(Icons.Default.AddPhotoAlternate, contentDescription = null)
+                    Spacer(Modifier.width(6.dp))
+                    Text(if (selectedMedia == null) "Galeria" else "Trocar (${selectedMedia.width}px)")
+                }
             }
 
             selectedMedia?.let { media ->
                 Image(
                     bitmap = media.fullBitmap.asImageBitmap(),
-                    contentDescription = "Pré-visualização da foto culinária sem EXIF",
+                    contentDescription = "Pré-visualização da foto da produção sem metadados",
                     contentScale = ContentScale.Crop,
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(190.dp)
+                        .clip(RoundedCornerShape(10.dp))
                 )
+                if (media.compressedSizeBytes > 0) {
+                    val fmt = MediaCompressor.formatBytes(media.compressedSizeBytes.toLong())
+                    val sav = if (media.savingsPercent > 0) " • −${media.savingsPercent}% vs. original" else ""
+                    TagPill("${media.width}×${media.height} px • JPEG $fmt$sav (EXIF removido)", InfoBlueBg, InfoBlue)
+                }
                 Button(
-                    onClick = { onRunChefAudit(activeRecipe?.title ?: "Treino Semana $weekNumber") },
+                    onClick = { onRunChefAudit(activeRecipe?.title ?: "Produção — Semana $weekNumber") },
                     colors = ButtonDefaults.buttonColors(containerColor = InfoBlue),
                     modifier = Modifier
                         .fillMaxWidth()
@@ -657,7 +659,7 @@ private fun ComposerAndVisualAiSection(
                 ) {
                     Icon(Icons.Default.AutoAwesome, contentDescription = null)
                     Spacer(Modifier.width(8.dp))
-                    Text("Avaliar Foto com Chef Instrutor IA (Gemini Multimodal)", fontWeight = FontWeight.Bold)
+                    Text("Avaliar Produção com Chef Instrutor IA", fontWeight = FontWeight.Bold)
                 }
             }
 
@@ -672,12 +674,37 @@ private fun ComposerAndVisualAiSection(
                 else -> {}
             }
 
-            OutlinedTextField(caption, onCaptionChange, label = { Text("Observações do treino / autoavaliação") }, modifier = Modifier.fillMaxWidth())
-            OutlinedTextField(mepSummary, onMepChange, label = { Text("Resumo Ficha MEP / PCC") }, modifier = Modifier.fillMaxWidth())
+            OutlinedTextField(caption, onCaptionChange, label = { Text("Observações de bancada / apresentação") }, modifier = Modifier.fillMaxWidth())
+            OutlinedTextField(mepSummary, onMepChange, label = { Text("Resumo da Ficha Técnica / PCC") }, modifier = Modifier.fillMaxWidth())
+
+            Text("Autoavaliação de Bancada (Selbstkontrolle 1–5 opcional):", style = MaterialTheme.typography.labelMedium)
+            Row(modifier = Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                (0..5).forEach { score ->
+                    FilterChip(
+                        selected = selbstkontrolleScore == score,
+                        onClick = { onScoreChange(score) },
+                        label = { Text(if (score == 0) "Sem nota" else "Nota $score/5", fontFamily = JetBrainsMonoFamily) },
+                        modifier = Modifier.height(44.dp)
+                    )
+                }
+            }
+
+            OutlinedTextField(
+                value = erkenntnisse,
+                onValueChange = onErkenntnisseChange,
+                label = { Text("Aprendizados consolidados (Erkenntnisse — opcional)") },
+                modifier = Modifier.fillMaxWidth()
+            )
+            OutlinedTextField(
+                value = offenePunkte,
+                onValueChange = onOffenePunkteChange,
+                label = { Text("Pontos abertos p/ próximo treino (Offene Punkte — opcional)") },
+                modifier = Modifier.fillMaxWidth()
+            )
 
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 Switch(checked = isPublic, onCheckedChange = onPublicChange)
-                Text(if (isPublic) "Visibilidade: Público no Mural do Atelier" else "Visibilidade: Privado (apenas Meu Portfólio)")
+                Text(if (isPublic) "Visibilidade: Público no Mural Comunitário" else "Visibilidade: Privado (apenas Meu Portfólio)")
             }
 
             Button(
@@ -689,7 +716,10 @@ private fun ComposerAndVisualAiSection(
                     .height(56.dp)
                     .testTag("publish_portfolio_post_button")
             ) {
-                Text(if (isPublishing) "Sincronizando no Firestore..." else "Salvar Registro ($authorName)", fontWeight = FontWeight.Bold)
+                Text(
+                    if (isPublishing) "Publicando registro na nuvem…" else "Publicar Registro ($authorName)",
+                    fontWeight = FontWeight.Bold
+                )
             }
         }
     }
@@ -699,18 +729,39 @@ private fun ComposerAndVisualAiSection(
 private fun ChefTutorChatSection(
     tutorState: ChefAiUiState,
     selectedWeek: Int,
+    prefilledQuestion: String = "",
+    activeContextSummary: String = "",
     onAsk: (String) -> Unit
 ) {
     var question by rememberSaveable { mutableStateOf("") }
+
+    LaunchedEffect(prefilledQuestion) {
+        if (prefilledQuestion.isNotBlank()) {
+            question = prefilledQuestion
+        }
+    }
 
     Card(
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline)
     ) {
         Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-            TagPill("CHEF INSTRUTOR IA • DIAGNÓSTICO DE BANCADA & SOCRÁTICO", InfoBlueBg, InfoBlue)
+            TagPill("CHEF INSTRUTOR IA (v5) • DIAGNÓSTICO DE BANCADA & TUTORIA", InfoBlueBg, InfoBlue)
+            if (activeContextSummary.isNotBlank()) {
+                Card(
+                    colors = CardDefaults.cardColors(containerColor = PccAmberBg),
+                    border = BorderStroke(1.dp, PccAmber)
+                ) {
+                    Text(
+                        text = "CONTEXTO ATIVO DO SOCORRO: $activeContextSummary",
+                        style = MaterialTheme.typography.bodySmall,
+                        fontWeight = FontWeight.SemiBold,
+                        modifier = Modifier.padding(10.dp)
+                    )
+                }
+            }
             Text(
-                "Consulte substituições suíças↔brasileiras, correção de emulsões talhadas, pontos de calda ou regras de acrilamida/Sous-vide.",
+                "Consulte equivalências de cortes, Concentração vs. Expansão (Bocuse), alfa-amilase em cremes (Canella-Rawls), hidrocoloides (Peterson), matrizes de Hazan/Paravati/Holland ou tabelas sous-vide.",
                 style = MaterialTheme.typography.bodySmall
             )
             OutlinedTextField(
@@ -747,17 +798,25 @@ private fun ChefTutorChatSection(
 
 @Composable
 private fun StudentProfileAndSignOutSection(
-    profileState: StreamUiState<com.example.data.remote.UserProfile?>,
+    profileState: StreamUiState<UserProfile?>,
+    pendingAvatar: CompressedAvatarPayload?,
     defaultName: String,
-    onSave: (String, String, Int, String, String) -> Unit,
+    onPickAvatar: () -> Unit,
+    onSave: (String, String, String, Int, String, String) -> Unit,
     onSignOut: () -> Unit
 ) {
     val existing = (profileState as? StreamUiState.Success)?.data
     var name by remember(existing) { mutableStateOf(existing?.displayName ?: defaultName) }
-    var bio by remember(existing) { mutableStateOf(existing?.bio ?: "Estudante autoguiado da culinária profissional suíça.") }
-    var canton by remember(existing) { mutableStateOf(existing?.cantonFocus ?: "ZH") }
-    var badge by remember(existing) { mutableStateOf(existing?.specialtyBadge ?: "Lernender EFZ") }
+    var bio by remember(existing) { mutableStateOf(existing?.bio ?: "Cozinheiro em formação dedicado à gastronomia profissional.") }
+    var defaultVis by remember(existing) { mutableStateOf(existing?.defaultVisibility ?: "public") }
+    var canton by remember(existing) { mutableStateOf(existing?.cantonFocus ?: "BR") }
+    var badge by remember(existing) { mutableStateOf(existing?.specialtyBadge ?: "Cozinheiro em Formação") }
     val week = existing?.currentWeek ?: 1
+
+    val avatarBmp = remember(pendingAvatar, existing?.avatarBase64) {
+        pendingAvatar?.avatarBitmap
+            ?: existing?.avatarBase64?.let { MediaCompressor.decodeBase64ToBitmap(it) }
+    }
 
     Card(
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
@@ -765,14 +824,60 @@ private fun StudentProfileAndSignOutSection(
     ) {
         Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
             AtelierFullLogoBanner(maxHeight = 88.dp)
-            Text("CADASTRO DO ALUNO • PERFIL NO MURAL", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+            Text("PERFIL PROFISSIONAL • IDENTIFICAÇÃO NA BRIGADA", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                if (avatarBmp != null) {
+                    Image(
+                        bitmap = avatarBmp.asImageBitmap(),
+                        contentDescription = "Avatar do perfil na brigada",
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier
+                            .size(64.dp)
+                            .clip(CircleShape)
+                    )
+                } else {
+                    Icon(
+                        imageVector = Icons.Default.AccountCircle,
+                        contentDescription = "Sem foto de avatar",
+                        tint = SwissRed,
+                        modifier = Modifier.size(64.dp)
+                    )
+                }
+                OutlinedButton(
+                    onClick = onPickAvatar,
+                    modifier = Modifier
+                        .height(48.dp)
+                        .testTag("pick_profile_avatar_button")
+                ) {
+                    Icon(Icons.Default.AddPhotoAlternate, contentDescription = null)
+                    Spacer(Modifier.width(6.dp))
+                    Text("Avatar (≤ 400 px sem EXIF)", fontWeight = FontWeight.SemiBold)
+                }
+            }
+
             OutlinedTextField(name, { name = it }, label = { Text("Nome / Assinatura na Brigada") }, singleLine = true, modifier = Modifier.fillMaxWidth())
-            OutlinedTextField(canton, { canton = it }, label = { Text("Cantão Suíço Favorito (ex.: ZH, BE, GR, TI, VD)") }, singleLine = true, modifier = Modifier.fillMaxWidth())
-            OutlinedTextField(badge, { badge = it }, label = { Text("Insígnia de Posto (ex.: Lernender EFZ, Saucier)") }, singleLine = true, modifier = Modifier.fillMaxWidth())
-            OutlinedTextField(bio, { bio = it }, label = { Text("Bio Gastronômica") }, modifier = Modifier.fillMaxWidth())
+            OutlinedTextField(canton, { canton = it }, label = { Text("Região / Escola de Referência (ex.: BR, SP, ZH, BE, GR)") }, singleLine = true, modifier = Modifier.fillMaxWidth())
+            OutlinedTextField(badge, { badge = it }, label = { Text("Praça / Função na Brigada (ex.: Saucier, Garde-manger, Confeitaria)") }, singleLine = true, modifier = Modifier.fillMaxWidth())
+            OutlinedTextField(bio, { bio = it }, label = { Text("Apresentação Profissional") }, modifier = Modifier.fillMaxWidth())
+
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                Switch(
+                    checked = defaultVis == "public",
+                    onCheckedChange = { isPub -> defaultVis = if (isPub) "public" else "private" }
+                )
+                Text(
+                    if (defaultVis == "public") "Visibilidade padrão: Público no Mural Comunitário"
+                    else "Visibilidade padrão: Privado no Meu Portfólio"
+                )
+            }
 
             Button(
-                onClick = { onSave(name, bio, week, canton, badge) },
+                onClick = { onSave(name, bio, defaultVis, week, canton, badge) },
                 colors = ButtonDefaults.buttonColors(containerColor = SwissRed),
                 modifier = Modifier
                     .fillMaxWidth()

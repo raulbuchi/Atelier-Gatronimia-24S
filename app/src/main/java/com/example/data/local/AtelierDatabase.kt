@@ -8,6 +8,7 @@ import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Room
 import androidx.room.RoomDatabase
+import androidx.room.Transaction
 import kotlinx.coroutines.flow.Flow
 
 @Dao
@@ -36,11 +37,11 @@ interface AtelierDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun upsertAllSm2(entities: List<Sm2ProgressEntity>)
 
-    // 3. Ficha MEP Digital (8 Blocos)
-    @Query("SELECT * FROM mep_sheets")
+    // 3. Ficha MEP Digital & Calculadora (8 Blocos + Linhas de Insumos PB/PL/FC)
+    @Query("SELECT * FROM mep_sheets ORDER BY updatedAtEpochMs DESC")
     fun observeAllMepSheets(): Flow<List<MepSheetEntity>>
 
-    @Query("SELECT * FROM mep_sheets")
+    @Query("SELECT * FROM mep_sheets ORDER BY updatedAtEpochMs DESC")
     suspend fun getAllMepSheetsOnce(): List<MepSheetEntity>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
@@ -48,6 +49,45 @@ interface AtelierDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun upsertAllMepSheets(sheets: List<MepSheetEntity>)
+
+    @Query("DELETE FROM mep_sheets WHERE recipeId = :recipeId")
+    suspend fun deleteMepSheetById(recipeId: String)
+
+    @Query("SELECT * FROM mep_ingredient_lines ORDER BY recipeId ASC, sortOrder ASC, id ASC")
+    fun observeAllMepLines(): Flow<List<MepIngredientLineEntity>>
+
+    @Query("SELECT * FROM mep_ingredient_lines ORDER BY recipeId ASC, sortOrder ASC, id ASC")
+    suspend fun getAllMepLinesOnce(): List<MepIngredientLineEntity>
+
+    @Query("SELECT * FROM mep_ingredient_lines WHERE recipeId = :recipeId ORDER BY sortOrder ASC, id ASC")
+    suspend fun getMepLinesForSheetOnce(recipeId: String): List<MepIngredientLineEntity>
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertMepLines(lines: List<MepIngredientLineEntity>)
+
+    @Query("DELETE FROM mep_ingredient_lines WHERE recipeId = :recipeId")
+    suspend fun deleteMepLinesForSheet(recipeId: String)
+
+    @Transaction
+    suspend fun saveMepSheetWithLines(
+        sheet: MepSheetEntity,
+        lines: List<MepIngredientLineEntity>
+    ) {
+        upsertMepSheet(sheet)
+        deleteMepLinesForSheet(sheet.recipeId)
+        if (lines.isNotEmpty()) {
+            val normalized = lines.mapIndexed { idx, line ->
+                line.copy(id = 0L, recipeId = sheet.recipeId, sortOrder = idx)
+            }
+            insertMepLines(normalized)
+        }
+    }
+
+    @Transaction
+    suspend fun deleteMepSheetComplete(recipeId: String) {
+        deleteMepLinesForSheet(recipeId)
+        deleteMepSheetById(recipeId)
+    }
 
     // 4. Shopping & FIFO Pantry
     @Query("SELECT * FROM shopping_fifo_items ORDER BY sector ASC, expiryDate ASC, ingredientName ASC")
@@ -100,11 +140,12 @@ interface AtelierDao {
         StudyTimerEntity::class,
         Sm2ProgressEntity::class,
         MepSheetEntity::class,
+        MepIngredientLineEntity::class,
         ShoppingFifoEntity::class,
         EquipmentOwnedEntity::class,
         SelfEvalEntity::class
     ],
-    version = 1,
+    version = 3,
     exportSchema = false
 )
 abstract class AtelierDatabase : RoomDatabase() {
@@ -120,7 +161,7 @@ abstract class AtelierDatabase : RoomDatabase() {
                     context.applicationContext,
                     AtelierDatabase::class.java,
                     "atelier_gastronomia_24s_v4.db"
-                ).fallbackToDestructiveMigration().build().also { INSTANCE = it }
+                ).fallbackToDestructiveMigration(dropAllTables = true).build().also { INSTANCE = it }
             }
         }
     }

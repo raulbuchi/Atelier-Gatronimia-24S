@@ -61,11 +61,16 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.R
+import com.example.core.audio.KitchenAudioNarrator
+import com.example.core.audio.OfflinePodcastPlayer
 import com.example.data.curriculum.CurriculumWeeksAndGuides
+import com.example.data.curriculum.DidacticLibraryLoader
 import com.example.data.curriculum.SwissmilkAndBaseRecipesCatalog
 import com.example.data.local.StudyTimerEntity
 import com.example.domain.model.BrochureGuideSpec
 import com.example.ui.components.AtelierFullLogoBanner
+import com.example.ui.components.AudioNarrationPlayerCard
+import com.example.ui.components.CoursePodcastPlayerCard
 import com.example.ui.components.KeepScreenOnEffect
 import com.example.ui.components.TagPill
 import com.example.ui.components.formatSecondsMmSs
@@ -88,6 +93,8 @@ import com.example.ui.viewmodel.StreamUiState
 fun Dashboard24SScreen(
     atelierVm: AtelierViewModel,
     communityVm: CommunityAiViewModel,
+    audioNarrator: KitchenAudioNarrator,
+    podcastPlayer: OfflinePodcastPlayer,
     onOpenTheoryTab: () -> Unit,
     onOpenRecipeKitchen: (String) -> Unit,
     onOpenCommunityTab: () -> Unit
@@ -98,6 +105,8 @@ fun Dashboard24SScreen(
     val selfEvalsMap by atelierVm.selfEvaluationsMap.collectAsStateWithLifecycle()
     val mepSheetsMap by atelierVm.mepSheetsMap.collectAsStateWithLifecycle()
     val myPostsState by communityVm.myPostsState.collectAsStateWithLifecycle()
+    val narrationState by audioNarrator.state.collectAsStateWithLifecycle()
+    val podcastState by podcastPlayer.state.collectAsStateWithLifecycle()
 
     val currentWeek = remember(selectedWeekNum) {
         CurriculumWeeksAndGuides.weeks.find { it.weekNumber == selectedWeekNum }
@@ -288,6 +297,18 @@ fun Dashboard24SScreen(
             }
         }
 
+        // Player de Episódios Deep Dive (100% Offline embutidos no app)
+        CoursePodcastPlayerCard(
+            currentCycleNumber = currentWeek.cycleNumber,
+            podcastState = podcastState,
+            onSelectAndPlay = { episode -> podcastPlayer.playEpisode(episode) },
+            onTogglePlayPause = { episode -> podcastPlayer.togglePlayPause(episode) },
+            onSeekTo = { ms -> podcastPlayer.seekTo(ms) },
+            onSkipBy = { delta -> podcastPlayer.skipBy(delta) },
+            onStop = { podcastPlayer.stop() },
+            onSelectSpeed = { speed -> podcastPlayer.setPlaybackSpeed(speed) }
+        )
+
         // Current Week Hero Card + 80-Min Study Block Engine
         Card(
             colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
@@ -354,6 +375,12 @@ fun Dashboard24SScreen(
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Column(modifier = Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                        Text(
+                            text = stringResource(R.string.study_timer_section_label),
+                            style = MaterialTheme.typography.labelSmall,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.SpaceBetween,
@@ -427,6 +454,68 @@ fun Dashboard24SScreen(
                         }
                     }
                 }
+
+                // Player de Áudio Nativo (Narração pt-BR) do Eixo Atual e da Aula da Semana
+                val activeAxisBrochure = remember(currentWeek.axisId) {
+                    DidacticLibraryLoader.findAxis(currentWeek.axisId)
+                }
+                val axisSourceId = "axis_${activeAxisBrochure.axisNumber}"
+                val weekSourceId = "week_${currentWeek.weekNumber}"
+                val activeDashboardAudioId = if (narrationState.activeSourceId == weekSourceId) weekSourceId else axisSourceId
+
+                AudioNarrationPlayerCard(
+                    sourceId = activeDashboardAudioId,
+                    title = if (activeDashboardAudioId == weekSourceId) {
+                        "Narração da Aula • Semana S${"%02d".format(currentWeek.weekNumber)} (5 Etapas)"
+                    } else {
+                        "Ouvir Eixo ${activeAxisBrochure.axisNumber} • ${activeAxisBrochure.title}"
+                    },
+                    subtitle = if (activeDashboardAudioId == weekSourceId) {
+                        "Roteiro completo dos 80 minutos narrado em português (pt-BR) para estudo de bancada"
+                    } else {
+                        "Áudio narrado em pt-BR das ${activeAxisBrochure.sections.size} seções do Eixo ${activeAxisBrochure.axisNumber} (sem downloads)"
+                    },
+                    narrationState = narrationState,
+                    onTogglePlayPause = {
+                        if (activeDashboardAudioId == weekSourceId) {
+                            audioNarrator.togglePlayPause(
+                                fallbackSourceId = weekSourceId,
+                                fallbackTitle = "Semana S${"%02d".format(currentWeek.weekNumber)} • ${currentWeek.title}",
+                                fallbackSegmentsProvider = { KitchenAudioNarrator.buildWeekLessonSegments(currentWeek) }
+                            )
+                        } else {
+                            audioNarrator.togglePlayPause(
+                                fallbackSourceId = axisSourceId,
+                                fallbackTitle = "Eixo ${activeAxisBrochure.axisNumber} • ${activeAxisBrochure.title}",
+                                fallbackSegmentsProvider = { KitchenAudioNarrator.buildAxisSegments(activeAxisBrochure) }
+                            )
+                        }
+                    },
+                    onSkipPrevious = { audioNarrator.skipPrevious() },
+                    onSkipNext = { audioNarrator.skipNext() },
+                    onStop = { audioNarrator.stop() },
+                    onSelectSpeed = { audioNarrator.setSpeechRate(it) },
+                    secondaryActionLabel = if (activeDashboardAudioId == weekSourceId) {
+                        "Trocar para Áudio Completo do Eixo ${activeAxisBrochure.axisNumber}"
+                    } else {
+                        "Ouvir Roteiro da Aula S${"%02d".format(currentWeek.weekNumber)} (5 Etapas)"
+                    },
+                    onSecondaryAction = {
+                        if (activeDashboardAudioId == weekSourceId) {
+                            audioNarrator.playSegments(
+                                sourceId = axisSourceId,
+                                title = "Eixo ${activeAxisBrochure.axisNumber} • ${activeAxisBrochure.title}",
+                                segments = KitchenAudioNarrator.buildAxisSegments(activeAxisBrochure)
+                            )
+                        } else {
+                            audioNarrator.playSegments(
+                                sourceId = weekSourceId,
+                                title = "Semana S${"%02d".format(currentWeek.weekNumber)} • ${currentWeek.title}",
+                                segments = KitchenAudioNarrator.buildWeekLessonSegments(currentWeek)
+                            )
+                        }
+                    }
+                )
 
                 // Week Recipes & Badges
                 Text(

@@ -21,7 +21,6 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.Logout
 import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.AddPhotoAlternate
@@ -48,7 +47,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -62,10 +60,8 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.credentials.CredentialManager
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.R
-import com.example.core.firebase.signOutGoogle
 import com.example.core.media.CompressedAvatarPayload
 import com.example.core.media.CompressedMediaPayload
 import com.example.core.media.MediaCompressor
@@ -99,8 +95,6 @@ fun CommunityChefAiScreen(
     defaultAuthorName: String
 ) {
     val context = LocalContext.current
-    val scope = rememberCoroutineScope()
-    val credentialManager = remember(context) { CredentialManager.create(context) }
 
     val pendingTransfer by atelierVm.pendingPhotoTransfer.collectAsStateWithLifecycle()
     val pendingSos by atelierVm.pendingChefSos.collectAsStateWithLifecycle()
@@ -286,6 +280,10 @@ fun CommunityChefAiScreen(
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(14.dp)
         ) {
+            if (!communityVm.isAuthenticated && subTab in setOf(0, 1, 2, 4)) {
+                TestModeCloudBanner()
+            }
+
             when (subTab) {
                 0 -> MuralComunitarioSection(
                     state = publicMuralState,
@@ -316,6 +314,7 @@ fun CommunityChefAiScreen(
                 )
                 2 -> ComposerAndVisualAiSection(
                     authorName = currentAuthorName,
+                    isAuthenticated = communityVm.isAuthenticated,
                     weekNumber = postWeek,
                     onWeekChange = { postWeek = it },
                     materialType = postMaterialType,
@@ -390,10 +389,11 @@ fun CommunityChefAiScreen(
                         communityVm.askChefTutor(q, ctx)
                     }
                 )
-                4 -> StudentProfileAndSignOutSection(
+                4 -> StudentProfileSection(
                     profileState = profileState,
                     pendingAvatar = pendingAvatar,
                     defaultName = defaultAuthorName,
+                    isAuthenticated = communityVm.isAuthenticated,
                     onPickAvatar = {
                         avatarPickerLauncher.launch(
                             PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
@@ -401,9 +401,6 @@ fun CommunityChefAiScreen(
                     },
                     onSave = { name, bio, defVis, w, canton, badge ->
                         communityVm.saveProfile(name, bio, defVis, w, canton, badge)
-                    },
-                    onSignOut = {
-                        signOutGoogle(credentialManager = credentialManager, scope = scope)
                     }
                 )
             }
@@ -529,8 +526,33 @@ private fun MyPortfolioSection(
 }
 
 @Composable
+private fun TestModeCloudBanner() {
+    Card(
+        colors = CardDefaults.cardColors(containerColor = PccAmberBg),
+        border = BorderStroke(1.dp, PccAmber),
+        modifier = Modifier
+            .fillMaxWidth()
+            .testTag("test_mode_cloud_banner")
+    ) {
+        Column(modifier = Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+            TagPill(stringResource(R.string.test_mode_badge) + " • FIRESTORE PAUSADO", SwissRedContainer, OnSwissRedContainer)
+            Text(
+                text = stringResource(R.string.test_mode_cloud_title),
+                style = MaterialTheme.typography.titleSmall,
+                fontWeight = FontWeight.Bold
+            )
+            Text(
+                text = stringResource(R.string.test_mode_cloud_desc),
+                style = MaterialTheme.typography.bodySmall
+            )
+        }
+    }
+}
+
+@Composable
 private fun ComposerAndVisualAiSection(
     authorName: String,
+    isAuthenticated: Boolean,
     weekNumber: Int,
     onWeekChange: (Int) -> Unit,
     materialType: String,
@@ -707,19 +729,21 @@ private fun ComposerAndVisualAiSection(
                 Text(if (isPublic) "Visibilidade: Público no Mural Comunitário" else "Visibilidade: Privado (apenas Meu Portfólio)")
             }
 
-            Button(
-                onClick = { onPublish(activeRecipe, aiFeedbackText) },
-                enabled = !isPublishing,
-                colors = ButtonDefaults.buttonColors(containerColor = SwissRed),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(56.dp)
-                    .testTag("publish_portfolio_post_button")
-            ) {
-                Text(
-                    if (isPublishing) "Publicando registro na nuvem…" else "Publicar Registro ($authorName)",
-                    fontWeight = FontWeight.Bold
-                )
+            if (isAuthenticated) {
+                Button(
+                    onClick = { onPublish(activeRecipe, aiFeedbackText) },
+                    enabled = !isPublishing,
+                    colors = ButtonDefaults.buttonColors(containerColor = SwissRed),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(56.dp)
+                        .testTag("publish_portfolio_post_button")
+                ) {
+                    Text(
+                        text = if (isPublishing) "Publicando registro na nuvem…" else "Publicar Registro ($authorName)",
+                        fontWeight = FontWeight.Bold
+                    )
+                }
             }
         }
     }
@@ -797,13 +821,13 @@ private fun ChefTutorChatSection(
 }
 
 @Composable
-private fun StudentProfileAndSignOutSection(
+private fun StudentProfileSection(
     profileState: StreamUiState<UserProfile?>,
     pendingAvatar: CompressedAvatarPayload?,
     defaultName: String,
+    isAuthenticated: Boolean,
     onPickAvatar: () -> Unit,
-    onSave: (String, String, String, Int, String, String) -> Unit,
-    onSignOut: () -> Unit
+    onSave: (String, String, String, Int, String, String) -> Unit
 ) {
     val existing = (profileState as? StreamUiState.Success)?.data
     var name by remember(existing) { mutableStateOf(existing?.displayName ?: defaultName) }
@@ -876,27 +900,17 @@ private fun StudentProfileAndSignOutSection(
                 )
             }
 
-            Button(
-                onClick = { onSave(name, bio, defaultVis, week, canton, badge) },
-                colors = ButtonDefaults.buttonColors(containerColor = SwissRed),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(56.dp)
-                    .testTag("save_profile_button")
-            ) {
-                Text("Salvar Perfil na Nuvem", fontWeight = FontWeight.Bold)
-            }
-
-            OutlinedButton(
-                onClick = onSignOut,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(48.dp)
-                    .testTag("sign_out_button")
-            ) {
-                Icon(Icons.AutoMirrored.Filled.Logout, contentDescription = null)
-                Spacer(Modifier.width(8.dp))
-                Text(stringResource(R.string.sign_out))
+            if (isAuthenticated) {
+                Button(
+                    onClick = { onSave(name, bio, defaultVis, week, canton, badge) },
+                    colors = ButtonDefaults.buttonColors(containerColor = SwissRed),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(56.dp)
+                        .testTag("save_profile_button")
+                ) {
+                    Text("Salvar Perfil na Nuvem", fontWeight = FontWeight.Bold)
+                }
             }
         }
     }

@@ -17,7 +17,7 @@ android {
     applicationId = "com.aistudio.ateliergastronomia.v4kxmp"
     minSdk = 24
     targetSdk = 36
-    versionCode = 1
+    versionCode = 3
     versionName = "4.0"
 
     testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
@@ -65,9 +65,27 @@ android {
     buildConfig = true
   }
   testOptions { unitTests { isIncludeAndroidResources = true } }
+  androidResources {
+    noCompress += listOf("m4a", "mp3", "ogg", "wav")
+  }
+  packaging {
+    resources {
+      excludes += setOf(
+        "*.m4a",
+        "*.mp3",
+        "*.ogg",
+        "*.wav",
+        "*.md",
+        "*.ts",
+        "*.jpg",
+        "brochuras-didaticas-app__1__*.json"
+      )
+    }
+  }
   sourceSets {
     getByName("main") {
       resources.srcDirs("src/main/resources", "${rootDir}/public/assets/aistudio")
+      assets.srcDirs("src/main/assets", "${rootDir}/public/assets/aistudio")
     }
   }
   dependenciesInfo {
@@ -125,12 +143,12 @@ dependencies {
   // Uncomment to use Firestore:
   implementation(libs.firebase.firestore)
 
-  // Uncomment ALL FOUR of the following dependencies together to use Firebase Auth and Google
-  // Sign-In via Credential Manager:
-  implementation(libs.firebase.auth)
-  implementation(libs.androidx.credentials)
-  implementation(libs.androidx.credentials.play.services)
-  implementation(libs.googleid)
+  // Uncomment ALL FOUR of the following dependencies together to re-enable Firebase Auth and Google
+  // Sign-In via Credential Manager when testing is complete:
+  // implementation(libs.firebase.auth)
+  // implementation(libs.androidx.credentials)
+  // implementation(libs.androidx.credentials.play.services)
+  // implementation(libs.googleid)
   implementation(libs.firebase.appcheck.recaptcha)
   implementation(libs.firebase.appcheck.debug)
   implementation(libs.kotlinx.coroutines.android)
@@ -144,6 +162,7 @@ dependencies {
   testImplementation(libs.androidx.compose.ui.test.junit4)
   testImplementation(libs.androidx.core)
   testImplementation(libs.androidx.junit)
+  testImplementation(libs.firebase.auth)
   testImplementation(libs.junit)
   testImplementation(libs.kotlinx.coroutines.test)
   testImplementation(libs.robolectric)

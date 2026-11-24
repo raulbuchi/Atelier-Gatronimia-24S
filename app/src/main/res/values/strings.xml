@@ -55,4 +55,21 @@
     <string name="didactic_library_title">Biblioteca Didática de Apoio — Os 6 Eixos</string>
     <string name="didactic_library_search_hint">Buscar em todos os 6 Eixos (ex.: Acrilamida, Alfa-amilase, Brunoise, Sous-vide)…</string>
     <string name="didactic_practice_sm2">Praticar estes cartões no SM-2</string>
+    <string name="test_mode_badge">MODO TESTE</string>
+    <string name="test_mode_cloud_title">Login Google desabilitado temporariamente para testes</string>
+    <string name="test_mode_cloud_desc">Todos os recursos locais (Curso 24S, Biblioteca, SM-2, Receitas, Ficha Técnica MEP, CameraX e Chef Instrutor IA) funcionam livremente sem login. A sincronização em nuvem no Firestore fica pausada até a reativação do login Google.</string>
+    <string name="cd_audio_narration">Narração em áudio da aula e biblioteca didática</string>
+    <string name="cd_audio_toggle">Reproduzir ou pausar narração em áudio</string>
+    <string name="audio_volume_muted_warning">Volume de mídia zerado: aumente o volume do dispositivo ou do emulador para ouvir a narração.</string>
+    <string name="study_timer_section_label">CRONÔMETRO DO BLOCO DE ESTUDO (80 MIN)</string>
+    <string name="podcast_status_playing">REPRODUZINDO • OFFLINE</string>
+    <string name="podcast_status_offline">DEEP DIVE EM ÁUDIO • 100% OFFLINE</string>
+    <string name="podcast_action_play">Ouvir Episódio</string>
+    <string name="podcast_action_pause">Pausar</string>
+    <string name="podcast_action_resume">Retomar</string>
+    <string name="cd_podcast_audio">Episódios de áudio offline do Atelier Gastronomia 24S</string>
+    <string name="cd_podcast_toggle">Reproduzir ou pausar episódio de áudio</string>
+    <string name="cd_podcast_rewind">Voltar 15 segundos</string>
+    <string name="cd_podcast_forward">Avançar 15 segundos</string>
+    <string name="cd_podcast_stop">Parar reprodução do episódio</string>
 </resources>

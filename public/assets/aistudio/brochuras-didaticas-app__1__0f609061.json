@@ -1,0 +1,2635 @@
+{
+  "schema_version": "1.0",
+  "source_edition": "v3 (Fontes Ampliadas)",
+  "app_name": "Atelier Gastronomia 24S",
+  "title": "Biblioteca Didática de Apoio — Os 6 Eixos da Gastronomia",
+  "description": "Versão nativa para leitura, busca e consulta rápida dentro do app (sem necessidade de download de PDF), contendo todo o conteúdo teórico, tabelas técnicas, protocolos sanitários, fichas comparativas, guias da Ficha MEP, flashcards SM-2 e bibliografia comentada dos 6 eixos.",
+  "render_instructions": {
+    "component_pattern": "Leitor editorial em 2 colunas (índice lateral de eixos/seções + área de leitura limpa com busca instantânea)",
+    "block_types": [
+      "paragraph (texto corrido com suporte a **negrito** e *itálico*)",
+      "bullets (lista de tópicos técnicos)",
+      "table (tabela responsiva com headers, rows e caption)",
+      "callout (caixas de destaque: variant = 'critical' | 'mep' | 'troubleshooting' | 'tip')",
+      "metric_strip (faixa visual de parâmetros numéricos / temperaturas / proporções)"
+    ]
+  },
+  "axes_brochures": [
+    {
+      "id": "eixo-1",
+      "axis_number": 1,
+      "title": "Técnicas Culinárias, Fundamentos & AVOR",
+      "subtitle": "Cortes suíços (Schnittarten), bateria trilíngue, Bocuse & Escoffier, molhos modernistas (Peterson), Sous-vide e anatomia Rind",
+      "estimated_read_minutes": 25,
+      "weeks_covered": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        8,
+        10,
+        11,
+        12,
+        17,
+        21,
+        24
+      ],
+      "badges": [
+        "Ciclo 1 (Base)",
+        "AVOR & Ficha MEP",
+        "8 Clássicos Swissmilk",
+        "Sous-Vide",
+        "12 Flashcards"
+      ],
+      "overview_cards": [
+        {
+          "label": "Alinhamento no Curso",
+          "text": "Sustenta o Ciclo 1 (Semanas 1–6) e apoia cozinha quente, sous-vide e garde manger nos Ciclos 2–4, além de 8 clássicos Swissmilk e fichas Chefkoch."
+        },
+        {
+          "label": "Núcleo Ampliado",
+          "text": "Pauli/AVOR (14ª ed.), Schnittarten, Kochgeschirrarten, Spezielle Gartechniken (Sous-vide), Rind, Institut Paul Bocuse, Escoffier, James Peterson, George Bento e CIA."
+        },
+        {
+          "label": "Integração App & MEP",
+          "text": "Alimenta os 8 blocos da Ficha MEP, alertas de Vitamina C no aço e Acrilamida (175 °C), calculadora de salmoura 5–10% e 12 flashcards SM-2."
+        }
+      ],
+      "sections": [
+        {
+          "id": "e1-sec-0",
+          "number": "0",
+          "title": "Alinhamento no Curso de 24 Semanas, Ficha MEP & Clássicos",
+          "weeks": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            8,
+            10,
+            11,
+            12,
+            17,
+            21,
+            24
+          ],
+          "search_keywords": [
+            "AVOR",
+            "Ficha MEP",
+            "Bocuse",
+            "Escoffier",
+            "Peterson",
+            "Bento",
+            "Brauner Kalbsfond",
+            "Geflügelgalantine"
+          ],
+          "blocks": [
+            {
+              "type": "paragraph",
+              "text": "Este módulo sustenta diretamente o **Ciclo 1 (Semanas 1–6 — Alicerces da Cozinha)** e apoia as execuções práticas de cozinha quente, *sous-vide* e *garde manger* nos Ciclos 2, 3 e 4. A matriz clássica (*Chef Profissional* CIA, *Le Cordon Bleu*, *Pauli* 14ª ed.) é ampliada pelos tratados franceses de **Auguste Escoffier** (*The Escoffier Cookbook* / *Le Guide Culinaire*), **Paul Bocuse** (*Institut Paul Bocuse Gastronomique*, *French Cooking*, *The Cuisine of Paul Bocuse*), **James Peterson** (*Sauces: Classical and Contemporary Sauce Making*), **New Larousse Gastronomique**, **George Bento** (*Técnicas de Cozinha*), além dos manuais técnicos suíços de **cortes (*Schnittarten*)**, **bateria (*Kochgeschirrarten*)**, **anatomia bovina (*Rind*)**, **cocções clássicas e *sous-vide***, **Fundo Escuro de Vitela (*Brauner Kalbsfond*)** e **Galantina de Ave (*Geflügelgalantine*)**."
+            },
+            {
+              "type": "table",
+              "caption": "Mapa de integração do Eixo 1 nas Semanas e na Ficha MEP",
+              "headers": [
+                "Semanas / Ciclo",
+                "Seção de Apoio",
+                "Receitas Práticas (Swissmilk & Chefkoch)",
+                "Aplicação na Ficha MEP (AVOR / PCC)"
+              ],
+              "rows": [
+                [
+                  "Sem. 1–2 (Ciclo 1)",
+                  "Seção 1 — AVOR, Cortes Suíços & Bateria",
+                  "Smoothie; Blumenkohl-Stampf; Tessiner Minestrone (#16)",
+                  "Blocos 1–3: FC, Higiene, PB/PL, cortes 1,5–10 mm e escolha de facas/panelas"
+                ],
+                [
+                  "Sem. 3–4 (Ciclo 1)",
+                  "Seção 3 — Fundos, 5 Molhos-Mãe & Hidrocoloides",
+                  "Fundo Vegetais; Brauner Kalbsfond (5 L); Basler Mehlsuppe (#3); Schwyzer (#13)",
+                  "Blocos 4–6: Torrefação de ossos/farinha (170 °C), frémir ≤ 85 °C e resfriamento 2 estágios"
+                ],
+                [
+                  "Sem. 5–6 (Ciclo 1)",
+                  "Seção 2 & 4 — Concentração/Expansão & Garde Manger",
+                  "Papet vaudois (#20); revisão prática do Ciclo 1",
+                  "Bloco 8: Auditoria completa pela rubrica Selbstkontrolle (1–5)"
+                ],
+                [
+                  "Sem. 8, 10–12 (C2)",
+                  "Seção 2.1–2.2 — Anatomia Rind & Maillard/Fritura",
+                  "Zürcher Geschnetzeltes (#23); Berner Platte; Bollito misto; Bison-Mignons",
+                  "Espelho do exemplo Zürcher + Rösti; usar antiaderente para vegetais"
+                ],
+                [
+                  "Sem. 17, 21, 24 (C3–4)",
+                  "Seção 2.3 & 4 — Sous-Vide, Salmoura & Galantina",
+                  "Artischocken-SV (86 °C); Bacalhau/Vitela SV; Geflügelgalantine; Omble (#6)",
+                  "Blocos 5–6: Salmoura 5–10%, banho +0,5–1 °C e galantina a 65 °C internos"
+                ]
+              ]
+            }
+          ]
+        },
+        {
+          "id": "e1-sec-1",
+          "number": "1",
+          "title": "Mise en Place, AVOR, Cortes Padronizados (Schnittarten) & Bateria",
+          "weeks": [
+            1,
+            2
+          ],
+          "search_keywords": [
+            "AVOR",
+            "Brunoise",
+            "Jardinière",
+            "Macédoine",
+            "Paysanne",
+            "Julienne",
+            "Bâtonnets",
+            "Demidoff",
+            "Rhomben",
+            "Tourné",
+            "Concassés",
+            "Mirepoix",
+            "Matignon",
+            "Bouquet Garni",
+            "Sachet",
+            "Rôtissoire",
+            "Braisière",
+            "Rondeau",
+            "Sautoir",
+            "Sauteuse",
+            "Lyoner Pfanne",
+            "Poissonnière"
+          ],
+          "blocks": [
+            {
+              "type": "paragraph",
+              "text": "Na formação suíça de *Chefkoch* (*Kochen inkl. AVOR*), a organização prévia (**AVOR — Arbeitsvorbereitung**) integra a nota prática junto com economia de insumos (reaproveitamento de carcaças, *abattis* e aparas *Parüren*), precisão geométrica e limpeza contínua. Em *Schnittarten.pdf*, reforça-se uma regra físico-mecânica essencial: trabalhar sempre com **facas bem afiadas** sobre tábua antiderrapante (estabilizada com pano úmido por baixo, segundo Figueira, 2018) e mão de apoio em \"garra\"; facas cegas aumentam o risco de acidentes e esmagam células vegetais, provocando perda excessiva de suco, oxidação e alteração de cor e sabor. Na construção do sabor italiano (Marcella Hazan), o corte fino inicia o trio *battuto* (picado cru aromático) → *soffritto* (suar lentamente sem queimar o alho) → *insaporire* (saltear vigorosamente o ingrediente principal em fogo alto)."
+            },
+            {
+              "type": "table",
+              "caption": "Matriz Comparada de Cortes Padronizados (Schnittarten, Bento & Escoffier)",
+              "headers": [
+                "Corte",
+                "Padrão Suíço (Schnittarten) / Clássico",
+                "Ferramenta & Aplicações Típicas"
+              ],
+              "rows": [
+                [
+                  "Brunoise",
+                  "Cubos ~1,5 mm (Schnittarten) • ~1,5–3 mm (CIA/Bento)",
+                  "Faca do chef; cenoura, alho-poró, aipo-rábano, pimentão, Bündner Fleisch, consomês"
+                ],
+                [
+                  "Jardinière",
+                  "Cubos ~5 mm de aresta (Schnittarten)",
+                  "Cenoura, aipo-rábano, pepino, couve-rábano (Kohlrabi), bacon cozido"
+                ],
+                [
+                  "Macédoine / Concassés",
+                  "Cubos ~8 mm de aresta (legumes, frutas ou tomate sem pele/semente)",
+                  "Abóbora, cenoura, aipo, pêssego, manga; tomate branqueado e concassé"
+                ],
+                [
+                  "Paysanne",
+                  "Lâminas finas ~1 cm de aresta",
+                  "Faca do chef; cenoura, alho-poró, repolho crespo (Wirz), aipo, batata"
+                ],
+                [
+                  "Julienne",
+                  "Tiras ~1 mm × 3 cm (CH) • 3 × 3 mm × 2,5–5 cm (Bento)",
+                  "Cenoura, alho-poró, aipo, cogumelos, presunto cru/cozido"
+                ],
+                [
+                  "Bâtonnets",
+                  "Bastões ~5 mm × 3 cm",
+                  "Batatas, cenouras, couve-rábano, bacon cozido"
+                ],
+                [
+                  "Chiffonnade",
+                  "Fitas finíssimas em tiras",
+                  "Folhas empilhadas e enroladas (alface, couve, alho-de-urso, azedinha, ervas)"
+                ],
+                [
+                  "Demidoff",
+                  "Rodelas onduladas de ~5 mm",
+                  "Buntschneidemesser (faca ondulada); cenoura, pepino, abobrinha, aipo-rábano"
+                ],
+                [
+                  "Rhomben / Girando",
+                  "Losangos rústicos (CH) • Ângulo 45° girando 90° (LCB)",
+                  "Gemüsemesser; vegetais para Wok (alho-poró, pimentão, ervilha-torta) e salteados"
+                ],
+                [
+                  "Tourniertes Gemüse",
+                  "Oval alongado ~3 cm (7 faces)",
+                  "Tourniermesser; cenoura, nabo, pepino, abobrinha, beterraba (envernizados)"
+                ]
+              ]
+            },
+            {
+              "type": "table",
+              "caption": "Bases Aromáticas e Proporções Exatas (CIA / Escoffier)",
+              "headers": [
+                "Base Aromática",
+                "Composição e Proporção Exata",
+                "Uso Clássico e Momento de Adição"
+              ],
+              "rows": [
+                [
+                  "Mirepoix Padrão & Branco",
+                  "Padrão: 50% cebola, 25% cenoura, 25% salsão (454 g / 3,84 L). Branco: 25% cada (cebola/alho-poró, aipo, pastinaca).",
+                  "Padrão para fundos escuros e braseados; Branco para fundos claros e veloutés sem pigmento laranja."
+                ],
+                [
+                  "Matignon (\"comestível\")",
+                  "113 g cebola, 113 g cenoura, 57 g salsão, 85 g bacon/presunto, tomilho, louro.",
+                  "Base aromática de peças poêlées (Escoffier #250) ou guarnição comestível."
+                ],
+                [
+                  "Bouquet Garni & Sachet d'Épices",
+                  "Bouquet: tomilho, 3–4 salsa, louro, alho-poró, salsão. Sachet: + 2 g pimenta quebrada em gaze.",
+                  "Nos últimos 15–30 min (< 3,84 L) ou 1 h antes em lotes maiores (Brauner Kalbsfond)."
+                ],
+                [
+                  "Cebola Brûlée & Piquée",
+                  "Brûlée: ao meio tostada a seco. Piquée: cravada com cravos-da-índia e louro.",
+                  "Brûlée dá cor âmbar a consomês/fundos; Piquée aromatiza molho béchamel."
+                ]
+              ]
+            },
+            {
+              "type": "table",
+              "caption": "Metrologia Culinária: Conversões e Escalas de Forno (Le Cordon Bleu / CIA)",
+              "headers": [
+                "Sistema",
+                "Equivalências Padrão",
+                "Escala de Forno (°C / °F / Gás)"
+              ],
+              "rows": [
+                [
+                  "Volume (Colheres)",
+                  "¼ cc = 1,25 mL | ½ cc = 2,5 mL | 1 cc = 5 mL | 1 cs (3 cc) = 15 mL | 4 cs = 60 mL",
+                  "110 °C (225 °F / Gás ¼) — Frio | 120 °C (250 °F / Gás ½) — Frio"
+                ],
+                [
+                  "Xícaras Americanas",
+                  "¼ xíc. = 60 mL | ⅓ xíc. = 70 mL | ½ xíc. = 125 mL | 1 xíc. = 250 mL | 4 xíc. = 1 L",
+                  "140–150 °C (275–300 °F / Gás 1–2) — Muito baixo | 160 °C (325 °F / Gás 3) — Baixo"
+                ],
+                [
+                  "Massa & Medidas Lineares",
+                  "25 g ≈ 1 oz | 225 g ≈ 8 oz | 450 g ≈ 1 lb | 1 kg ≈ 2 lb 4 oz | 2,5 cm = 1 in",
+                  "170–180 °C (Moderado) | 190 °C (Mod. quente) | 200–220 °C (Quente) | 230 °C (Muito quente)"
+                ]
+              ]
+            },
+            {
+              "type": "table",
+              "caption": "Bateria Profissional Trilíngue (Kochgeschirrarten & Klassische Gartechniken)",
+              "headers": [
+                "Alemão (DE) / Francês (FR)",
+                "Utensílio em Português",
+                "Regra Técnica de Uso"
+              ],
+              "rows": [
+                [
+                  "Bratgeschirr / Rôtissoire",
+                  "Assadeira funda de forno",
+                  "Dourar ossos sem excesso de gordura (Brauner Kalbsfond) e grandes assados."
+                ],
+                [
+                  "Schmorgeschirr / Braisière",
+                  "Caçarola de brasear c/ tampa",
+                  "Brasear carnes ricas em colágeno (tampa justa) e Poelieren (140–160 °C)."
+                ],
+                [
+                  "Niedriger Bratentopf / Rondeau",
+                  "Caçarola baixa e larga c/ alças",
+                  "Selar carnes cuja borra formará molho escuro; redução uniforme."
+                ],
+                [
+                  "Flachkasserolle / Sautoir",
+                  "Caçarola rasa de cabo longo",
+                  "Saltear proteínas para construir molhos na deglaçagem (ao contrário da de aço)."
+                ],
+                [
+                  "Schwenkkasserolle / Sauteuse",
+                  "Frigideira alta bordas inclinadas",
+                  "Saltear agitando e emulsionar molhos fora do fogo (monter au beurre)."
+                ],
+                [
+                  "Bratpfanne Antihaft / Poêle antiadhésif",
+                  "Frigideira antiaderente",
+                  "Obrigatória p/ saltear vegetais: aço puro destrói vitamina C (Klassische Gartechniken)."
+                ],
+                [
+                  "Lyoner Pfanne / Poêle lyonnaise",
+                  "Frigideira de ferro/aço",
+                  "Saltear carnes/peixes sem fazer molho nela (aço altera sabor do molho); tostar cebolas."
+                ],
+                [
+                  "Fischkessel / Poissonnière",
+                  "Peixeira c/ grelha removível",
+                  "Pochar peixes inteiros delicados em court-bouillon sem quebrar a estrutura."
+                ]
+              ]
+            }
+          ]
+        },
+        {
+          "id": "e1-sec-2",
+          "number": "2",
+          "title": "Princípios de Calor, Cocções Clássicas, Anatomia Rind & Sous-Vide",
+          "weeks": [
+            5,
+            8,
+            10,
+            11,
+            12,
+            17
+          ],
+          "search_keywords": [
+            "Concentração",
+            "Expansão",
+            "Saltear",
+            "Fritar",
+            "Acrilamida",
+            "Vitamina C",
+            "Poelieren",
+            "Brasear",
+            "Pochar",
+            "Rind",
+            "Stotzen",
+            "Nierstück",
+            "Sous-vide",
+            "Salmoura",
+            "Cook-and-Chill"
+          ],
+          "blocks": [
+            {
+              "type": "paragraph",
+              "text": "O *Institut Paul Bocuse Gastronomique* sistematiza toda cocção em dois regimes físicos: **Cocção por Concentração** (calor seco vigoroso ou imersão em líquido já fervente para coagular proteínas na superfície, formar crosta e reter sucos internos — ex.: grelhar, saltear, assar) e **Cocção por Expansão** (início em líquido frio com troca livre de sabores e nutrientes entre alimento e meio — ex.: fundos, *consommés*, *pot-au-feu*). Já **Paul Bocuse** (*French Cooking* / *The Cuisine of Paul Bocuse*), herdando de Fernand Point os princípios da *Nouvelle Cuisine*, enfatiza tempos curtos e precisos: peixes servidos ainda rosados junto à espinha (nunca cozidos em excesso), vagens crocantes (*al dente*) e *Loup en croûte* (massa e recheio atuando como câmara protetora de umidade)."
+            },
+            {
+              "type": "table",
+              "caption": "Métodos Clássicos de Cocção e Parâmetros Críticos",
+              "headers": [
+                "Método / Categoria",
+                "Parâmetros Críticos (Klassische Gartechniken / Escoffier / Bocuse)",
+                "Pratos-Modelo"
+              ],
+              "rows": [
+                [
+                  "Saltear (Sautieren)",
+                  "Vegetais só em antiaderente (preserva Vit. C). Proteínas p/ molho em Sautoir/Rondeau; sem molho em Lyoner Pfanne.",
+                  "Zürcher Geschnetzeltes (#23); Piccata alla milanese"
+                ],
+                [
+                  "Fritar (Frittieren)",
+                  "Pré-fritar a 140 °C (abaixo disso absorve óleo); finalizar a 165–175 °C. Teto máximo 175 °C evita acrilamida.",
+                  "Eglifilets em massa de fritura; Pommes frites"
+                ],
+                [
+                  "Poelieren (Poêlé)",
+                  "Escoffier #250 & Pauli: peça tenra em manteiga sobre Matignon tampada a 140–160 °C sem líquido extra; deglaçar fundo ao final.",
+                  "Frango poêlé c/ morchelas (Pauli p. 387)"
+                ],
+                [
+                  "Brasear & Glasieren",
+                  "Dourar → mirepoix/pinçage → deglaçar vinho → cobrir 1/3 a 1/2 c/ fundo → forno tampado; carnes ricas em colágeno. (Peixe c/ pouco líquido = pochar).",
+                  "Thurgauer Sauerbraten (#17); Braised beef (Bocuse)"
+                ],
+                [
+                  "Assar (Braten) & Descanso",
+                  "Forno a 180–220 °C; descanso 10–15 min sob alumínio frouxo (carry-over); Wellington envolve carne selada em crêpes p/ proteger folhada.",
+                  "Roastbeef; Filé Wellington; Saucisson im Teig (#11)"
+                ],
+                [
+                  "Pochar & Court-Bouillon",
+                  "Líquido gentil 71–82 °C (simmering 82–85 °C). Bocuse: postas ≥ 4 cm entram no court-bouillon já fervente e reduzem p/ fogo brando.",
+                  "Omble chevalier (#6); Berner Platte (82 °C)"
+                ]
+              ]
+            },
+            {
+              "type": "paragraph",
+              "text": "**Pontos de Grelha e Assamento (Le Cordon Bleu):** Filés de 2,5 a 5 cm grelhados em fogo alto seguem 4 estágios — *Bleu* (1 min/lado filé mignon; 2 min alcatra), *Saignant* (2 min/lado filé; 3 min alcatra — 52–54 °C), *À Point* (3 min/lado filé; 4 min alcatra — ~60 °C) e *Bien Cuit* (tostar 3 min/lado + 6–10 min fogo baixo — ≥ 70 °C). Assados a 180 °C com osso (por 450 g): 20+20 min (malpassada), 25+25 min (ao ponto) e 30+30 min (bem passada), reduzindo 5 min sem osso."
+            },
+            {
+              "type": "table",
+              "caption": "Anatomia Bovina Suíça (Lebensmittel und Zubereitung — Rind)",
+              "headers": [
+                "Grande Corte (DE / FR / EN)",
+                "Teor de Colágeno & Subcortes Principais",
+                "Técnicas Ideais de Cocção"
+              ],
+              "rows": [
+                [
+                  "A. Stotzen (Cuisse / Hind)",
+                  "Misto/Médio: Unterspälte (tranche carrée), Runder Mocken, Rosenstück, Eckstück (top side), Nuss (knuckle), Schenkel, Weisses Stück.",
+                  "Eckstück: Sautieren; Unterspälte/Mocken/Nuss: Schmoren/Dünsten; Schenkel: Sieden/Schmoren"
+                ],
+                [
+                  "B. Nierstück (Aloyau / Sirloin)",
+                  "Pobre em colágeno (Nobre): Filet (Filetkopf/Chateaubriand, Filetherz/Tournedos, Filetspitz/Mignons), Roastbeef (Entrecote/Doppeltes), Kotelett/Club/T-Bone/Porterhouse, Huft/Huftdeckel.",
+                  "Sautieren, Grillieren, Braten (Filet inteiro/Roastbeef); Huftdeckel (Picanha) admite Sieden (Bollito misto) e Schmoren"
+                ],
+                [
+                  "C–H. Cortes Anteriores & Flanco",
+                  "Ricos em colágeno: C. Lempen (flanc), D. Rücken (train de côtes/Hohrücken), E. Schulter (épaule), F. Federstück, G. Brust (poitrine), H. Hals (cou).",
+                  "Sieden (Berner Platte c/ Hohrücken 90 min), Schmoren, Ragout, Hackfleisch e Fundos"
+                ]
+              ]
+            },
+            {
+              "type": "paragraph",
+              "text": "**Protocolo Técnico Sous-Vide & Cook-and-Chill (*Spezielle Gartechniken*):** A cocção a vácuo funciona fisicamente como um *pochage* hermético de precisão. Peças grandes devem ter **espessura máxima de 7 cm** e estar **sem ossos** (evitam perfurar o saco e bloqueio térmico). Em vez de salgar a seco diretamente, aplica-se **salmoura prévia a 5%–10% (50 a 100 g de sal por litro de água)**: **10 minutos para peixes** (impede saída de albumina na superfície) e **3 a 4 horas para carnes grandes** (aumenta capacidade de retenção hídrica). O banho opera **0,5 °C a 1 °C acima do centro térmico desejado** (efeito pasteurizador)."
+            },
+            {
+              "type": "metric_strip",
+              "title": "Parâmetros Validados Sous-Vide & Temperaturas Internas (Proteínas)",
+              "items": [
+                {
+                  "label": "Bacalhau Sous-Vide",
+                  "value": "55 °C / 2h30",
+                  "detail": "Salmoura 5–10% por 10 min pré-vácuo"
+                },
+                {
+                  "label": "Salmão 25 mm SV",
+                  "value": "57,5 °C / 125 min",
+                  "detail": "Peixe clássico poché/forno: 63 °C (Omble)"
+                },
+                {
+                  "label": "Cordeiro 20 mm SV",
+                  "value": "60,5 °C / 30 min",
+                  "detail": "Nunca pré-selar cordeiro antes do vácuo"
+                },
+                {
+                  "label": "Peito de Ave 25 mm SV",
+                  "value": "63,5 °C / 45 min",
+                  "detail": "Cocção tradicional aves CIA: 74 °C (82 °C coxas)"
+                },
+                {
+                  "label": "Peito de Vitela SV",
+                  "value": "62 °C / 15 h",
+                  "detail": "Após 3 h em salmoura; selagem Maillard após o saco"
+                },
+                {
+                  "label": "Galantina de Ave",
+                  "value": "65 °C internos",
+                  "detail": "Pochada em fundo de ave (ou 75 °C Kombisteamer)"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "e1-sec-3",
+          "number": "3",
+          "title": "Fundos, Cinco Molhos-Mãe (Escoffier), Hidrocoloides (Peterson) & Emulsões",
+          "weeks": [
+            3,
+            4,
+            6
+          ],
+          "search_keywords": [
+            "Fundo",
+            "Escoffier",
+            "Bocuse",
+            "Brauner Kalbsfond",
+            "Peterson",
+            "Xantana",
+            "Lecitina",
+            "Glice",
+            "Ágar",
+            "Carragena",
+            "Roux",
+            "Slurry",
+            "Liaison",
+            "Hollandaise",
+            "Vanner"
+          ],
+          "blocks": [
+            {
+              "type": "paragraph",
+              "text": "Em *The Escoffier Cookbook* (1903), *Chef Profissional* (CIA) e *Técnicas de Cozinha* (George Bento), os *fonds de cuisine* dividem-se em fundos claros, fundos escuros (*estouffade*), *fumets* e *remouillage* (segunda extração). Paul Bocuse e Escoffier destacam três regras de ouro: iniciar em **água fria** para dissolução proteica gradual, **escumar continuamente (*dépouiller*)** para prolongar a vida útil e **não salgar (ou salgar minimamente)** o fundo para evitar excesso de sal após reduções. Para molhos escuros rápidos, Bocuse recomenda também a *torréfaction* a seco da farinha em assadeira a **170 °C (325 °F)** antes de diluir em líquido frio."
+            },
+            {
+              "type": "callout",
+              "variant": "tip",
+              "title": "Ficha Suíça Passo a Passo — Brauner Kalbsfond (Fundo Escuro de Vitela, 5 L)",
+              "body": "Picar 4 kg de ossos e 1 kg de pés de vitela; dourar em 50 g de óleo de amendoim; juntar 800 g de mirepoix; escorrer a gordura; tostar 120 g de extrato de tomate (pinçage); deglaçar 2–3 vezes com água até ponto de glace; reduzir 1 kg de vinho branco; completar com 7 kg de água + 40 g de sal; ferver brando (frémir) por 3 h adicionando o sachet d'épices e alecrim fresco apenas na última hora; coar em pano fino."
+            },
+            {
+              "type": "table",
+              "caption": "Fundos Clássicos e Bases Aromáticas Líquidas (CIA / Escoffier / Figueira)",
+              "headers": [
+                "Tipo de Fundo / Base",
+                "Composição Padrão (Lote 3,84–5 L)",
+                "Técnica Crítica e Tempo"
+              ],
+              "rows": [
+                [
+                  "Fundo Claro (Vitela / Frango)",
+                  "Ossos não tostados + água fria + mirepoix branco + bouquet/sachet",
+                  "Água fria, simmering brando (82–85 °C), escumar; nunca salgar antes de reduzir."
+                ],
+                [
+                  "Fundo Escuro / Demi-Glace",
+                  "Ossos e aparas dourados (204–232 °C) + mirepoix + pinçage",
+                  "Deglaçar 2–3x; cozinhar 3–8 h; sem sal."
+                ],
+                [
+                  "Fumet de Peixe",
+                  "Espinhas lavadas + mirepoix fatiado fino + vinho branco seco",
+                  "Suar em manteiga c/ vinho antes da água fria; extração curta (20–45 min) p/ não amargar."
+                ],
+                [
+                  "Fundo de Vegetais & Court-Bouillon",
+                  "Vegetais: 1,36–2,5 kg / 4,8–6 L água. Court-Bouillon: + 240 mL vinagre",
+                  "Extração suave a 82–85 °C por 20–60 min; resfriar em 2 estágios (21 °C ≤ 2 h; ≤ 5 °C +4 h)."
+                ]
+              ]
+            },
+            {
+              "type": "paragraph",
+              "text": "**Arquitetura Clássica vs. Molhos Contemporâneos (James Peterson):** Em *Sauces: Classical and Contemporary Sauce Making*, James Peterson atualiza os 5 molhos-mãe de Escoffier (Béchamel, Velouté, Espagnole, Tomate, Hollandaise) classificando os molhos modernos em **Integrais** (extraídos dos próprios sucos do preparo, como *jus*), **Não Integrais** (baseados em fundos ou ingredientes independentes, como salsas, chutneys e coulis em Bento) e **Não Ligados** (*unbound*, sem espessante nem gordura, servidos em prato fundo). Para evitar o sabor abafado da farinha sem perder estabilidade no serviço, Peterson integra hidrocoloides e emulsificantes modernistas:"
+            },
+            {
+              "type": "table",
+              "caption": "Agentes de Ligação Clássicos (Escoffier / CIA) e Hidrocoloides Modernistas (Peterson)",
+              "headers": [
+                "Agente Clássico / Modernista",
+                "Proporção & Mecanismo",
+                "Aplicação Prática & Recuperação"
+              ],
+              "rows": [
+                [
+                  "Roux, Beurre Manié & Liaison",
+                  "Roux: 50% gordura + 50% farinha (cozinhar ≥ 5 min). Manié: cru p/ ajuste final. Liaison: 3 creme : 1 gema fora da fervura.",
+                  "Béchamel, Velouté, Espagnole; evitar película c/ papel-manteiga ou vanner (mexer até esfriar — Bocuse/Escoffier)."
+                ],
+                [
+                  "Slurry (Amidos Puros)",
+                  "Amido + líquido frio: araruta (não forma gel nem solta água/sinérese ao esfriar), maisena (forma gel), tapioca, batata.",
+                  "Brilho rápido sem alterar cor; Jus lié (85–113 g araruta/maisena por 3,84 L)."
+                ],
+                [
+                  "Goma Xantana (Peterson)",
+                  "0,1%–0,5% em líquido frio ou quente (ex.: 0,2 g / 190 mL). Evita sinérese em purês e estabiliza beurre blanc/vinagretes.",
+                  "Não usar > 0,5% (fica viscoso/escorregadio); combinar 0,1 g xantana + 0,5 g alginato PG."
+                ],
+                [
+                  "Lecitina Líquida & Glice",
+                  "Lecitina: 1%–2% na manteiga ou gemas (surfactante verdadeiro). Glice (mono/diglicerídeos): 2%–5% na gordura a 60 °C.",
+                  "Segura molhos de manteiga/hollandaise em banho-maria a 60 °C durante serviço longo sem talhar."
+                ],
+                [
+                  "Ágar-Ágar & Carragena Lambda",
+                  "Ágar (0,01%–0,9%): gelifica e tritura-se em fluid gel (ex.: Sauce Soubise III c/ 1,75 g / 500 mL leite). Lambda (0,03%–2%): hidrata a frio sem gelificar.",
+                  "Fluid gels criam molhos sedosos sem gordura; Carragena Lambda confere untuosidade láctea a leites vegetais."
+                ]
+              ]
+            },
+            {
+              "type": "callout",
+              "variant": "troubleshooting",
+              "title": "Recuperação de Emulsão Quente (Hollandaise / Béarnaise)",
+              "body": "Se o molho Hollandaise talhar, bata gotas de água morna vigorosamente ou cozinhe uma nova gema com 5 mL de água em banho-maria brando até espessar e verta o molho separado em fio lento contínuo."
+            }
+          ]
+        },
+        {
+          "id": "e1-sec-4",
+          "number": "4",
+          "title": "Garde Manger, Galantina (65 °C), Ficha MEP & Autoavaliação (Selbstkontrolle)",
+          "weeks": [
+            6,
+            17,
+            24
+          ],
+          "search_keywords": [
+            "Garde Manger",
+            "Patê",
+            "Terrina",
+            "Galantina",
+            "Geflügelgalantine",
+            "Chaudfroid",
+            "Aspic",
+            "Selbstkontrolle",
+            "Ficha MEP"
+          ],
+          "blocks": [
+            {
+              "type": "table",
+              "caption": "Preparações Clássicas de Cozinha Fria / Garde Manger (Pauli / Escoffier / Bocuse / RB)",
+              "headers": [
+                "Preparação Fria",
+                "Estrutura & Composição",
+                "Execução Crítica"
+              ],
+              "rows": [
+                [
+                  "Patês (Pâtés)",
+                  "Mistura fina/rústica de carnes, fígados e gordura ligada c/ ovos ou panade.",
+                  "Em crosta (pâté en croûte) exige chaminé para vapor e preenchimento final com geleia de aspic."
+                ],
+                [
+                  "Terrinas (Terrines)",
+                  "Camadas ou farce cozida em banho-maria dentro de fôrma retangular revestida.",
+                  "Prensagem fria pós-cocção expulsa bolhas de ar e compacta a fatia."
+                ],
+                [
+                  "Galantinas & Ballotines",
+                  "Ave/carne desossada, recheada com farce, enrolada em cilindro e pochada.",
+                  "Geflügelgalantine: desossar pelas costas mantendo pele íntegra; passar farce da coxa + creme 35% no tamis sobre gelo + frutas secas no Maraschino; pochar até exatos 65 °C internos."
+                ],
+                [
+                  "Mousses, Aspics & Chaudfroid",
+                  "Mousse: purê na peneira aerado c/ chantilly. Aspic: consommé gelificado. Chaudfroid: velouté/béchamel + aspic.",
+                  "Chaudfroid reveste peças frias em 3–4 camadas brilhantes; resfriar mousse sobre gelo antes de incorporar o creme."
+                ]
+              ]
+            },
+            {
+              "type": "callout",
+              "variant": "mep",
+              "title": "Guia Prático da Ficha MEP (8 Blocos) nos Treinos do Eixo 1",
+              "body": "FRENTE (Pré-execução): Bloco 1 define Fator de Conversão (FC) e horário reverso de serviço; Bloco 2 trava higiene 99% vs. 99,99%, luvas pontuais e separação cru × cozido; Bloco 3 registra Peso Bruto (PB), Peso Líquido (PL), FC, corte suíço exato (mm/cm) e destino das aparas (Parüren); Bloco 4 separa bateria correta (ex.: antiaderente p/ vegetais, Sautoir p/ molhos) e louça pré-aquecida (60–75 °C). VERSO (Execução): Bloco 5 ordena etapas paralelas; Bloco 6 audita PCCs (≤ 85 °C fundos, 140/175 °C fritura, 65 °C galantina, resfriamento 2 estágios); Bloco 7 detalha empratamento e quebra; Bloco 8 aplica a Selbstkontrolle (1 a 5)."
+            },
+            {
+              "type": "bullets",
+              "items": [
+                "**1. Execução integral e crítica:** Preparar integralmente os pratos-modelo avaliando desvios em cada etapa.",
+                "**2. Domínio técnico sob controle sanitário:** Controlar calor, temperatura, tempos, utensílios corretos e cumprimento estrito de GHP/CCP.",
+                "**3. Economia e desperdício zero:** Executar limpeza (*parieren*) e filetagem exatas, reaproveitando aparas em fundos e guarnições.",
+                "**4. Excelência sensorial no serviço:** Entregar textura, ponto (*Garpunkt*), apresentação, sabor, aroma e temperatura ao comensal."
+              ]
+            }
+          ]
+        }
+      ],
+      "flashcards": [
+        {
+          "id": "fc-e1-1",
+          "topic": "AVOR",
+          "q": "O que significa AVOR e o que estabiliza a tábua na bancada?",
+          "a": "Arbeitsvorbereitung (preparo prévio). Tábua firme sobre pano úmido e mão de apoio em garra."
+        },
+        {
+          "id": "fc-e1-2",
+          "topic": "Cortes CH",
+          "q": "Quais as dimensões de Brunoise, Jardinière, Macédoine e Julienne em Schnittarten?",
+          "a": "Brunoise ~1,5 mm; Jardinière ~5 mm; Macédoine ~8 mm; Julienne ~1 mm × 3 cm (Bento: 3 mm comum)."
+        },
+        {
+          "id": "fc-e1-3",
+          "topic": "Concentração vs. Expansão",
+          "q": "Qual a diferença entre Cocção por Concentração e Expansão (Institut Paul Bocuse)?",
+          "a": "Concentração sela a superfície para reter sucos (grelhar/assar); Expansão parte do frio em líquido para extrair sabores (fundos)."
+        },
+        {
+          "id": "fc-e1-4",
+          "topic": "Fundos",
+          "q": "Por que iniciar fundos em água fria, escumar (dépouiller) e evitar sal?",
+          "a": "Água fria extrai proteínas gradualmente; escumar remove impurezas que acidificam; sal concentraria na redução."
+        },
+        {
+          "id": "fc-e1-5",
+          "topic": "Bateria",
+          "q": "Por que usar antiaderente p/ vegetais e não fazer molhos na frigideira de aço (Lyoner)?",
+          "a": "Aço destrói a vitamina C de vegetais salteados e prejudica o sabor de molhos; molhos pedem Sautoir/Rondeau."
+        },
+        {
+          "id": "fc-e1-6",
+          "topic": "Fritura",
+          "q": "Quais as temperaturas de pré-fritura e finalização sem gerar acrilamida?",
+          "a": "Pré-fritar a 140 °C e finalizar a 165–175 °C; nunca ultrapassar 175 °C para evitar formação de acrilamida."
+        },
+        {
+          "id": "fc-e1-7",
+          "topic": "Peterson",
+          "q": "Como a goma xantana e a lecitina atuam em molhos contemporâneos?",
+          "a": "Xantana (0,1–0,5%) evita sinérese e espessa; Lecitina (1–2% na manteiga) é surfactante que estabiliza emulsões quentes."
+        },
+        {
+          "id": "fc-e1-8",
+          "topic": "Galantina",
+          "q": "Qual a temperatura interna da Galantina de Ave e como a farce é refinada?",
+          "a": "Pochada em fundo de ave até 65 °C internos; a farce fria é passada pelo tamis sobre banho de gelo."
+        },
+        {
+          "id": "fc-e1-9",
+          "topic": "Sous-vide",
+          "q": "Qual a concentração e tempo da salmoura pré-sous-vide (Spezielle Gartechniken)?",
+          "a": "Salmoura 5%–10% (50–100 g/L): 10 min p/ peixes (contém albumina) e 3–4 h p/ carnes (eleva retenção hídrica)."
+        },
+        {
+          "id": "fc-e1-10",
+          "topic": "Rind CH",
+          "q": "Qual grande corte bovino suíço reúne Filé, Roastbeef e Huft?",
+          "a": "Nierstück (Aloyau / Sirloin) — corte nobre pobre em colágeno, ideal para Sautieren, Grillieren e Braten."
+        },
+        {
+          "id": "fc-e1-11",
+          "topic": "Ligação",
+          "q": "Qual a diferença entre Beurre Manié, Slurry de Araruta e Liaison?",
+          "a": "Beurre manié: manteiga+farinha crus p/ ajuste final; Araruta: slurry translúcido sem sinérese; Liaison: 3 creme : 1 gema fora da fervura."
+        },
+        {
+          "id": "fc-e1-12",
+          "topic": "Bocuse",
+          "q": "Como preparar farinha tostada estável p/ molho escuro segundo Paul Bocuse?",
+          "a": "Torréfaction a seco espalhando a farinha em assadeira no forno a 170 °C (325 °F) e armazenando em pote fechado."
+        }
+      ],
+      "bibliography": [
+        "AUGUSTE ESCOFFIER. The Escoffier Cookbook (Le Guide Culinaire); 25 Cooking Techniques.",
+        "BENTO, George. Técnicas de Cozinha (ETEPAM/PE).",
+        "BOCUSE, Paul. Institut Paul Bocuse Gastronomique; Paul Bocuse’s French Cooking; The Cuisine of Paul Bocuse.",
+        "CURAVIVA; H+; HOTEL & GASTRO FORMATION SCHWEIZ. Kochen inkl. AVOR (Pauli 14ª ed.); Schnittarten; Kochgeschirrarten; Klassische_Gartechniken; Spezielle_Gartechniken; Lebensmittel_und_Zubereitung_-_Rind; Brauner-Kalbsfond; Geflügelgalantine.",
+        "FIGUEIRA, Rosiane Costa. Gastronomia Aplicada à Nutrição, 2018.",
+        "INSTITUTO AMERICANO DE CULINÁRIA (CIA). Chef Profissional, 4. ed., 2011.",
+        "NEW LAROUSSE GASTRONOMIQUE (Hamlyn).",
+        "PETERSON, James. Sauces: Classical and Contemporary Sauce Making (4th ed.).",
+        "SWISSMILK. Schweizer Klassiker. | WRIGHT & TREUILLE. Le Cordon Bleu: Todas as Técnicas Culinárias, 1998."
+      ]
+    },
+    {
+      "id": "eixo-2",
+      "axis_number": 2,
+      "title": "Cozinhas Regionais, Patrimônio & Os 23 Clássicos Swissmilk",
+      "subtitle": "Catálogo integral Swissmilk (23 cantões), fichas suíças profissionais, Marcella Hazan (Itália), Paravati & Dória (Brasil) e Mina Holland",
+      "estimated_read_minutes": 25,
+      "weeks_covered": [
+        2,
+        3,
+        4,
+        5,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        20,
+        24
+      ],
+      "badges": [
+        "23 Clássicos Swissmilk",
+        "Fichas Chefkoch",
+        "Hazan (Itália)",
+        "Paravati & Dória (BR)",
+        "10 Flashcards"
+      ],
+      "overview_cards": [
+        {
+          "label": "Coleção Suíça Integral",
+          "text": "23 clássicos cantonais da Swissmilk (AG–ZH) + fichas profissionais Berner Platte, Bollito misto e Bison-Mignons."
+        },
+        {
+          "label": "Itália & Brasil Ampliados",
+          "text": "Tríade battuto/soffritto/insaporire e risotto (Marcella Hazan) + 5 macrorregiões de Luis Carlos Paravati & cadeia de Carlos Alberto Dória + IPHAN."
+        },
+        {
+          "label": "Atlas Mundial & MEP",
+          "text": "7 refogados base e 9 misturas de especiarias (Mina Holland), New Larousse Gastronomique, Kalil, Canto e 10 flashcards SM-2."
+        }
+      ],
+      "sections": [
+        {
+          "id": "e2-sec-1",
+          "number": "1",
+          "title": "Culinária Suíça: Diversidade Cantonal, 23 Clássicos Swissmilk & Novas Fichas",
+          "weeks": [
+            2,
+            3,
+            4,
+            5,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16,
+            17
+          ],
+          "search_keywords": [
+            "Swissmilk",
+            "Cantão",
+            "Fondue",
+            "Rösti",
+            "Zürcher Geschnetzeltes",
+            "Capuns",
+            "Papet",
+            "Cholera",
+            "Berner Platte",
+            "Bollito misto",
+            "Bison",
+            "Raclette",
+            "Birchermüesli"
+          ],
+          "blocks": [
+            {
+              "type": "paragraph",
+              "text": "Segundo *About Switzerland* (FDFA) e *Patrimoine culinaire Suisse*, a gastronomia suíça nasce do encontro entre tradições germânicas, francesas e do norte da Itália adaptadas ao relevo alpino. A apostila *Schweizer Klassiker* (Swissmilk, 9ª ed.) reúne um menu completo com **23 especialidades cantonais da entrada à sobremesa**, todas integradas 1:1 ao catálogo de receitas do aplicativo."
+            },
+            {
+              "type": "metric_strip",
+              "title": "Indicadores da Diversidade Alimentar Suíça (FDFA / Patrimoine Culinaire)",
+              "items": [
+                {
+                  "label": "Produtos Patrimoniais",
+                  "value": "400+",
+                  "detail": "Inventário Patrimoine culinaire Suisse"
+                },
+                {
+                  "label": "Variedades de Queijos",
+                  "value": "700+",
+                  "detail": "Consumo médio de 23 kg/hab/ano"
+                },
+                {
+                  "label": "Tipos de Pães",
+                  "value": "200+",
+                  "detail": "Integrais (CH alemã) vs. brancos (FR/IT)"
+                },
+                {
+                  "label": "Chocolate per capita",
+                  "value": "> 11 kg/ano",
+                  "detail": "Líder mundial em consumo"
+                },
+                {
+                  "label": "Cervelat Nacional",
+                  "value": "160 mi/ano",
+                  "detail": "Salsicha popular assada ou em salada"
+                },
+                {
+                  "label": "Castas de Vinho",
+                  "value": "250 (~40 nat.)",
+                  "detail": "Valais concentra > 50 castas"
+                }
+              ]
+            },
+            {
+              "type": "table",
+              "caption": "Catálogo Técnico Completo das 23 Receitas da Swissmilk no App (AG a ZH)",
+              "headers": [
+                "# · Cantão",
+                "Receita Swissmilk",
+                "Ciclo / Sem.",
+                "Insumos-Chave & Ponto Crítico Técnico (MEP)"
+              ],
+              "rows": [
+                [
+                  "1 · AG",
+                  "Aargauer Rüeblitorte",
+                  "C3 / S15",
+                  "250 g cenoura, 250 g amêndoas, 75 g farinha, 5 ovos, glacê limão; melhora após 2–3 dias."
+                ],
+                [
+                  "2 · AI/AR",
+                  "Appenzeller Biberli",
+                  "C3 / S16",
+                  "500 g Ruchmehl, 200 g mel, 150 g amêndoas; secar 1 noite antes de assar a 180 °C."
+                ],
+                [
+                  "3 · BS",
+                  "Basler Mehlsuppe",
+                  "C1 / S3",
+                  "3 cs Bratbutter, 5 cs farinha tostada castanho s/ queimar, 1 L caldo carne, 40 min."
+                ],
+                [
+                  "4 · BE",
+                  "Berner Rösti",
+                  "C2 / S7",
+                  "1 kg Gschwellti (véspera), 100 g bacon, 3 cs Bratbutter; dourar 15 min/lado sem mexer."
+                ],
+                [
+                  "5 · FR",
+                  "Fondue moitié-moitié",
+                  "C2 / S9",
+                  "300–400 g Gruyère AOP + 300–400 g Vacherin AOP, 3 dl vinho/ácido, Maizena; fogo brando."
+                ],
+                [
+                  "6 · GE",
+                  "Omble chevalier (Genebra)",
+                  "C3 / S17",
+                  "4 peixes pochados 20 min a 180 °C em cidra+limão; molho c/ beurre manié + gema s/ ferver."
+                ],
+                [
+                  "7 · GL",
+                  "Glarner Zoggle",
+                  "C2 / S12",
+                  "80 g Schabziger, 400 g farinhas, 4 ovos; bater até bolhas, descansar 30 min, crivo."
+                ],
+                [
+                  "8 · GR",
+                  "Capuns aus Graubünden",
+                  "C2 / S11",
+                  "Massa Spätzli c/ Salsiz em acelga branqueada; pochar 15–20 min em caldo e creme."
+                ],
+                [
+                  "9 · JU",
+                  "Milchragoût aus dem Jura",
+                  "C2 / S12",
+                  "1 kg cordeiro em 1 L leite + ½ cc bicarbonato (evita talhamento!), 1 kg batatas."
+                ],
+                [
+                  "10 · LU",
+                  "Luzerner Chügelipastete",
+                  "C3 / S14",
+                  "550 g folhada moldada em esfera de papel (18 cm), vitela + 400 g Brät em molho de cidra."
+                ],
+                [
+                  "11 · NE",
+                  "Neuenburger Saucisson im Teig",
+                  "C3 / S15",
+                  "250 g quark + 225 g farinha + 75 g manteiga sem sovar; linguiça pochada, assar 220 °C."
+                ],
+                [
+                  "12 · SH",
+                  "Schaffhauser Bölletünne",
+                  "C3 / S14",
+                  "250 g massa c/ vinagre s/ sovar, 750 g cebolas suadas s/ dourar, Guss c/ cominho."
+                ],
+                [
+                  "13 · SZ",
+                  "Schwyzer Reis-Kastanien",
+                  "C1 / S4",
+                  "180 g castanhas s/ película, 60 g Arborio, 1 L caldo, 100 g queijo Sbrinz AOP."
+                ],
+                [
+                  "14 · SO",
+                  "Solothurner Kuchen",
+                  "C3 / S16",
+                  "350 g avelãs em 3 texturas: pão de ló (160 °C) + 2 discos Japonais (180 °C) + creme."
+                ],
+                [
+                  "15 · SG",
+                  "St. Galler Türggeribel",
+                  "C2 / S12",
+                  "400 g Ribelmais hidratado 1–2 h em leite/água; tostar lentamente 30–40 min em grânulos."
+                ],
+                [
+                  "16 · TI",
+                  "Tessiner Minestrone",
+                  "C1 / S2",
+                  "50 g Borlotti demolhado, mirepoix + Wirz, concassé tomate, 50 g Arborio, Sbrinz AOP."
+                ],
+                [
+                  "17 · TG",
+                  "Thurgauer Sauerbraten",
+                  "C3 / S17",
+                  "1 kg bovino marinado 5 dias ≤ 5 °C em 7,5 dl cidra s/ álcool; roux escuro, brasear 2 h."
+                ],
+                [
+                  "18 · NW/OW",
+                  "Unterwaldner Ofeguck",
+                  "C2 / S11",
+                  "800 g batata no passe-vite, 4 claras neve, bacon, 4 gemas inteiras, Sbrinz a 200 °C."
+                ],
+                [
+                  "19 · UR",
+                  "Urner Älplermagrone",
+                  "C2 / S10",
+                  "500 g Magronen, 200 g Bergkäse, creme, cebolas fritas crocantes; servir c/ Apfelmus."
+                ],
+                [
+                  "20 · VD",
+                  "Papet vaudois",
+                  "C1 / S5",
+                  "800 g alho-poró, 400 g batata, Saucisson perfurada c/ palito p/ não estourar."
+                ],
+                [
+                  "21 · VS",
+                  "Walliser Aprikosenflan",
+                  "C3 / S16",
+                  "750 g damascos + 3 ovos + 3 dl meio-creme em banho-maria a 180 °C (25–35 min)."
+                ],
+                [
+                  "22 · ZG",
+                  "Zuger Chabisbünteli",
+                  "C2 / S10",
+                  "8–12 folhas de repolho cozidas 8 min, recheio carne+pão, amarradas c/ barbante."
+                ],
+                [
+                  "23 · ZH",
+                  "Zürcher Geschnetzeltes",
+                  "C2 / S8",
+                  "600 g vitela em tiras selada em lotes; cogumelos, vinho, creme; retorno s/ ferver."
+                ]
+              ]
+            },
+            {
+              "type": "table",
+              "caption": "Novas Fichas Profissionais Suíças Integradas (Fleischgerichte / Chefkoch)",
+              "headers": [
+                "Prato Profissional (Sem.)",
+                "Base Técnica & Escala (4 / 10 pess.)",
+                "Controle Crítico na Ficha MEP"
+              ],
+              "rows": [
+                [
+                  "Berner Platte (Sem. 10)",
+                  "Língua defumada (320/800 g), bacon (160/400 g), Rippchen (200/500 g), Zungenwurst, Siedfleisch Hohrücken (320/800 g), vagens e Bohnenkraut.",
+                  "Sincronizar cocções distintas: língua ~120 min, Siedfleisch ~90 min, bacon ~60 min; pochar costelas e Zungenwurst a ~82 °C; cebola tostada em Lyoner Pfanne."
+                ],
+                [
+                  "Bollito misto mit Salsa verde (Sem. 11)",
+                  "Huftdeckel (400/1000 g), ombro de vitela (400/1000 g), língua (200/500 g), frango, Zampone (200/500 g) e vegetais (1×1×4 cm).",
+                  "Branquear carnes e enxaguar quente→frio; cozimento paralelo (bovino 1h30, vitela/língua 1 h, Zampone 50 min, frango no fundo); Salsa verde emulsionada c/ gema pasteurizada."
+                ],
+                [
+                  "Bison-Mignons mit Thymiankruste (Sem. 12)",
+                  "Mignons de 60 g (2/pess.) com corte em grade 2 mm, mostarda inglesa + vinho branco, crosta de tomilho/cebolinha/farinha, purê de cebolinha.",
+                  "Reduzir cebolinha em vinho tinto + açúcar até xarope antes de bater; grelhar/saltear saignant e finalizar Wild-Demi-glace com creme 35% e gin."
+                ]
+              ]
+            },
+            {
+              "type": "callout",
+              "variant": "tip",
+              "title": "Diferenças Clássicas: Rösti (Gschwellti vs. Crua), Fondue/Raclette & Birchermüesli",
+              "body": "Na Rösti com Gschwellti (204 kcal), cozinhar batatas firmes na véspera retrograda e estabiliza o amido; na Rösti crua (269 kcal), é indispensável secar as lascas antes de salgar. No Fondue talhado, dissolver 1 cc de Maizena em pouco vinho e limão e mexer em '8'. Raclette du Valais AOP designa raspar meio queijo de leite cru derretido (em panelinhas chama-se Raclonette). Já o Birchermüesli (1900, 303 kcal) hidrata 80 g de aveia por 1 h em 2 dl água/leite + 4 maçãs raladas com casca + 2 cs de limão (evita oxidação)."
+            }
+          ]
+        },
+        {
+          "id": "e2-sec-2",
+          "number": "2",
+          "title": "Fundamentos da Cozinha Italiana Clássica (Marcella Hazan)",
+          "weeks": [
+            7,
+            10,
+            11
+          ],
+          "search_keywords": [
+            "Hazan",
+            "Battuto",
+            "Soffritto",
+            "Insaporire",
+            "Acqua",
+            "Massa fresca",
+            "Risotto",
+            "All'onda",
+            "Pomodoro"
+          ],
+          "blocks": [
+            {
+              "type": "paragraph",
+              "text": "Em *Fundamentos da Cozinha Italiana Clássica*, **Marcella Hazan** explica que não existe uma única cozinha italiana, mas cozinhas regionais anteriores à unificação de 1861 (Lácio, Emília-Romanha, Vêneto, Calábria, Sicília). Quase toda preparação salgada italiana constrói sabor de baixo para cima mediante três técnicas sequenciais e um solvente discreto:"
+            },
+            {
+              "type": "bullets",
+              "items": [
+                "**Battuto → Soffritto → Insaporire:** *Battuto* é a mistura finamente picada crua (ou *a crudo*, como o pesto); *Soffritto* é refogar essa base lentamente sem escurecer o alho (que dominaria o prato) — frequentemente unindo **manteiga + óleo vegetal neutro** para elevar o ponto térmico sem queimar a manteiga; *Insaporire* é incorporar o ingrediente principal em fogo alto até impregnar-se dos aromáticos.",
+                "**Papel da água (*Acqua*):** Atua como solvente auto-eliminatório para estender o tempo de cocção e deglaçar o fundo sem mascarar sabores.",
+                "**Massa Fresca vs. Massa Seca & Molho Pomodoro:** Massa caseira (ovos + farinha mole — sem sal, azeite nem água) é leve e porosa para manteiga/creme; massa seca industrial é firme para azeite/tomate (o *pomodoro* clássico de Hazan reduz tomates pelados com manteiga e duas metades de cebola por 45 min).",
+                "**Risotto & Estilo all'Onda:** A amilopectina dos grãos italianos **não lavados** (tostados na gordura e hidratados concha a concha) cria cremosidade natural — variando do estilo denso piemontês/milanês ao fluido *risotto all'onda* veneziano, que descansa 1 minuto espalhado no prato antes de comer."
+              ]
+            }
+          ]
+        },
+        {
+          "id": "e2-sec-3",
+          "number": "3",
+          "title": "Formação da Culinária Brasileira: Dória, Paravati (5 Regiões) & IPHAN",
+          "weeks": [
+            18
+          ],
+          "search_keywords": [
+            "Dória",
+            "Paravati",
+            "IPHAN",
+            "Tucupi",
+            "Jambú",
+            "Acarajé",
+            "Abará",
+            "Tiquira",
+            "Peixe azul-marinho",
+            "Barreado",
+            "Moqueca capixaba",
+            "Matulagem"
+          ],
+          "blocks": [
+            {
+              "type": "paragraph",
+              "text": "O eixo brasileiro articula a análise sociológica de **Carlos Alberto Dória** (*A Formação da Culinária Brasileira* — cadeia **Biodiversidade → Ingredientes → Produtos → Receitas**, dividindo os insumos em nativos, exóticos aclimatados e importados, além dos pratos secos de *matulagem* e bens do **IPHAN**: Baianas de Acarajé 2004, Queijo de Minas Artesanal 2009, Sistema Agrícola do Rio Negro 2010, Cajuína do Piauí 2014, Pelotas e Vale do Ribeira 2018 + Embrapa/Slow Food) ao mapeamento técnico das **5 macrorregiões** de **Luis Carlos Paravati** (*Cozinha Brasileira*, 2018):"
+            },
+            {
+              "type": "table",
+              "caption": "Mapa Técnico das 5 Macrorregiões Brasileiras (Paravati, 2018 & Dória)",
+              "headers": [
+                "Região Brasileira",
+                "Ingredientes-Chave & Processos Técnicos",
+                "Pratos Paradigmáticos & Patrimônio"
+              ],
+              "rows": [
+                [
+                  "Norte (Pará & Amazônia)",
+                  "Mandioca brava: prensagem no tipiti extrai tucupi (fervura prolongada elimina ácido cianídrico; redução 40:1 gera tucupi preto), goma e massa puba; urupema (peneira de buriti); jambú (efeito anestésico); aviú (camarão seco); folha de bananeira.",
+                  "Tacacá, Pato no tucupi (assado e cozido no tucupi c/ jambú), Maniçoba, Açaí c/ peixe frito (Ver-o-Peso), Costela c/ tucupi preto"
+                ],
+                [
+                  "Nordeste (Maranhão & Recôncavo Baiano)",
+                  "MA: vinagreira (Hibiscus sabdariffa), babaçu, camapu/physalis e tiquira (destilado de mandioca c/ folha de tangerina). BA: laicização das comidas de santo c/ dendê e leite de coco.",
+                  "Arroz de cuxá (MA); Acarajé (IPHAN 2004), Abará (cozido no vapor em folha de bananeira), Vatapá, Caruru, Moqueca e Bobó (BA)"
+                ],
+                [
+                  "Sudeste (SP, MG, RJ, ES)",
+                  "SP caipira/tropeira vs. caiçara (peixe, taioba, banana verde c/ tanino); MG (mineração/tropeiros, ora-pro-nóbis, queijo artesanal IPHAN 2009); ES (panela de barro de Goiabeiras, tintura de urucum sem dendê).",
+                  "Peixe azul-marinho (Ubatuba), Virado/Cuscuz paulista, Farofa de içá; Frango c/ ora-pro-nóbis, Feijão-tropeiro; Moqueca capixaba; Manuê"
+                ],
+                [
+                  "Centro-Oeste & Sul (GO, MS/MT, PR, SC, RS)",
+                  "Pequi, pacu/pintado, mandioca mansa; PR técnica do barrear (vedar panela de barro com massa de mandioca e cinza de fogão a lenha em cocção lenta).",
+                  "Empadão goiano, Mojica de pintado, Sopa paraguaia, Furrundu; Barreado (escaldando farinha em pirão + banana) e Porco no rolete"
+                ]
+              ]
+            }
+          ]
+        },
+        {
+          "id": "e2-sec-4",
+          "number": "4",
+          "title": "Volta ao Mundo (Mina Holland), Cozinha Árabe-Mediterrânea & História",
+          "weeks": [
+            12,
+            18,
+            20
+          ],
+          "search_keywords": [
+            "Mina Holland",
+            "Atlas Gastronômico",
+            "Kalil",
+            "Pelt",
+            "Canto",
+            "Bahar",
+            "Zaatar",
+            "Burghul",
+            "Samneh",
+            "Tahine",
+            "Mahleb",
+            "Nouvelle Cuisine",
+            "Kaiseki",
+            "Garum"
+          ],
+          "blocks": [
+            {
+              "type": "paragraph",
+              "text": "Cruzando **Mina Holland** (*O Atlas Gastronômico* — 39 cozinhas), **Newton Kalil** (*Culinária Árabe Mediterrânea*), **Jean-Marie Pelt** (*Especiarias*), **Rodrigo Canto** (*História*) e o *New Larousse Gastronomique*, destaca-se como cada cultura combina gorduras e bases aromáticas distintas:"
+            },
+            {
+              "type": "table",
+              "caption": "Os 7 Refogados Regionais & Misturas Globais de Especiarias (Mina Holland / Kalil / Pelt)",
+              "headers": [
+                "Cozinha / Blend",
+                "Composição Aromática e Técnica",
+                "Aplicação & Cuidados"
+              ],
+              "rows": [
+                [
+                  "7 Bases Aromáticas (Holland)",
+                  "França (aipo+cebola+cenoura); Espanha (cebola+tomate+alho+pimentão); Itália (alho+cebola+aipo; manteiga Norte vs. azeite Sul); Portugal (cebola+alho+bacalhau); Cajun (pimentão+aipo+cebola); Caribe (cebola+scotch bonnet+pimentão); África Ocidental (tomate+extrato+cebola).",
+                  "Identifica imediatamente a assinatura geográfica do prato pela gordura e base refogada."
+                ],
+                [
+                  "Blends Mundiais (Holland)",
+                  "Ras el Hanout (Marrocos, c/ pétalas de rosa), Berbere (Etiópia), Baharat (Turquia), Dukkah (Egito, avelãs+gergelim), Panch Phoron (Bengala) e Advieh (Irã).",
+                  "Tostar especiarias inteiras a seco ou desabrochar no óleo antes de líquidos (como no Qeema indiano, 6 sabores: doce, azedo, salgado, pungente, amargo, adstringente)."
+                ],
+                [
+                  "Árabe Clássica (Kalil)",
+                  "Pimenta Síria (Bahar Halu / pimenta-da-jamaica), Zaatar (tomilho+gergelim+sumagre), Burghul (inteiro, grosso, fino), Samneh (manteiga clarificada), Tahine, Ma'ward/Ma'zahr e Mahleb.",
+                  "Mahleb exige cautela extrema: usar apenas 8 a 10 grãos por kg de farinha; samneh conserva-se fora da geladeira."
+                ],
+                [
+                  "História & Trocas (Canto)",
+                  "Trocas pós-séc. XV (batata/tomate das Américas; Capsicum na Ásia); Carême (1815), Brillat-Savarin (1825), Escoffier e Nouvelle Cuisine (1973, inspirada no kaiseki de Quioto).",
+                  "Base histórica para contextualizar cardápios degustação e patrimônio alimentar."
+                ]
+              ]
+            }
+          ]
+        }
+      ],
+      "flashcards": [
+        {
+          "id": "fc-e2-1",
+          "topic": "Rösti",
+          "q": "Por que Gschwellti (cozidas na véspera) são preferidas na Rösti?",
+          "a": "Cozimento com casca e repouso frio retrograda e estabiliza o amido, reduzindo umidade para dourar em crosta sem virar purê."
+        },
+        {
+          "id": "fc-e2-2",
+          "topic": "Fondue",
+          "q": "Qual a diferença entre Fondue moitié-moitié e Raclette du Valais AOP?",
+          "a": "Moitié-moitié une 50% Gruyère + 50% Vacherin c/ vinho e amido; Raclette du Valais usa queijo de leite cru raspado ao derreter."
+        },
+        {
+          "id": "fc-e2-3",
+          "topic": "Hazan",
+          "q": "Quais são as 3 etapas de construção de sabor na cozinha italiana (Hazan)?",
+          "a": "Battuto (base picada crua) → Soffritto (refogar lento sem queimar o alho) → Insaporire (selar o ingrediente principal em fogo alto)."
+        },
+        {
+          "id": "fc-e2-4",
+          "topic": "Dória",
+          "q": "Qual a sequência conceitual de Carlos Alberto Dória?",
+          "a": "Biodiversidade → Ingredientes culturalmente selecionados → Produtos → Receitas (cozinha de ingredientes)."
+        },
+        {
+          "id": "fc-e2-5",
+          "topic": "Norte BR",
+          "q": "Como tornar o tucupi seguro e o que diferencia o tucupi preto (Paravati)?",
+          "a": "Cozimento prolongado evapora o ácido cianídrico da mandioca brava; redução de 40 L para 1 L gera o tucupi preto."
+        },
+        {
+          "id": "fc-e2-6",
+          "topic": "Capixaba",
+          "q": "O que diferencia a Moqueca Capixaba da Baiana segundo Paravati?",
+          "a": "A capixaba (panela de barro de Goiabeiras) não leva azeite de dendê nem leite de coco, sendo colorida com tintura de urucum."
+        },
+        {
+          "id": "fc-e2-7",
+          "topic": "Árabe",
+          "q": "Quais os 3 calibres de burghul e o limite do Mahleb (Kalil)?",
+          "a": "Inteiro (sopas), grosso (arroz) e fino (quibe/tabule). Mahleb: usar apenas 8 a 10 grãos por kg de farinha."
+        },
+        {
+          "id": "fc-e2-8",
+          "topic": "História",
+          "q": "O que inspirou o menu degustação da Nouvelle Cuisine em 1973?",
+          "a": "Viagem de Paul Bocuse, Pierre Troisgros e Louis Outhier ao Japão, adaptando a sequência leve do kaiseki de Quioto."
+        },
+        {
+          "id": "fc-e2-9",
+          "topic": "Barreado",
+          "q": "Em que consiste a técnica de 'barrear' no prato paranaense?",
+          "a": "Vedar hermeticamente a tampa da panela de barro com massa de farinha de mandioca e cinza para cozimento lento sem fuga de vapor."
+        },
+        {
+          "id": "fc-e2-10",
+          "topic": "Berner Platte",
+          "q": "Qual a ordem de tempos na Berner Platte para servir todas as carnes juntas?",
+          "a": "Língua defumada ~120 min, Siedfleisch ~90 min, bacon ~60 min, e costelas/Zungenwurst pochadas a ~82 °C."
+        }
+      ],
+      "bibliography": [
+        "ABOUT SWITZERLAND (FDFA). Swiss cuisine. | PATRIMOINE CULINAIRE SUISSE. Inventaire.",
+        "BETTY BOSSI & SWISSMILK. Schweizer Klassiker (23 receitas cantonais) + 11 receitas clássicas.",
+        "CANTO, R. S. História e Cultura da Gastronomia Internacional e Oriental, 2018.",
+        "DÓRIA, C. A. A Formação da Culinária Brasileira, 2009/2021. | EMBRAPA & SUSTENTAREA/USP.",
+        "DUMAS, A. Grande Dicionário de Culinária, 2009. | Fleischgerichte-Geflügelgerichte-Wildgerichte_RB_2023.",
+        "HAZAN, Marcella. Fundamentos da Cozinha Italiana Clássica, 2024. | HOLLAND, Mina. O Atlas Gastronômico, 2015.",
+        "KALIL, Newton. Culinária Árabe Mediterrânea. | NEW LAROUSSE GASTRONOMIQUE.",
+        "PARAVATI, Luis Carlos. Cozinha Brasileira, 2018. | PELT, J.-M. Especiarias e Ervas Aromáticas."
+      ]
+    },
+    {
+      "id": "eixo-3",
+      "axis_number": 3,
+      "title": "Panificação, Fermentação & Confeitaria de Precisão",
+      "subtitle": "Levain, folhados suíços (Teige), espessantes & gomas (Canella-Rawls), 7 cremes compostos (Senac), Le Cordon Bleu Sobremesas e Beta V",
+      "estimated_read_minutes": 25,
+      "weeks_covered": [
+        13,
+        14,
+        15,
+        16,
+        24
+      ],
+      "badges": [
+        "Ciclo 3 (Avançado)",
+        "Folhados Teige",
+        "7 Cremes Senac",
+        "Beta V",
+        "10 Flashcards"
+      ],
+      "overview_cards": [
+        {
+          "label": "Alinhamento no Curso",
+          "text": "Rege o Ciclo 3 (Semanas 13–16) e retorna na Semana 24; integra 8 clássicos Swissmilk de padaria/doçaria + Vanilleauflauf e Karamellcreme."
+        },
+        {
+          "label": "Novas Fontes Integradas",
+          "text": "Sandra Canella-Rawls (Espessantes/Gomas), Diego Rodrigues Costa (Confeitaria Senac), LCB Sobremesas, Teige, Kalte Süssspeisen e Koppmann (Cap. 4–7)."
+        },
+        {
+          "label": "Precisão no App",
+          "text": "Simulador de dobras (3 vs 4 duplas), tabela de equivalência de gelatina (12 g = 6 folhas), curvas Beta V e 10 flashcards SM-2."
+        }
+      ],
+      "sections": [
+        {
+          "id": "e3-sec-1",
+          "number": "1",
+          "title": "Panificação Artesanal, Levain (King Arthur) & Sonntagszopf Suíço",
+          "weeks": [
+            13
+          ],
+          "search_keywords": [
+            "Glúten",
+            "Autólise",
+            "Levain",
+            "Sourdough",
+            "Sonntagszopf",
+            "Zopf",
+            "King Arthur"
+          ],
+          "blocks": [
+            {
+              "type": "paragraph",
+              "text": "Em *Manual Básico de Gastronomia Científica*, **Mariana Koppmann** (2023) explica que o glúten resulta da rede viscoelástica de **gliadinas** (extensibilidade) e **gluteninas** (elasticidade). A **autólise** (repouso de farinha + água antes de incorporar sal e fermento) hidrata proteínas e desenvolve glúten com menor oxidação mecânica. O ponto da fermentação é aferido pelo teste do dedo (retorno lento da depressão)."
+            },
+            {
+              "type": "bullets",
+              "items": [
+                "**Inicialização do Levain (King Arthur Baking, 2024):** Misturar partes iguais em peso de farinha e água à temperatura ambiente, com descartes parciais e alimentações diárias por **5 a 14 dias** até dobrar de volume de forma previsível em **6 a 8 horas**.",
+                "**Manutenção Diária vs. Semanal:** Padeiros diários mantêm em temperatura ambiente (1 alimentação/24 h); ocasionais mantêm refrigerado (1 alimentação/semana) e fazem **2 reativações a cada 12 h** antes da fornada (aproveitando descartes em panquecas, waffles, pizzas e cookies).",
+                "**Sonntagszopf / Butterzopf (Betty Bossi / Swissmilk):** 500 g farinha Zopf, 1,5 cc sal, 1 cc açúcar, 20 g fermento fresco, 60 g manteiga e 300 mL leite; dobrar (~2 h), modelar 2 cordões de ~70 cm com pontas afiladas, trançar, pincelar com 1 gema + 1 cs leite/creme, descansar 30 min, repincelar e assar a **200 °C por ~35 min** na metade inferior do forno."
+              ]
+            }
+          ]
+        },
+        {
+          "id": "e3-sec-2",
+          "number": "2",
+          "title": "Massas Laminadas Suíças (Teige), Choux, Massas Secas & Bolos",
+          "weeks": [
+            14,
+            15
+          ],
+          "search_keywords": [
+            "Blätterteig",
+            "Deutscher",
+            "Halbblätterteig",
+            "Blitzblätterteig",
+            "Croissant",
+            "Pâte à Choux",
+            "Paris-Brest",
+            "Croquembouche",
+            "Brisée",
+            "Sablée",
+            "Sucrée",
+            "Canella-Rawls"
+          ],
+          "blocks": [
+            {
+              "type": "paragraph",
+              "text": "O manual suíço *Lebensmittel und Zubereitung — Teige* padroniza três arquiteturas de massa folhada usando farinha **T400** de bom glúten extensível, sal a **2%–2,5%** e malte a **1%–2%**, alertando que **massas cruas nunca devem ficar longos períodos a 5 °C** (acidificam e acinzentam por oxidação — preferir congelamento e descongelar em geladeira):"
+            },
+            {
+              "type": "table",
+              "caption": "Formulação e Controle de Massas Laminadas, Choux e Massas Secas",
+              "headers": [
+                "Tipo de Massa / Preparo",
+                "Formulação Base & Dobras (Teige / LCB / KA)",
+                "Erros Críticos & Controle Prático"
+              ],
+              "rows": [
+                [
+                  "Deutscher Blätterteig (1 kg)",
+                  "420 g farinha T400 + 300 g margarina folhado + 65 g manteiga + 210 g água + 10 g sal + 2 g malte → 4 dobras duplas (doppeltouren).",
+                  "Após a 1ª dupla, fazer a 2ª em seguida e descansar ≥ 30 min frio; repetir 2 duplas + descanso. Varrer farinha seca (Mehlbesen) antes de dobrar!"
+                ],
+                [
+                  "Halbblätterteig & Blitzblätterteig",
+                  "Halb: metade da gordura em 3 dobras duplas. Blitz (holandesa): cubos de gordura ~2 cm congelados/frios + 4 dobras duplas rápidas.",
+                  "Assar em chapas apenas umedecidas com água ou Silpat (nunca untadas). Se gordura vazar: faltou dobra; se encolher: pouco descanso ou sova insuficiente."
+                ],
+                [
+                  "Croissant (King Arthur) & Pâte à Choux",
+                  "Croissant: placa de manteiga maleável a 21 °C (70 °F) em 3 dobras simples (20×45 cm). Choux: 500 mL água, 200 g manteiga, 300 g farinha, 8–9 ovos.",
+                  "Na Choux, secar na panela até película antes dos ovos; assar a 200 °C (20–25 min). Base p/ Paris-Brest (anel c/ creme praliné) e Croquembouche."
+                ],
+                [
+                  "Massas Secas (LCB / Costa)",
+                  "Pâte Brisée (salgada/neutro, 200 g farinha, 100 g manteiga, 1 ovo, água), Pâte Sucrée (+ açúcar e gemas) e Pâte Sablée (cremosa c/ conf.).",
+                  "Manipular o mínimo possível (método sablage) e descansar 30 min frio antes de abrir; pré-assar perfurada c/ garfo (2 mm)."
+                ]
+              ]
+            },
+            {
+              "type": "paragraph",
+              "text": "**Bolos — Funções dos Ingredientes (Sandra Canella-Rawls):** Em *Espessantes na Confeitaria*, os ingredientes dividem-se em **Estrutura** (ovos, farinha, cacau, féculas), **Suavizantes** (açúcares, gorduras, levedantes), **Umectantes** (água, leite, óleo, mel, açúcar invertido) e **Secantes** (farinhas, cacau, leite em pó). Os métodos dividem-se em **Alto teor de gordura / Amanteigados** (método cremoso) e **Baixo teor de gordura / Esponjosos** (*génoise*, separação claras/gemas, *chiffon* c/ óleo e cremor de tártaro a 180–190 °C, e *angel food* sem gordura). Nos clássicos suíços sem farinha de trigo destacam-se a *Aargauer Rüeblitorte* e a *Solothurner Kuchen*."
+            }
+          ]
+        },
+        {
+          "id": "e3-sec-3",
+          "number": "3",
+          "title": "Espessantes, Alfa-Amilase, 7 Cremes Compostos & Sobremesas Quentes/Frias",
+          "weeks": [
+            16
+          ],
+          "search_keywords": [
+            "Alfa-amilase",
+            "Pâtissière",
+            "Anglaise",
+            "Légère",
+            "Diplomate",
+            "Frangipane",
+            "Mousseline",
+            "Bavarois",
+            "Chiboust",
+            "Crémeux",
+            "Zabaione",
+            "Gelatina",
+            "Pectina",
+            "Vanilleauflauf",
+            "Karamellcreme",
+            "Sorvete"
+          ],
+          "blocks": [
+            {
+              "type": "paragraph",
+              "text": "Integrando **Canella-Rawls**, **Diego Rodrigues Costa (Senac)**, **Le Cordon Bleu Sobremesas** e as fichas suíças (***Vanilleauflauf*** e ***Gestürzte Karamellcreme***), três mecanismos governam os cremes: **(1)** a gema contém a enzima **alfa-amilase**, que digere o amido e liquefaz o *crème pâtissière* se não ferver (**~98–100 °C**) por alguns minutos; **(2)** no *crème anglaise* (sem amido), nunca ultrapassar **79–80 °C**; e **(3)** cremes em banho-maria cozinham no máximo a **80–82 °C** (como na *Gestürzte Karamellcreme* suíça, coberta com filme plástico e maturada por meio dia antes de desenformar) para evitar porosidade. Já no ***Vanilleauflauf*** (Suflê de Baunilha), cozinha-se a base até soltar da panela, incorporam-se gemas e claras em neve em dois tempos até ¾ de ramequins untados (manteiga + farinha T550), pré-aquece-se em banho-maria no fogão e assa-se a **200 °C por 15–20 min**."
+            },
+            {
+              "type": "table",
+              "caption": "7 Cremes Compostos, Sobremesas Clássicas, Gelatina e Estabilizantes de Gelados",
+              "headers": [
+                "Família / Item",
+                "Composição Exata (Costa / LCB / Canella-Rawls)",
+                "Controle Térmico & Equivalências"
+              ],
+              "rows": [
+                [
+                  "Crème Légère & Diplomate",
+                  "Légère: creme de confeiteiro + creme fresco batido (crème fouettée). Diplomate: + gelatina hidratada.",
+                  "Gelatinizar creme a ~20 °C antes de incorporar chantilly; base de tortas e entremets."
+                ],
+                [
+                  "Frangipane & Mousseline",
+                  "Frangipane: confeiteiro + creme de amêndoas. Mousseline: confeiteiro + manteiga pomada (+ merengue opcional).",
+                  "Manteiga e confeiteiro na mesma temperatura para não talhar a emulsão."
+                ],
+                [
+                  "Bavarois, Chiboust & Crémeux",
+                  "Bavarois: anglaise + gelatina + fouettée. Chiboust: confeiteiro + merengue suíço/italiano + gelatina. Crémeux: anglaise + chocolate/fruta.",
+                  "Chiboust substitui merengue francês por suíço/italiano por segurança sanitária (Saint-Honoré)."
+                ],
+                [
+                  "Zabaione, Flummery & Syllabub",
+                  "Zabaione: 4 gemas + 40 g açúcar + 100 mL Marsala em banho-maria até fita. Flummery: creme de amêndoa + gelatina + fouettée.",
+                  "Servir Zabaione morno; Syllabub (vinho Xerez + limão + creme) firma 2 h na geladeira (LCB Sobremesas)."
+                ],
+                [
+                  "Equivalência Gelatina & Pectina",
+                  "Gelatina (Costa): 1 envelope (12 g pó) = 6 folhas; 1 cc pó = 1 folha; 1 c. sobremesa = 3 folhas. Pectina: gel transparente c/ ácido + açúcar.",
+                  "Hidratar gelatina em água fria e derreter a ≤ 60 °C (calor extremo destrói força de gel; abacaxi/kiwi crus têm enzimas)."
+                ],
+                [
+                  "Estabilizantes em Gelados (Costa)",
+                  "Alginato (0,2–0,3%), Ágar (0,3–0,35%), Carragena (0,15–0,25%, precisa Ca²⁺), Guar/Alfarroba (0,15–0,3%), Pectina (0,3–0,5%), Gelatina (0,25–0,5%).",
+                  "Impedem formação de grandes cristais de gelo durante armazenamento e transporte; Sorbets/Granitas/Spoom em LCB."
+                ]
+              ]
+            }
+          ]
+        },
+        {
+          "id": "e3-sec-4",
+          "number": "4",
+          "title": "Caldas de Açúcar (100–180 °C), Pastas Decorativas, Gorduras & Temperagem Beta V",
+          "weeks": [
+            15,
+            16,
+            24
+          ],
+          "search_keywords": [
+            "Calda",
+            "Bala mole",
+            "Bala dura",
+            "Casca dura",
+            "Caramelo",
+            "Fondant",
+            "Pastillage",
+            "Pasta americana",
+            "Beta V",
+            "Chocolate",
+            "Manteiga",
+            "Óleo",
+            "Koppmann"
+          ],
+          "blocks": [
+            {
+              "type": "metric_strip",
+              "title": "Estágios Térmicos do Açúcar (Le Cordon Bleu / Manual Senac / Koppmann)",
+              "items": [
+                {
+                  "label": "Fio Fraco / Fio",
+                  "value": "100–110 °C",
+                  "detail": "Caldas de frutas e embeber bolos"
+                },
+                {
+                  "label": "Bala Mole",
+                  "value": "116–118 °C",
+                  "detail": "Merengue italiano, Crème au beurre e Parfaits"
+                },
+                {
+                  "label": "Bala Dura",
+                  "value": "125 °C",
+                  "detail": "Fondant trabalhado em mármore e Marzipã"
+                },
+                {
+                  "label": "Casca Mole",
+                  "value": "134 °C",
+                  "detail": "Nougat e confeitos aerados"
+                },
+                {
+                  "label": "Casca Dura",
+                  "value": "145 °C",
+                  "detail": "Frutas cristalizadas e sucre filé"
+                },
+                {
+                  "label": "Caramelo",
+                  "value": "160–180 °C",
+                  "detail": "Nougatine, Croquembouche e Karamellcreme"
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "text": "**Pastas Decorativas (Diego Costa / Senac):** *Pastillage* (seca rígida para esculturas), *Glacê Real* (250 g açúcar + 1 clara + 1 cs limão), *Glacê Mármore*, *Pasta Americana* (com glicerina e gelatina), *Pasta de Flores* e *Pasta Elástica* (com CMC e descanso de 24 h). **Gorduras na Confeitaria (Koppmann, Cap. 7):** Manteiga é emulsão água-em-óleo sólida a 20 °C (permite método cremoso e laminação); óleo líquido (ex.: donuts assados de Catherine Zhang) mantém miolo úmido mesmo sob refrigeração."
+            },
+            {
+              "type": "table",
+              "caption": "Curvas Térmicas de Temperagem de Chocolate — Cristais Beta V (King Arthur / LCB)",
+              "headers": [
+                "Chocolate / Método",
+                "1. Fusão Inicial",
+                "2. Resfriamento (Cristalização)",
+                "3. Trabalho (Beta V) & Teste"
+              ],
+              "rows": [
+                [
+                  "Amargo 60–65% — Semeadura (KA)",
+                  "Derreter 75% (340 g) em banho quente (fogo desligado) ≤ 50 °C.",
+                  "Fora do banho, juntar 25% (114 g) picado em terços até 27–28 °C.",
+                  "Reaquecer suave a 30–32 °C; colher seca brilhante em 3–5 min."
+                ],
+                [
+                  "Amargo — Banho de Gelo (LCB)",
+                  "Derreter em banho-maria não fervente até ficar liso a 45 °C.",
+                  "Transferir sobre banho de gelo mexendo até cair a 25 °C.",
+                  "Retornar à água quente (30–60 s) até exatos 32 °C (jamais tocar água!)."
+                ],
+                [
+                  "Ao Leite / Branco — Semeadura (KA)",
+                  "Fusão branda em banho-maria mantendo ≤ 40 °C.",
+                  "Resfriar com chocolate semente mexendo até 26–27 °C.",
+                  "Manter entre 28,9 °C e 30 °C; camadas finas secam em 3–5 min."
+                ]
+              ]
+            }
+          ]
+        }
+      ],
+      "flashcards": [
+        {
+          "id": "fc-e3-1",
+          "topic": "Autólise",
+          "q": "O que é autólise e como testar o ponto da massa fermentada?",
+          "a": "Repouso de farinha + água antes do sal e fermento p/ hidratar glúten; teste do dedo com retorno lento."
+        },
+        {
+          "id": "fc-e3-2",
+          "topic": "Levain",
+          "q": "Qual a proporção e prazo para iniciar um levain do zero?",
+          "a": "Partes iguais em peso de farinha e água, alimentado diariamente por 5–14 dias até dobrar em 6–8 h."
+        },
+        {
+          "id": "fc-e3-3",
+          "topic": "Folhados CH",
+          "q": "Quantas dobras duplas levam o Deutscher vs. Halbblätterteig e por que não estocar a 5 °C?",
+          "a": "Deutscher/Blitz: 4 dobras duplas; Halb: 3 dobras duplas. Estocar longo tempo a 5 °C acidifica e acinzenta por oxidação (congelar crua)."
+        },
+        {
+          "id": "fc-e3-4",
+          "topic": "Croissant",
+          "q": "Qual a temperatura ideal da manteiga na massa de croissant?",
+          "a": "Cerca de 21 °C (70 °F) — maleável sem derreter nem quebrar, com 3 dobras simples e descansos de 20–30 min frio."
+        },
+        {
+          "id": "fc-e3-5",
+          "topic": "Alfa-amilase",
+          "q": "Por que o Creme Pâtissière precisa ferver, ao contrário do Creme Anglaise?",
+          "a": "Pâtissière tem amido e precisa ferver (~98–100 °C) p/ inativar a alfa-amilase da gema; Anglaise (sem amido) não passa de 79–80 °C."
+        },
+        {
+          "id": "fc-e3-6",
+          "topic": "Vanilleauflauf",
+          "q": "Qual a temperatura de forno e etapa prévia do Suflê de Baunilha suíço?",
+          "a": "Pré-aquecer os ramequins (cheios até ¾) em banho-maria no fogão e assar a 200 °C por 15–20 min."
+        },
+        {
+          "id": "fc-e3-7",
+          "topic": "Gelatina",
+          "q": "Qual a equivalência entre gelatina em pó e em folhas (Manual Senac)?",
+          "a": "1 envelope (12 g pó) = 6 folhas; 1 colher de chá = 1 folha; 1 colher de sobremesa = 3 folhas."
+        },
+        {
+          "id": "fc-e3-8",
+          "topic": "Chocolate",
+          "q": "Quais as temperaturas de trabalho Beta V do chocolate amargo e ao leite?",
+          "a": "Amargo: 30–32 °C (semeadura 50→27,5→31 °C); Ao leite/branco: 28,9–30 °C; validação na colher em 3–5 min."
+        },
+        {
+          "id": "fc-e3-9",
+          "topic": "Cremes",
+          "q": "O que diferencia Crème Diplomate, Mousseline e Chiboust?",
+          "a": "Diplomate: confeiteiro + chantilly + gelatina; Mousseline: confeiteiro + manteiga; Chiboust: confeiteiro + merengue suíço/italiano + gelatina."
+        },
+        {
+          "id": "fc-e3-10",
+          "topic": "Caldas",
+          "q": "Quais as temperaturas de Bala Mole, Bala Dura e Casca Dura?",
+          "a": "Bala mole: 116–118 °C (merengue italiano); Bala dura: 125 °C (fondant/marzipã); Casca dura: 145 °C (frutas cristalizadas)."
+        }
+      ],
+      "bibliography": [
+        "BETTY BOSSI & SWISSMILK. Sonntagszopf, Rüeblitorte, Apfelwähe, Cholera, Schweizer Klassiker.",
+        "CANELLA-RAWLS, Sandra. Espessantes na Confeitaria: Texturas e Sabores. Senac São Paulo, 2014.",
+        "COSTA, Diego Rodrigues et al. Manual Prático de Confeitaria Senac. São Paulo, 2018.",
+        "DUCHENE, Laurent; JONES, Bridget. Le Cordon Bleu: Sobremesas e suas Técnicas.",
+        "HOTEL & GASTRO FORMATION SCHWEIZ. Lebensmittel_und_Zugereitung_-_Teige; Kalte_Suessspeisen; Vanilleauflauf-step-by-step_2023.",
+        "KING ARTHUR BAKING. Sourdough, Laminated Dough, Temper Chocolate.",
+        "KOPPMANN, Mariana. Manual Básico de Gastronomia Científica, 2023 (Cap. 4–7).",
+        "WRIGHT & TREUILLE. Le Cordon Bleu: Todas as Técnicas Culinárias. | ZHANG, Catherine. Baked Blueberry Glazed Donuts."
+      ]
+    },
+    {
+      "id": "eixo-4",
+      "axis_number": 4,
+      "title": "Ciência dos Alimentos & Segurança Sanitária",
+      "subtitle": "Química culinária, hidrocoloides & alfa-amilase, proteção de vitamina C, limite de acrilamida (175 °C), Sous-vide e ANVISA × LMG/HACCP",
+      "estimated_read_minutes": 20,
+      "weeks_covered": [
+        1,
+        2,
+        6,
+        7,
+        8,
+        9,
+        12,
+        16,
+        17,
+        19,
+        23
+      ],
+      "badges": [
+        "Transversal (Blocos 2 & 6)",
+        "Acrilamida 175 °C",
+        "Vitamina C",
+        "ANVISA × LMG",
+        "10 Flashcards"
+      ],
+      "overview_cards": [
+        {
+          "label": "Transversalidade",
+          "text": "Governa os Blocos 2 (Higiene/GHP) e 6 (APPCC/PCC) da Ficha MEP ao longo das 24 semanas."
+        },
+        {
+          "label": "Atualizações Científicas",
+          "text": "Teto de acrilamida (> 175 °C), destruição de vitamina C no aço, salmoura Sous-vide 5–10%, alfa-amilase da gema e surfactantes (Peterson)."
+        },
+        {
+          "label": "Matriz Legal",
+          "text": "Convergência prática entre ANVISA RDC 216/2004 (4 POPs), padrão técnico CIA e normas suíças LMG/GHP/HACCP."
+        }
+      ],
+      "sections": [
+        {
+          "id": "e4-sec-1",
+          "number": "1",
+          "title": "Os Seis Princípios Científicos, Proteínas, Amidos & Hidrocoloides",
+          "weeks": [
+            7,
+            8,
+            9,
+            12,
+            16,
+            17
+          ],
+          "search_keywords": [
+            "Desnaturação",
+            "Coagulação",
+            "Gelatinização",
+            "Emulsificação",
+            "Caramelização",
+            "Maillard",
+            "Fécula",
+            "Sinérese",
+            "Alfa-amilase",
+            "Surfactante",
+            "Estabilizador",
+            "Salmoura",
+            "Ovos 6X"
+          ],
+          "blocks": [
+            {
+              "type": "paragraph",
+              "text": "**Mariana Koppmann** (*Manual Básico de Gastronomia Científica*, 2023) e o *Chef Profissional* (CIA) explicam quase toda transformação na panela por seis princípios: **Desnaturação** (desenrolamento proteico por calor/ácido/sal/batimento — clara a 61 °C), **Coagulação** (agregação formando gel — miosina 55 °C, proteínas celulares 60 °C, colágeno 70 °C, ovo total 75 °C), **Gelatinização** (absorção de água por amilose/amilopectina — *roux*, *slurry*, crosta da Rösti e *risotto*), **Emulsificação** (dispersão água/óleo estabilizada por lecitina ou saponinas), **Caramelização** (açúcares puros > 160 °C) e **Reação de Maillard** (aminoácidos + açúcares redutores ≥ 140–149 °C)."
+            },
+            {
+              "type": "metric_strip",
+              "title": "Espectro Térmico Contínuo (Segurança Microbiológica → Reações Químicas)",
+              "items": [
+                {
+                  "label": "Freezer / Frio",
+                  "value": "≤ −18 °C / ≤ 5 °C",
+                  "detail": "Carnes 0–2 °C; Peixes −1 a +1 °C"
+                },
+                {
+                  "label": "Zona de Perigo",
+                  "value": "5 °C a 60 °C",
+                  "detail": "Máx. 4 h cumulativas (CIA); 1 bact. → 130 mil/6 h"
+                },
+                {
+                  "label": "Ovos 6X / Peixe",
+                  "value": "61–68 °C / 63 °C",
+                  "detail": "Miosina 55 °C; Galantina 65 °C"
+                },
+                {
+                  "label": "Cocção Segura",
+                  "value": "≥ 70–74 °C",
+                  "detail": "ANVISA ≥ 70 °C; Aves/Recheios CIA 74 °C"
+                },
+                {
+                  "label": "Maillard Ideal",
+                  "value": "140–175 °C",
+                  "detail": "Exige superfície seca; pré-fritura 140 °C"
+                },
+                {
+                  "label": "Acrilamida / Pirólise",
+                  "value": "> 175 °C / > 180 °C",
+                  "detail": "Teto de fritura 175 °C; > 180 °C queima amarga"
+                }
+              ]
+            },
+            {
+              "type": "table",
+              "caption": "Amidos, Alfa-Amilase (Canella-Rawls), Hidrocoloides vs. Surfactantes (Peterson) & Salmoura",
+              "headers": [
+                "Mecanismo / Composto",
+                "Comportamento Físico-Químico",
+                "Controle Prático na Cozinha & App"
+              ],
+              "rows": [
+                [
+                  "Amido vs. Fécula & Sinérese",
+                  "Amido (partes aéreas: milho, trigo) vs. Fécula (subterrâneas: batata, mandioca, araruta — Costa/Koppmann). Maisena gelifica e solta água ao esfriar; Araruta e Tapioca resistem melhor a ácidos e congelamento.",
+                  "Usar araruta ou tapioca em preparações refrigeradas ou ácidas para evitar sinérese."
+                ],
+                [
+                  "Enzima Alfa-Amilase na Gema",
+                  "Canella-Rawls: a gema contém alfa-amilase que digere o amido se a mistura não atingir ebulição (~98–100 °C).",
+                  "Creme Pâtissière deve ferver mexendo por alguns minutos; sem amido (Anglaise), limitar a 79–80 °C."
+                ],
+                [
+                  "Estabilizador vs. Surfactante (Peterson)",
+                  "Estabilizador (xantana, amido, fluid gel de ágar): trava gotículas aumentando a viscosidade da fase aquosa. Surfactante (lecitina 1–2%, gema): liga-se simultaneamente à água e ao óleo.",
+                  "Combinar alginato PG (0,3–0,9% na água) + lecitina (1–2% na manteiga) p/ segurar emulsões quentes em banho-maria a 60 °C."
+                ],
+                [
+                  "Salmoura 5%–10% & Sous-Vide",
+                  "Spezielle Gartechniken: 50–100 g sal/L (10 min peixes; 3–4 h carnes). Impede exsudação de proteínas na superfície do peixe e aumenta retenção hídrica na carne.",
+                  "Banho 0,5–1 °C acima do centro térmico desejado p/ efeito pasteurizador (Cook-and-Chill)."
+                ]
+              ]
+            }
+          ]
+        },
+        {
+          "id": "e4-sec-2",
+          "number": "2",
+          "title": "Reação de Maillard, Vitamina C no Aço & Teto de Acrilamida (175 °C)",
+          "weeks": [
+            7,
+            8,
+            12
+          ],
+          "search_keywords": [
+            "Maillard",
+            "Vitamina C",
+            "Antiaderente",
+            "Acrilamida",
+            "Pirólise",
+            "pH alcalino",
+            "Bicarbonato",
+            "Cordeiro"
+          ],
+          "blocks": [
+            {
+              "type": "bullets",
+              "items": [
+                "**1. Secura superficial e teto de 100 °C:** A água livre impede que o alimento ultrapasse 100 °C ao nível do mar. Secar proteínas com papel-toalha (*Zürcher Geschnetzeltes*) ou elevar a pressão na panela viabiliza a reação de Maillard (≥ 140–149 °C).",
+                "**2. Preservação de Vitamina C no Salteado (*Klassische Gartechniken*):** Vegetais devem ser salteados exclusivamente em **frigideiras revestidas/antiaderentes (*Poêle antiadhésif*)**, pois o contato direto com frigideiras de aço puro catalisa a destruição da vitamina C.",
+                "**3. Controle de Acrilamida (175 °C) e Pirólise (180 °C):** Na fritura por imersão, **pré-fritar a 140 °C** e **finalizar entre 165 °C e 175 °C** — nunca ultrapassar **175 °C** pelo risco de formação de acrilamida em amidos; acima de **180 °C**, inicia-se a pirólise (queima amarga e compostos carcinogênicos).",
+                "**4. pH Alcalino e Alerta Sous-vide em Cordeiro:** Bicarbonato ou marinada de clara (pH ~9) aceleram Maillard (*Milchragoût* usa ½ cc de bicarbonato no leite para não talhar). Nunca pré-selar cordeiro antes do vácuo (*Modernist Cuisine*), evitando oxidação lipídica."
+              ]
+            }
+          ]
+        },
+        {
+          "id": "e4-sec-3",
+          "number": "3",
+          "title": "Microbiologia e Legislação Sanitária Comparada (ANVISA × CIA × LMG)",
+          "weeks": [
+            1,
+            2,
+            6
+          ],
+          "search_keywords": [
+            "ANVISA",
+            "RDC 216",
+            "LMG",
+            "GHP",
+            "HACCP",
+            "APPCC",
+            "POPs",
+            "Mãos",
+            "Luvas",
+            "200 ppm",
+            "Resfriamento",
+            "Pasteurizados"
+          ],
+          "blocks": [
+            {
+              "type": "table",
+              "caption": "Matriz Sanitária Comparada (ANVISA RDC 216/2004 × CIA × Suíça LMG/GHP/HACCP)",
+              "headers": [
+                "Critério Sanitário",
+                "Brasil — ANVISA (RDC 216/2004)",
+                "Padrão Técnico CIA",
+                "Suíça — LMG / GHP / HACCP"
+              ],
+              "rows": [
+                [
+                  "Zona de Perigo Térmico",
+                  "5 °C a 60 °C (1 bactéria chega a 130.000 em 6 h)",
+                  "5 °C a 57 °C; máximo cumulativo de 4 horas",
+                  "Monitoramento contínuo de cadeia fria/quente (CCPs)"
+                ],
+                [
+                  "Cocção Segura & Ovos",
+                  "Mínimo 70 °C em todas as partes",
+                  "Aves 74 °C; moídas 71–74 °C; peixe 63 °C",
+                  "Galantina 65 °C; usar ovos pasteurizados em suflês e Salsa verde"
+                ],
+                [
+                  "Armazenamento & Resfriamento",
+                  "Frio ≤ 5 °C (máx. 5 dias); Quente ≥ 60 °C (máx. 6 h)",
+                  "60 °C → 21 °C em ≤ 2 h; 21 °C → ≤ 5 °C em +4 h",
+                  "Separação rigorosa fluxo limpo/sujo e registro diário"
+                ],
+                [
+                  "Higienização & Mãos",
+                  "Vegetais: 200 ppm cloro/15 min. Mãos: > 20 s + papel + antisséptico",
+                  "Água a 43 °C + sabonete ≥ 20 s até antebraços",
+                  "Lavar remove 99%; desinfetar mãos TOTALMENTE SECAS elimina 99,99%"
+                ],
+                [
+                  "Luvas & Documentação",
+                  "Manual de Boas Práticas + 4 POPs (instalações, pragas, caixa d'água, manipuladores)",
+                  "Trocar luvas entre crus/prontos; 7 Princípios APPCC",
+                  "Luvas apenas curtas e pontuais (uso único — nunca permanentes); Art. 23 LMG"
+                ]
+              ]
+            }
+          ]
+        }
+      ],
+      "flashcards": [
+        {
+          "id": "fc-e4-1",
+          "topic": "Acrilamida",
+          "q": "Qual a temperatura máxima na fritura por imersão para evitar acrilamida?",
+          "a": "Nunca ultrapassar 175 °C (pré-fritar a 140 °C e finalizar a 165–175 °C). Acima de 180 °C inicia-se a pirólise."
+        },
+        {
+          "id": "fc-e4-2",
+          "topic": "Vitamina C",
+          "q": "Por que não saltear vegetais em frigideira de aço comum?",
+          "a": "Segundo Klassische Gartechniken, o aço puro destrói a vitamina C dos vegetais; usar frigideira com revestimento antiaderente."
+        },
+        {
+          "id": "fc-e4-3",
+          "topic": "Alfa-amilase",
+          "q": "Qual o risco enzimático ao usar gemas e amido juntos em um creme?",
+          "a": "A gema contém alfa-amilase, que digere o amido e liquefaz o creme se a mistura não ferver próximo a 100 °C."
+        },
+        {
+          "id": "fc-e4-4",
+          "topic": "Sous-vide",
+          "q": "Por que aplicar salmoura 5–10% antes de embalar a vácuo?",
+          "a": "Em peixes (10 min) evita perda de albumina na superfície; em carnes (3–4 h) aumenta a retenção hídrica."
+        },
+        {
+          "id": "fc-e4-5",
+          "topic": "Ovos 6X",
+          "q": "A que temperatura a ovotransferrina desnatura e o ovo coagula totalmente?",
+          "a": "Inicia a 61 °C (ovos 6X entre 61–68 °C); coagulação total a 75 °C; flan com açúcar eleva para ~90 °C."
+        },
+        {
+          "id": "fc-e4-6",
+          "topic": "Mãos GHP",
+          "q": "Qual a diferença de eficácia entre lavar e desinfetar as mãos?",
+          "a": "Lavar remove até 99% dos germes; desinfetar com as mãos totalmente secas elimina 99,99% dos patógenos."
+        },
+        {
+          "id": "fc-e4-7",
+          "topic": "RDC 216",
+          "q": "Qual a diluição correta para sanitizar vegetais na Cartilha ANVISA?",
+          "a": "200 ppm de cloro ativo (1 cs de água sanitária própria p/ alimentos em 1 L de água) por 15 min + enxágue."
+        },
+        {
+          "id": "fc-e4-8",
+          "topic": "APPCC / POP",
+          "q": "Quais os 7 princípios do APPCC e os 4 POPs da RDC 216?",
+          "a": "APPCC: perigos, PCCs, limites, monitoramento, ação corretiva, verificação, registros. POPs: instalações, pragas, caixa d’água, manipuladores."
+        },
+        {
+          "id": "fc-e4-9",
+          "topic": "Ovos Crus",
+          "q": "Qual o padrão suíço para preparações delicadas com ovos (Suflê/Salsa verde)?",
+          "a": "Utilizar ovos e gemas/claras pasteurizados (Eigelb/Eiweiss pasteurisiert) para eliminar risco de Salmonella."
+        },
+        {
+          "id": "fc-e4-10",
+          "topic": "Resfriamento",
+          "q": "Qual a regra de resfriamento rápido em 2 estágios (Bloco 6 Ficha MEP)?",
+          "a": "Baixar de 60 °C para 21 °C em até 2 horas, e de 21 °C para ≤ 5 °C em até mais 4 horas."
+        }
+      ],
+      "bibliography": [
+        "ANVISA. Cartilha sobre Boas Práticas para Serviços de Alimentação (RDC nº 216/2004).",
+        "CANELLA-RAWLS, Sandra. Espessantes na Confeitaria, 2014.",
+        "COSTA, Diego Rodrigues et al. Manual Prático de Confeitaria Senac, 2018.",
+        "FIGUEIRA, R. C. Gastronomia Aplicada à Nutrição, 2018.",
+        "HOTEL & GASTRO FORMATION SCHWEIZ. Händehygiene_D; Einweghandschuhe_D; Klassische_Gartechniken; Spezielle_Gartechniken.",
+        "CIA. Chef Profissional, 2011. | KOPPMANN, Mariana. Manual Básico de Gastronomia Científica, 2023.",
+        "MODERNIST CUISINE. The Maillard Reaction, 2013. | PETERSON, James. Sauces, 4th ed."
+      ]
+    },
+    {
+      "id": "eixo-5",
+      "axis_number": 5,
+      "title": "Bebidas, Sensorialidade, Enologia & Bar",
+      "subtitle": "Fisiologia do gosto (umami/ISO 3972), WSET SAT, AOCs & rotas da vinha, SCA CVA, Lista IBA, Dumas, Apéro suíço e Tiquira",
+      "estimated_read_minutes": 18,
+      "weeks_covered": [
+        19,
+        20
+      ],
+      "badges": [
+        "Ciclo 4 (Sem. 19–20)",
+        "WSET SAT",
+        "SCA CVA",
+        "IBA & Apéro",
+        "8 Flashcards"
+      ],
+      "overview_cards": [
+        {
+          "label": "Alinhamento no Curso",
+          "text": "Rege as Semanas 19 e 20 (Ciclo 4) e sustenta a análise sensorial do Bloco 8 da Ficha MEP ao longo das 24 semanas."
+        },
+        {
+          "label": "Padrões Internacionais",
+          "text": "WSET SAT (4 etapas), SCA CVA (normas 102–710), Lista Oficial IBA (3 pilares), Dumas, AOCs (Mina Holland), Institut Paul Bocuse e Paravati."
+        },
+        {
+          "label": "Integração no App",
+          "text": "Ficha guiada WSET SAT, catálogo IBA/Apéro (com opção sem álcool), cronômetro de espresso 25–30 s e 8 flashcards SM-2."
+        }
+      ],
+      "sections": [
+        {
+          "id": "e5-sec-1",
+          "number": "1",
+          "title": "Neurofisiologia do Sabor, ISO 3972, Teste PROP & Foodpairing",
+          "weeks": [
+            19
+          ],
+          "search_keywords": [
+            "Umami",
+            "Ikeda",
+            "ISO 3972",
+            "PROP",
+            "Capsaicina",
+            "Retrogosto",
+            "Foodpairing",
+            "Neurogastronomia"
+          ],
+          "blocks": [
+            {
+              "type": "paragraph",
+              "text": "Em *Manual Básico de Gastronomia Científica* (Cap. 8), **Mariana Koppmann** (2023) demonstra que a degustação é multissensorial: visão (tons vermelhos acentuam doçura), olfato ortonasal e retronasal (~1.000 receptores), tato oral, sensações trigeminais (**capsaicina concentrada na placenta/parte branca das pimentas — não nas sementes**) e os 5 gostos básicos: doce, salgado, ácido, amargo e **umami** (descoberto por **Kikunae Ikeda em 1912**). Não existe \"mapa da língua\": todos os 5 gostos são percebidos em toda a superfície lingual, com sensibilidade máxima entre **20 °C e 30 °C**."
+            },
+            {
+              "type": "metric_strip",
+              "title": "Parâmetros Sensoriais (ISO 3972, Teste PROP & Faixas Térmicas)",
+              "items": [
+                {
+                  "label": "Sensibilidade Máxima",
+                  "value": "20 °C a 30 °C",
+                  "detail": "Frio/calor extremos reduzem percepção"
+                },
+                {
+                  "label": "ISO 3972 (Doce vs Amargo)",
+                  "value": "5,76 g vs 0,195 g/L",
+                  "detail": "Cafeína 30× menor que sacarose"
+                },
+                {
+                  "label": "Teste Genético PROP",
+                  "value": "25% / 50% / 25%",
+                  "detail": "Supergustadores / Interm. / Não gust."
+                },
+                {
+                  "label": "Teto de Infusões",
+                  "value": "≤ 83 °C",
+                  "detail": "Acima disso extrai amargor (chá/mate)"
+                },
+                {
+                  "label": "Espresso (SCA)",
+                  "value": "90–96 °C / 25–30 s",
+                  "detail": "Protocolo CVA 102–710"
+                }
+              ]
+            },
+            {
+              "type": "paragraph",
+              "text": "Aplicam-se também os três métodos do *Institute of Food Technologists* (IFT): provas **discriminativas**, **descritivas** e **afetivas**, além do *Foodpairing* (Blumenthal & Benzi, 1992–2004) e da neurogastronomia (Spence, Shepherd)."
+            }
+          ]
+        },
+        {
+          "id": "e5-sec-2",
+          "number": "2",
+          "title": "Enologia Sistemática (WSET SAT), Dumas, Bocuse & Rotas da Vinha",
+          "weeks": [
+            20
+          ],
+          "search_keywords": [
+            "WSET",
+            "SAT",
+            "Dumas",
+            "Colagem",
+            "Decantação",
+            "AOC",
+            "Champagne",
+            "Sauternes",
+            "Valais",
+            "Brillat-Savarin"
+          ],
+          "blocks": [
+            {
+              "type": "paragraph",
+              "text": "A metodologia **WSET SAT** (*Systematic Approach to Tasting*) avalia o vinho em quatro etapas ininterruptas (**Aspecto → Olfato → Paladar → Conclusões**) com coerência lógica entre escala estrutural e julgamento final. No contexto histórico, **Alexandre Dumas** (*Grande Dicionário de Culinária*) registra a ordem de serviço de Brillat-Savarin, a colagem (tintos com **4 claras/pipa**; brancos com **6 g de cola de peixe**) e as **8 taças clássicas**. Já **Mina Holland** destaca a proteção **AOC** (*Champagne*, *Sauternes* com *Botrytis*) e rotas das uvas francesas, enquanto o **Valais** lidera a Suíça (250 castas no país, > 50 no cantão). Na cozinha, vale a regra do CIA: **nunca cozinhar com vinho que não seja bom para beber**."
+            },
+            {
+              "type": "table",
+              "caption": "Fluxo WSET SAT e Regras Clássicas de Adega & Serviço",
+              "headers": [
+                "Etapa / Pilar",
+                "Parâmetros Obrigatórios",
+                "Erros a Evitar & Prática no App"
+              ],
+              "rows": [
+                [
+                  "1. Aspecto & 2. Olfato (WSET)",
+                  "Limpidez, intensidade, cor; condição (defeitos?), intensidade e aromas Primários (uva), Secundários (carvalho/borras) e Terciários (idade).",
+                  "Descrever sem viés prévio; usar descritores objetivos ('cassis') no lugar de metáforas vagas."
+                ],
+                [
+                  "3. Paladar & 4. Conclusões",
+                  "Doçura, acidez, taninos, álcool, corpo, intensidade e final (finish); concluir qualidade + prontidão p/ consumo (Nível 3).",
+                  "Treinar em voz alta, em pares contrastantes (Sauvignon Blanc × Chardonnay) e com cronômetro."
+                ],
+                [
+                  "Conservação & Serviço (CIA / Dumas / Bocuse)",
+                  "Vinhos de mesa abertos na geladeira; fortificados (Porto, Madeira, Xerez) em local seco; decantação perde 2–3 copos/garrafa.",
+                  "Ordem crescente de corpo e complexidade; temperatura correta à mesa (Institut Paul Bocuse)."
+                ]
+              ]
+            }
+          ]
+        },
+        {
+          "id": "e5-sec-3",
+          "number": "3",
+          "title": "Cafés Especiais (SCA CVA), Lista Oficial IBA, Apéro Suíço & Tiquira",
+          "weeks": [
+            20
+          ],
+          "search_keywords": [
+            "SCA",
+            "CVA",
+            "Espresso",
+            "IBA",
+            "Dry shake",
+            "Apéro",
+            "Limoncello Spritz",
+            "Negroni Sbagliato",
+            "Virgin Mojito",
+            "Tiquira",
+            "Caipirinha"
+          ],
+          "blocks": [
+            {
+              "type": "paragraph",
+              "text": "A *Specialty Coffee Association* (**SCA**) estruturou o *Coffee Value Assessment* (**CVA**) nas normas **SCA-102** (preparo), **103** (descritiva), **104** (afetiva), **105** (extrínseca) e **710** (competências). Na coquetelaria, a **Lista Oficial IBA** (1961–2026) divide-se em *The Unforgettables*, *Contemporary Classics* e *New Era Drinks*, somada ao *dry shake* (agitar sem gelo para emulsionar claras), ao **Apéro suíço** (Betty Bossi: *Limoncello Spritz*, *Negroni Sbagliato*, *Cosmopolitan*, *Virgin Mojito* sem álcool) e aos ícones brasileiros: **Caipirinha** e **Tiquira maranhense** (Paravati — destilado de massa de mandioca fermentada infundida com folhas de tangerina)."
+            },
+            {
+              "type": "callout",
+              "variant": "mep",
+              "title": "Guia de Uso na Ficha MEP (Bloco 8 — Sensorial & Harmonização)",
+              "body": "Ao finalizar qualquer prato das Semanas 1–24, utilize o Bloco 8 da Ficha MEP para auditar equilíbrio dos 5 gostos (incluindo umami de Sbrinz/Bergkäse/fundos), ausência de retrogosto amargo (> 175–180 °C) e harmonização por contraste ou semelhança (ex.: acidez de vinho branco suíço Chasselas cortando a gordura do Fondue moitié-moitié)."
+            }
+          ]
+        }
+      ],
+      "flashcards": [
+        {
+          "id": "fc-e5-1",
+          "topic": "Fisiologia",
+          "q": "Qual a diferença entre gosto (taste), aroma retronasal e sabor (flavor)?",
+          "a": "Gosto detecta 5 moléculas básicas; aroma é a via retronasal ao mastigar; sabor integra gosto + aroma + somatosensações."
+        },
+        {
+          "id": "fc-e5-2",
+          "topic": "Umami",
+          "q": "O que é o gosto umami e quem o identificou em 1912?",
+          "a": "Quinto gosto básico associado ao glutamato (queijos curados, tomates, cogumelos, carnes); identificado por Kikunae Ikeda em 1912."
+        },
+        {
+          "id": "fc-e5-3",
+          "topic": "ISO / PROP",
+          "q": "Qual a concentração de cafeína na ISO 3972 e os percentuais do PROP?",
+          "a": "ISO 3972: 0,195 g/L de cafeína (30× menor que 5,76 g/L de sacarose). PROP: 25% supergustadores, 50% intermediários, 25% não gustadores."
+        },
+        {
+          "id": "fc-e5-4",
+          "topic": "WSET SAT",
+          "q": "Quais as 4 etapas do WSET SAT e os 3 grupos de aromas?",
+          "a": "1) Aspecto; 2) Olfato; 3) Paladar; 4) Conclusões. Aromas: Primários (uva/ferm.), Secundários (vinificação) e Terciários (idade)."
+        },
+        {
+          "id": "fc-e5-5",
+          "topic": "Adega Dumas",
+          "q": "Com o que se faz a colagem de vinhos tintos vs. brancos em Dumas?",
+          "a": "Tintos com claras de ovos frescas (4 claras p/ 250–275 garrafas); brancos com cola de peixe (6 g dissolvidas por 24 h)."
+        },
+        {
+          "id": "fc-e5-6",
+          "topic": "Café SCA",
+          "q": "Quais as normas do Coffee Value Assessment (CVA) e faixa do espresso?",
+          "a": "SCA-102 (preparo), 103 (descritiva), 104 (afetiva), 105 (extrínseca) e 710 (competências). Espresso: 90–96 °C por 25–30 s."
+        },
+        {
+          "id": "fc-e5-7",
+          "topic": "IBA & Bar",
+          "q": "Quais as 3 categorias da Lista Oficial IBA e o que é dry shake?",
+          "a": "The Unforgettables, Contemporary Classics e New Era Drinks (desde 1961). Dry shake é agitar sem gelo para emulsionar claras."
+        },
+        {
+          "id": "fc-e5-8",
+          "topic": "Cozinha & Brasil",
+          "q": "Qual a regra do CIA para vinhos na cozinha e o que é a Tiquira (Paravati)?",
+          "a": "Nunca cozinhar com vinho ruim de beber; mesa abertos na geladeira. Tiquira é destilado maranhense de mandioca com folhas de tangerina."
+        }
+      ],
+      "bibliography": [
+        "ABOUT SWITZERLAND (FDFA). Swiss cuisine. | BETTY BOSSI. Apéro.",
+        "BOCUSE, Paul. Institut Paul Bocuse Gastronomique (The Table / Matching Wine with Food).",
+        "DISTINCTION WINES. WSET SAT explained, 2026. | DUMAS, Alexandre. Grande Dicionário de Culinária, 2009.",
+        "HOLLAND, Mina. O Atlas Gastronômico, 2015. | CIA. Chef Profissional, 2011. | IBA. Official Cocktail List, 2026.",
+        "KOPPMANN, Mariana. Manual Básico de Gastronomia Científica, 2023 (Cap. 8).",
+        "PARAVATI, L. C. Cozinha Brasileira, 2018. | SCA. Standards: Coffee Value Assessment, 2026."
+      ]
+    },
+    {
+      "id": "eixo-6",
+      "axis_number": 6,
+      "title": "Gestão, Cálculos (Fachrechnen), Nutrição & Brigada",
+      "subtitle": "Fachrechnen 1–2, Prime-Cost, BAB/Break-even, nutrição & fibras (Ernaehrung / TBCA), 13 postos da brigada (Betriebsorganisation) e Führung/OR",
+      "estimated_read_minutes": 25,
+      "weeks_covered": [
+        11,
+        21,
+        22,
+        23,
+        24
+      ],
+      "badges": [
+        "Ciclo 4 (Gestor)",
+        "16 Exercícios EFZ",
+        "Fibras ≥ 30 g/dia",
+        "13 Postos Brigada",
+        "10 Flashcards"
+      ],
+      "overview_cards": [
+        {
+          "label": "Gestão & Cálculos",
+          "text": "Motor PB = PL × FC em todo o curso + 16 exercícios resolvidos de Fachrechnen 1–2, custeio BAB, Break-even, Nota Suíça 1–6 e CMV Real vs. Teórico."
+        },
+        {
+          "label": "Nutrição Ampliada",
+          "text": "Teor de carboidratos (%), amido 80/20, meta ≥ 30 g/dia de fibras (Ernaehrung.pdf), FODMAPs (Koppmann) e dietoterapia TBCA-USP."
+        },
+        {
+          "label": "Brigada & Direito OR",
+          "text": "Os 13 postos da brigada clássica (Betriebsorganisation), 3 organogramas operacionais, liderança situacional e proteção trabalhista (Kündigungsschutz)."
+        }
+      ],
+      "sections": [
+        {
+          "id": "e6-sec-1",
+          "number": "1",
+          "title": "Cálculos Culinários (Fachrechnen 1 & 2), Rendimento & CMV",
+          "weeks": [
+            11,
+            21
+          ],
+          "search_keywords": [
+            "Fachrechnen",
+            "Fator de Correção",
+            "FC",
+            "PB",
+            "PL",
+            "Perdas em cascata",
+            "Aparas",
+            "Parüren",
+            "MWST",
+            "BVP",
+            "EVP",
+            "CMV"
+          ],
+          "blocks": [
+            {
+              "type": "paragraph",
+              "text": "Os manuais suíços *Fachrechnen* (*Hilfsmittel* e Séries 1–2, nível EFZ), *Chef Profissional* (CIA) e Joel Pinheiro (2026) distinguem: peso bruto, tara, peso líquido (*Nettogewicht*), perdas não aproveitáveis (*Abfall/Verluste*), aparas aproveitáveis (*Abgang/Parüren*) e itens *pfannenfertig* (*pff*). Na regra de **perdas em cascata**, nunca se somam percentuais diretamente — aplica-se o produto dos rendimentos remanescentes na ordem inversa: `Compra = Porção ÷ [(1 − p_n) × ... × (1 − p_1)]`. No CMV gerencial, compara-se **CMV Real** (`EI + Compras − EF`) com **CMV Teórico** para flagrar desperdícios ou desvios de porção."
+            },
+            {
+              "type": "table",
+              "caption": "Gabarito Completo dos 16 Exercícios Oficiais Fachrechnen Séries 1 & 2 (Stufe EFZ)",
+              "headers": [
+                "Exercício (EFZ)",
+                "Dados de Entrada",
+                "Resultado Oficial (Hotel & Gastro formation)"
+              ],
+              "rows": [
+                [
+                  "1.1–1.3 Rendimentos",
+                  "1.1 Frango 1,2 kg (CHF 7,80) → 0,78 kg | 1.2 Aspargos 14 kg (CHF 115,50) → 8,68 kg | 1.3 Vitela 7 kg (CHF 154) − 1,2 kg aparas = 5,8 kg",
+                  "1.1: CHF 10,00/kg | 1.2: CHF 13,31/kg | 1.3: CHF 26,55/kg líquido"
+                ],
+                [
+                  "1.4–1.6 Porção & Cascata",
+                  "1.4 Costeleta CHF 3,85/pess. (CHF 18,50/kg, −15%) | 1.5 Presunto 35×200 g (−20%, −20%) | 1.6 Cenoura 25,4 kg (−20%, −25%)",
+                  "1.4: 177 g | 1.5: 10,938 kg | 1.6: 42,333 kg brutas"
+                ],
+                [
+                  "1.7–1.8 Peixes & BVP",
+                  "1.7 Tamboril 17→12,2 kg (CHF 32,40/kg), 125 g + guarn. CHF 3,50, F=3,5 | 1.8 Felchen 45×120 g (−10%, −20%), CHF 14,50/kg",
+                  "1.7: WK CHF 9,14 → BVP CHF 32,00 | 1.8: Compra 7,500 kg (WK CHF 97,88)"
+                ],
+                [
+                  "2.1–2.5 Perdas Série 2",
+                  "2.1 Parisienne (75×160 g, −20%, −25%) | 2.2 Roastbeef CHF 34 (−20%, −10%) | 2.3 Camarão 8 kg (−35%) | 2.4 Tomate 120×50 g | 2.5 Pescoço suíno CHF 16,50 (−30%, −5%)",
+                  "2.1: 20,000 kg | 2.2: CHF 47,22/kg | 2.3: 12,308 kg | 2.4: 11,483 kg | 2.5: CHF 24,81/kg"
+                ],
+                [
+                  "2.6–2.8 Vendas & MWST 8%",
+                  "2.6 EU 96.264 − WK 32.200 | 2.7 28 menus (WK 336, F=2,9) | 2.8 Rehschnitzel EVP CHF 42 (F=3,3, guarn. CHF 3,34, carne CHF 54/kg)",
+                  "2.6 BE: CHF 56.933,33 | 2.7 EVP: CHF 37,58 (BE CHF 638,40) | 2.8: 156 g de carne"
+                ]
+              ]
+            }
+          ]
+        },
+        {
+          "id": "e6-sec-2",
+          "number": "2",
+          "title": "Contabilidade Gerencial (BeBu / BAB), Prime-Cost, Break-even & KATAG",
+          "weeks": [
+            22
+          ],
+          "search_keywords": [
+            "BeBu",
+            "BAB",
+            "Prime-Cost",
+            "Break-even",
+            "KATAG",
+            "Custeio pleno",
+            "Hotel Schütz",
+            "Hotel Montana",
+            "Orçamento",
+            "FIFO"
+          ],
+          "blocks": [
+            {
+              "type": "paragraph",
+              "text": "Apenas a contabilidade gerencial (**BeBu**) via planilha de rateio (**BAB**) separa o desempenho por setor (Cozinha, Adega, Hospedagem), aplicando delimitações (*Abgrenzungen* / *Warendrittel*). No **custeio pleno** (Hotel Schütz, *Finanzen Serie 0*), o Banquete 1 vence com *Selbstkosten* de **CHF 11.087,85** (10% MGK, 36,729% FGK Cozinha, 42,293% FGK Adega, 1,363% VVGK). No **custeio parcial (*Direct Costing*)**, separa-se custo fixo ($K_f$) e variável ($k_v$) para achar o **Ponto de Equilíbrio** (`x_cr = Kf ÷ (p − kv)` — caso Hotel Montana Luzern). O orçamento para novos negócios (*Steakhouse Konstanz*, investimento CHF 1.210.000) segue **8 etapas** confrontadas com os *benchmarks* **KATAG**."
+            },
+            {
+              "type": "metric_strip",
+              "title": "Benchmarks Financeiros Suíços (Kalkulation / KATAG)",
+              "items": [
+                {
+                  "label": "Prime-Cost Alvo",
+                  "value": "72%",
+                  "detail": "Mercadorias (27%) + Pessoal (45%)"
+                },
+                {
+                  "label": "BE1 (Lucro Bruto 1)",
+                  "value": "BU − WK",
+                  "detail": "Receita Líquida menos Custo de Mercadorias"
+                },
+                {
+                  "label": "BE2 (Lucro Bruto 2)",
+                  "value": "BU − Prime-Cost",
+                  "detail": "Margem p/ cobrir demais custos fixos"
+                },
+                {
+                  "label": "Lucro Líquido KATAG",
+                  "value": "1% a 5%",
+                  "detail": "Faixa setorial típica na gastronomia"
+                },
+                {
+                  "label": "MWST Padrão (App)",
+                  "value": "8%",
+                  "detail": "BVP = EVP ÷ (1 + MWST)"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "e6-sec-3",
+          "number": "3",
+          "title": "Nutrição Aplicada (Ernaehrung, TBCA-USP, Koppmann) & Dietoterapia",
+          "weeks": [
+            23
+          ],
+          "search_keywords": [
+            "Ernaehrung",
+            "Amilopectina",
+            "Amilose",
+            "Carboidratos",
+            "Fibras",
+            "Nahrungsfasern",
+            "Ácidos biliares",
+            "Colesterol",
+            "TBCA",
+            "Renal",
+            "Potássio",
+            "Celíaca",
+            "Lactose",
+            "Diet",
+            "Light"
+          ],
+          "blocks": [
+            {
+              "type": "paragraph",
+              "text": "Integrando *Ernaehrung.pdf* (formação suíça), **Rosiane Figueira** (*Gastronomia Aplicada à Nutrição*), **Koppmann** e a base **TBCA-USP v. 7.2** (> 5.700 alimentos e 4.000 preparações), o amido vegetal é composto por cerca de **80% de amilopectina** externa e **20% de amilose** interna (75/25 em Koppmann, com leguminosas ricas em amilose 30–65% gerando menor índice glicêmico e FODMAPs como estaquiose e rafinose). A meta diária de fibras (*Nahrungsfasern*) é **≥ 30 g/dia**: ao se ligarem aos **ácidos biliares** excretados nas fezes, as fibras forçam o organismo a consumir **colesterol sanguíneo** para sintetizar novos ácidos biliares."
+            },
+            {
+              "type": "metric_strip",
+              "title": "Teor de Carboidratos & Equivalências para 10 g de Fibra (Ernaehrung.pdf)",
+              "items": [
+                {
+                  "label": "Carboidratos (%)",
+                  "value": "100% / 78% / 70%",
+                  "detail": "Açúcar (100), Arroz polido (78), Farinha/Massa (70)"
+                },
+                {
+                  "label": "Pães, Frutas & Leite",
+                  "value": "45% / 21% / 5%",
+                  "detail": "Ruchbrot (45), Banana (21), Batata (17), Leite (5)"
+                },
+                {
+                  "label": "10 g Fibra — Farelo",
+                  "value": "20 g",
+                  "detail": "Farelo de trigo (maior densidade)"
+                },
+                {
+                  "label": "10 g Fibra — Secos/Grãos",
+                  "value": "50–55 g",
+                  "detail": "Damasco seco (50 g) ou Feijão branco (55 g)"
+                },
+                {
+                  "label": "10 g Fibra — Lentilha/Pão",
+                  "value": "100–150 g",
+                  "detail": "Lentilhas secas (100 g) ou Pão Graham (150 g)"
+                },
+                {
+                  "label": "10 g Fibra — Vegetais",
+                  "value": "350–400 g",
+                  "detail": "Cenoura (350 g) ou Maçã (400 g)"
+                }
+              ]
+            },
+            {
+              "type": "table",
+              "caption": "Protocolos de Dietoterapia e Adaptação Gastronômica (Figueira / TBCA / ANVISA)",
+              "headers": [
+                "Condição Clínica / Dieta",
+                "Restrição ou Meta",
+                "Técnica Gastronômica de Adaptação"
+              ],
+              "rows": [
+                [
+                  "Doença Renal Crônica (K & Na)",
+                  "Sódio 2.000–2.300 mg/dia; proibido carambola (caramboxina) e sal dietético (KCl).",
+                  "Descascar, cortar pequeno e cozinhar em grande volume de água descartada ao final (reduz até 60% do potássio)."
+                ],
+                [
+                  "Hipertensão / Hipossódica",
+                  "Eliminar embutidos/enlatados; cozinhar sem sal + máx. 1 sachê (1 g) no serviço.",
+                  "Fundos naturais sem sal e blends de ervas/especiarias (louro, canela, alecrim, tomilho, coentro)."
+                ],
+                [
+                  "Celíaca & Intolerância Lactose",
+                  "Excluir trigo/cevada/centeio/aveia contaminada; ajustar lácteos à tolerância.",
+                  "Fécula de mandioca, tapioca, araruta, sorgo, amaranto; leites vegetais e Aquafaba Mayonnaise."
+                ],
+                [
+                  "Oncologia & Diet/Light",
+                  "Diet: isenção total. Light: redução ≥ 25% (> 3 g/100 g gordura em sólidos).",
+                  "Shakes hipercalóricos (342 kcal/250 mL), temperaturas brandas na mucosite; vapor e grelha."
+                ]
+              ]
+            }
+          ]
+        },
+        {
+          "id": "e6-sec-4",
+          "number": "4",
+          "title": "Brigada Clássica (13 Postos — Betriebsorganisation), Liderança & Direito OR",
+          "weeks": [
+            24
+          ],
+          "search_keywords": [
+            "Brigada",
+            "Betriebsorganisation",
+            "Küchenchef",
+            "Sous-chef",
+            "Saucier",
+            "Rôtisseur",
+            "Entremetier",
+            "Garde-manger",
+            "Pâtissier",
+            "Tournant",
+            "Diätkoch",
+            "Mitarbeiterkoch",
+            "Führung",
+            "OR",
+            "Kündigungsschutz",
+            "Nota Suíça",
+            "Dossier Lernreflexion"
+          ],
+          "blocks": [
+            {
+              "type": "paragraph",
+              "text": "O manual suíço *Betriebsorganisation.pdf* define **três organogramas** conforme o porte do negócio (Hotel sob direção geral com *Chef de service* e *Küchenchef*; Restaurante direto sob gerência; e Restauração Coletiva sob gestão de economia doméstica/cozinha) e padroniza os **13 postos da brigada clássica** em alemão, francês e inglês:"
+            },
+            {
+              "type": "table",
+              "caption": "Os 13 Postos da Brigada Clássica (Betriebsorganisation.pdf)",
+              "headers": [
+                "Cargo (DE / FR / EN)",
+                "Atribuições Operacionais na Brigada"
+              ],
+              "rows": [
+                [
+                  "1. Küchenchef / Chef de cuisine / Head chef",
+                  "Líder responsável pela cozinha; escalas de turno, planejamento de cardápios/menus, kalkulation (custos) e formação dos aprendizes."
+                ],
+                [
+                  "2. Sous-chef (Küchenchef-Stellvertreter)",
+                  "Substituto imediato do Küchenchef na ausência dele, frequentemente acumulado com um posto de Chef de partie."
+                ],
+                [
+                  "3. Saucier | 4. Rôtisseur | 5. Entremetier",
+                  "Saucier: molhos, carnes, caça, aves, peixes e entradas quentes. Rôtisseur: grelhados, assados no forno/espeto e frituras. Entremetier: sopas, vegetais, batatas, cereais, ovos/queijos e pratos vegetarianos."
+                ],
+                [
+                  "6. Garde-manger | 7. Pâtissier",
+                  "Garde-manger: limpeza e corte de carnes/peixes/aves crus, saladas, entradas e molhos frios, bufês. Pâtissier: todas as sobremesas, bolos, tortas, chocolates e massas da cozinha quente."
+                ],
+                [
+                  "8. Tournant | 9. Chef de garde (Wache)",
+                  "Tournant: coringa/substituto das folgas dos diferentes postos. Wache: responsável pelo serviço nos horários de ausência da brigada principal."
+                ],
+                [
+                  "10. Mitarbeiterkoch | 11. Diätkoch",
+                  "Mitarbeiterkoch: preparo das refeições dos colaboradores. Diätkoch: preparo técnico das refeições dietoterápicas prescritas."
+                ],
+                [
+                  "12. Lernender EFZ/EBA | 13. Hilfskoch",
+                  "Lernender: aprendiz em formação profissional (Cozinheiro EFZ ou Assistente EBA). Hilfskoch: auxiliar de cozinha sem certificado formal."
+                ]
+              ]
+            },
+            {
+              "type": "callout",
+              "variant": "critical",
+              "title": "Führung, Direito Trabalhista Suíço (OR/L-GAV) & Nota Suíça 1–6",
+              "body": "A prova Führung avalia Handlungskompetenz (Fach-, Methoden- e Sozialkompetenz), liderança situacional (delegativo → orientador/diretivo diante de queda de entrega), entrevista anual (Qualifikationsgespräch) e regras imperativas do OR: contrato escrito só se altera por escrito; dever de diligência (Sorgfaltspflicht); bloqueio contra demissão durante doença/acidente não profissional (Kündigungsschutz) contando o ano de serviço exato + 13º salário e auxílio-família cantonal (ex.: CHF 220/mês em Zug). Fórmula oficial da Nota Suíça: Nota = arredondar_meio((Pontos × 5 ÷ Máx) + 1) (meta ≥ 5,0 = Gut), consolidando o Dossier Lernreflexion na Semana 24."
+            }
+          ]
+        }
+      ],
+      "flashcards": [
+        {
+          "id": "fc-e6-1",
+          "topic": "Fachrechnen",
+          "q": "Por que perdas em cascata de 20% e 25% não somam 45%?",
+          "a": "Cada perda incide sobre o saldo restante: (1 − 0,20) × (1 − 0,25) = 0,60 (60% líquido, ou 40% de perda composta)."
+        },
+        {
+          "id": "fc-e6-2",
+          "topic": "Prime-Cost",
+          "q": "Qual a composição do Prime-Cost e dos Lucros Brutos 1 e 2?",
+          "a": "Prime-Cost = Mercadorias (27%) + Pessoal (45%) = 72%. BE1 = Receita − Mercadorias; BE2 = Receita − Prime-Cost."
+        },
+        {
+          "id": "fc-e6-3",
+          "topic": "Break-even",
+          "q": "Qual a fórmula do Break-even e a faixa de lucro líquido KATAG?",
+          "a": "x_cr = Kf ÷ (p − kv). Nos benchmarks KATAG, o lucro líquido final na gastronomia fica entre 1% e 5%."
+        },
+        {
+          "id": "fc-e6-4",
+          "topic": "Fibras",
+          "q": "Qual a meta diária de fibras (Ernaehrung) e como reduzem o colesterol?",
+          "a": "≥ 30 g/dia; as fibras ligam-se aos ácidos biliares excretados nas fezes, forçando o uso de colesterol do sangue para repô-los."
+        },
+        {
+          "id": "fc-e6-5",
+          "topic": "Amido",
+          "q": "Qual a proporção aproximada de amilopectina e amilose no amido?",
+          "a": "Cerca de 80% amilopectina na camada externa e 20% amilose no interior do grânulo (Ernaehrung.pdf)."
+        },
+        {
+          "id": "fc-e6-6",
+          "topic": "Brigada",
+          "q": "Quem prepara sopas/ovos/vegetarianos vs. carnes/molhos na brigada clássica?",
+          "a": "Entremetier prepara sopas, vegetais, batatas, ovos, queijos e vegetarianos; Saucier prepara molhos, carnes, aves e peixes."
+        },
+        {
+          "id": "fc-e6-7",
+          "topic": "Brigada Dieta",
+          "q": "Qual posto específico responde pelas dietas clínicas e pela equipe?",
+          "a": "Diätkoch (cuisinier en diététique) faz as dietas; Mitarbeiterkoch prepara a alimentação dos colaboradores."
+        },
+        {
+          "id": "fc-e6-8",
+          "topic": "Nutrição DRC",
+          "q": "Qual técnica reduz em até 60% o potássio de hortaliças para doentes renais?",
+          "a": "Descascar, cortar pequeno e cozinhar em grande volume de água, descartando toda a água de cocção ao final."
+        },
+        {
+          "id": "fc-e6-9",
+          "topic": "Diet/Light",
+          "q": "Qual o critério mínimo para um alimento sólido ser considerado Light?",
+          "a": "Redução mínima de 25% do nutriente ou calorias (e > 3 g/100 g para gorduras em sólidos)."
+        },
+        {
+          "id": "fc-e6-10",
+          "topic": "Direito OR",
+          "q": "Como alterar um contrato escrito e quando vale o Kündigungsschutz?",
+          "a": "Contrato escrito no OR só se altera por escrito; na doença/acidente aplica-se período legal de bloqueio conforme o ano de serviço."
+        }
+      ],
+      "bibliography": [
+        "CADERNO DO ESTUDANTE DE GASTRONOMIA. | FIGUEIRA, R. C. Gastronomia Aplicada à Nutrição, 2018.",
+        "FORC / USP. Tabela Brasileira de Composição de Alimentos (TBCA v. 7.2).",
+        "HOTEL & GASTRO FORMATION SCHWEIZ. Betriebsorganisation; Ernaehrung; BP-Kalkulation (KATAG); Kalkulation; Fachrechnen Hilfsmittel, Serie 1 & 2; Finanzen & Führung Serie 0; Lernreflexionsdossier; Portfolio Unterricht Information.",
+        "CIA. Chef Profissional, 2011. | KOPPMANN, Mariana. Manual Básico de Gastronomia Científica, 2023.",
+        "PINHEIRO, Joel. Ficha Técnica, CMV e Precificação, 2026."
+      ]
+    }
+  ]
+}

@@ -27,6 +27,7 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
@@ -55,25 +56,47 @@ class CommunityAiViewModel(
     initialDisplayName: String
 ) : ViewModel() {
 
-    val profileState: StateFlow<StreamUiState<UserProfile?>> = communityRepo.observeProfile(currentUserId)
-        .map<UserProfile?, StreamUiState<UserProfile?>> { StreamUiState.Success(it) }
-        .catch { error -> emit(unwrapToErrorState(error, "Falha ao carregar perfil")) }
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000L), StreamUiState.Loading)
+    val isAuthenticated: Boolean = currentUserId.isNotBlank()
 
-    val myPostsState: StateFlow<StreamUiState<List<PortfolioPost>>> = communityRepo.observeMyPosts(currentUserId)
-        .map<List<PortfolioPost>, StreamUiState<List<PortfolioPost>>> { StreamUiState.Success(it) }
-        .catch { error -> emit(unwrapToErrorState(error, "Falha ao carregar Meu Portfólio")) }
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000L), StreamUiState.Loading)
+    val profileState: StateFlow<StreamUiState<UserProfile?>> =
+        if (!isAuthenticated) {
+            MutableStateFlow<StreamUiState<UserProfile?>>(StreamUiState.Success(null)).asStateFlow()
+        } else {
+            communityRepo.observeProfile(currentUserId)
+                .map<UserProfile?, StreamUiState<UserProfile?>> { StreamUiState.Success(it) }
+                .catch { error -> emit(unwrapToErrorState(error, "Falha ao carregar perfil")) }
+                .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000L), StreamUiState.Loading)
+        }
 
-    val publicMuralState: StateFlow<StreamUiState<List<PortfolioPost>>> = communityRepo.observePublicMural(currentUserId)
-        .map<List<PortfolioPost>, StreamUiState<List<PortfolioPost>>> { StreamUiState.Success(it) }
-        .catch { error -> emit(unwrapToErrorState(error, "Falha ao carregar Mural do Atelier")) }
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000L), StreamUiState.Loading)
+    val myPostsState: StateFlow<StreamUiState<List<PortfolioPost>>> =
+        if (!isAuthenticated) {
+            MutableStateFlow<StreamUiState<List<PortfolioPost>>>(StreamUiState.Success(emptyList())).asStateFlow()
+        } else {
+            communityRepo.observeMyPosts(currentUserId)
+                .map<List<PortfolioPost>, StreamUiState<List<PortfolioPost>>> { StreamUiState.Success(it) }
+                .catch { error -> emit(unwrapToErrorState(error, "Falha ao carregar Meu Portfólio")) }
+                .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000L), StreamUiState.Loading)
+        }
 
-    val myMepLinksState: StateFlow<StreamUiState<List<MepSheetCloudLink>>> = communityRepo.observeMyMepSheetLinks(currentUserId)
-        .map<List<MepSheetCloudLink>, StreamUiState<List<MepSheetCloudLink>>> { StreamUiState.Success(it) }
-        .catch { error -> emit(unwrapToErrorState(error, "Falha ao sincronizar links das Fichas Técnicas")) }
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000L), StreamUiState.Loading)
+    val publicMuralState: StateFlow<StreamUiState<List<PortfolioPost>>> =
+        if (!isAuthenticated) {
+            MutableStateFlow<StreamUiState<List<PortfolioPost>>>(StreamUiState.Success(emptyList())).asStateFlow()
+        } else {
+            communityRepo.observePublicMural(currentUserId)
+                .map<List<PortfolioPost>, StreamUiState<List<PortfolioPost>>> { StreamUiState.Success(it) }
+                .catch { error -> emit(unwrapToErrorState(error, "Falha ao carregar Mural do Atelier")) }
+                .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000L), StreamUiState.Loading)
+        }
+
+    val myMepLinksState: StateFlow<StreamUiState<List<MepSheetCloudLink>>> =
+        if (!isAuthenticated) {
+            MutableStateFlow<StreamUiState<List<MepSheetCloudLink>>>(StreamUiState.Success(emptyList())).asStateFlow()
+        } else {
+            communityRepo.observeMyMepSheetLinks(currentUserId)
+                .map<List<MepSheetCloudLink>, StreamUiState<List<MepSheetCloudLink>>> { StreamUiState.Success(it) }
+                .catch { error -> emit(unwrapToErrorState(error, "Falha ao sincronizar links das Fichas Técnicas")) }
+                .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000L), StreamUiState.Loading)
+        }
 
     private val _selectedImagePayload = MutableStateFlow<CompressedMediaPayload?>(null)
     val selectedImagePayload: StateFlow<CompressedMediaPayload?> = _selectedImagePayload.asStateFlow()
@@ -100,14 +123,10 @@ class CommunityAiViewModel(
     val loadedFullMediaCache: StateFlow<Map<String, Bitmap>> = _loadedFullMediaCache.asStateFlow()
 
     init {
-        // Ensure culinary student profile exists on first authenticated session
-        viewModelScope.launch {
-            val currentSnap = communityRepo.observeProfile(currentUserId)
-            try {
-                // Lightweight check: only initialize if missing when user triggers save or lazily
-                Log.d(TAG, "Session active for UID=$currentUserId ($initialDisplayName)")
-            } catch (_: Exception) {
-            }
+        if (isAuthenticated) {
+            Log.d(TAG, "Authenticated session active for UID=$currentUserId ($initialDisplayName)")
+        } else {
+            Log.d(TAG, "Guest test mode active ($initialDisplayName) — Firestore listeners paused.")
         }
     }
 
@@ -134,6 +153,10 @@ class CommunityAiViewModel(
         cantonFocus: String,
         specialtyBadge: String
     ) {
+        if (!isAuthenticated) {
+            _feedbackMessage.value = "Modo teste sem login: entre com sua Conta Google para salvar o perfil na nuvem."
+            return
+        }
         viewModelScope.launch {
             val existingAvatar = (profileState.value as? StreamUiState.Success)?.data?.avatarBase64
             val resolvedAvatar = _pendingAvatarPayload.value?.avatarBase64 ?: existingAvatar
@@ -187,30 +210,52 @@ class CommunityAiViewModel(
             MediaCompressor.compressFromUri(context, uri)
                 .onSuccess { payload ->
                     _selectedImagePayload.value = payload
-                    communityRepo.saveMepSheetCreationPhoto(
-                        recipeId = sheet.recipeId,
-                        title = sheet.title,
-                        weekNumber = sheet.weekNumber,
-                        stationBrigade = sheet.stationBrigade,
-                        targetServings = sheet.targetServings,
-                        pccTargetTempC = sheet.pccTargetTempC,
-                        executionScore1To5 = sheet.executionScore1To5,
-                        thumbnailBase64 = payload.thumbnailBase64,
-                        fullImageBase64 = payload.fullBase64,
-                        imageWidth = payload.width,
-                        imageHeight = payload.height,
-                        localPhotoUri = payload.localUriString
-                    ).onSuccess { cloudLink ->
+                    if (!isAuthenticated) {
+                        val localOnlyLink = MepSheetCloudLink(
+                            recipeId = sheet.recipeId,
+                            title = sheet.title,
+                            weekNumber = sheet.weekNumber,
+                            stationBrigade = sheet.stationBrigade,
+                            targetServings = sheet.targetServings,
+                            pccTargetTempC = sheet.pccTargetTempC,
+                            executionScore1To5 = sheet.executionScore1To5,
+                            mediaId = "local_${sheet.recipeId}",
+                            imageLink = payload.localUriString,
+                            thumbnailBase64 = payload.thumbnailBase64,
+                            localPhotoUri = payload.localUriString
+                        )
                         _loadedFullMediaCache.value =
-                            _loadedFullMediaCache.value + (cloudLink.mediaId to payload.fullBitmap)
+                            _loadedFullMediaCache.value + (localOnlyLink.mediaId to payload.fullBitmap)
                         _isSyncingMepPhoto.value = false
-                        onLinked(payload.localUriString, cloudLink)
+                        onLinked(payload.localUriString, localOnlyLink)
                         _feedbackMessage.value =
-                            "Criação associada à Ficha Técnica e link salvo no Firestore (${cloudLink.imageLink})."
-                    }.onFailure { err ->
-                        _isSyncingMepPhoto.value = false
-                        _feedbackMessage.value =
-                            "Erro ao gravar link da imagem no Firestore: ${err.localizedMessage}"
+                            "Foto salva localmente na Ficha Técnica (modo teste sem login — nuvem pausada)."
+                    } else {
+                        communityRepo.saveMepSheetCreationPhoto(
+                            recipeId = sheet.recipeId,
+                            title = sheet.title,
+                            weekNumber = sheet.weekNumber,
+                            stationBrigade = sheet.stationBrigade,
+                            targetServings = sheet.targetServings,
+                            pccTargetTempC = sheet.pccTargetTempC,
+                            executionScore1To5 = sheet.executionScore1To5,
+                            thumbnailBase64 = payload.thumbnailBase64,
+                            fullImageBase64 = payload.fullBase64,
+                            imageWidth = payload.width,
+                            imageHeight = payload.height,
+                            localPhotoUri = payload.localUriString
+                        ).onSuccess { cloudLink ->
+                            _loadedFullMediaCache.value =
+                                _loadedFullMediaCache.value + (cloudLink.mediaId to payload.fullBitmap)
+                            _isSyncingMepPhoto.value = false
+                            onLinked(payload.localUriString, cloudLink)
+                            _feedbackMessage.value =
+                                "Criação associada à Ficha Técnica e link salvo no Firestore (${cloudLink.imageLink})."
+                        }.onFailure { err ->
+                            _isSyncingMepPhoto.value = false
+                            _feedbackMessage.value =
+                                "Erro ao gravar link da imagem no Firestore: ${err.localizedMessage}"
+                        }
                     }
                 }
                 .onFailure { err ->
@@ -239,7 +284,7 @@ class CommunityAiViewModel(
                     }
                 }
             }
-            if (cloudMediaId.isNotBlank()) {
+            if (isAuthenticated && cloudMediaId.isNotBlank() && !cloudMediaId.startsWith("local_")) {
                 val media = communityRepo.getFullMedia(cloudMediaId).getOrNull()
                 val bmp = media?.imageBase64?.let { MediaCompressor.decodeBase64ToBitmap(it) }
                 if (media != null && bmp != null) {
@@ -334,6 +379,10 @@ class CommunityAiViewModel(
         aiFeedback: String,
         onPublished: () -> Unit = {}
     ) {
+        if (!isAuthenticated) {
+            _feedbackMessage.value = "Modo teste sem login: entre com sua Conta Google no Mural para publicar no Firestore."
+            return
+        }
         viewModelScope.launch {
             _isPublishing.value = true
             val media = _selectedImagePayload.value
@@ -380,6 +429,10 @@ class CommunityAiViewModel(
     }
 
     fun togglePostVisibility(post: PortfolioPost) {
+        if (!isAuthenticated) {
+            _feedbackMessage.value = "Entre com sua Conta Google para alterar visibilidade no Firestore."
+            return
+        }
         val nextVis = if (post.visibility == "public") "private" else "public"
         viewModelScope.launch {
             communityRepo.updatePostVisibilityOrFeedback(
@@ -397,6 +450,10 @@ class CommunityAiViewModel(
     }
 
     fun toggleReaction(post: PortfolioPost) {
+        if (!isAuthenticated) {
+            _feedbackMessage.value = "Entre com sua Conta Google para curtir publicações no Mural."
+            return
+        }
         viewModelScope.launch {
             communityRepo.toggleReaction(post).onFailure { err ->
                 _feedbackMessage.value = "Erro ao reagir: ${err.localizedMessage}"
@@ -405,6 +462,7 @@ class CommunityAiViewModel(
     }
 
     fun observeCommentsForPost(post: PortfolioPost): Flow<List<PostComment>> {
+        if (!isAuthenticated) return flowOf(emptyList())
         return communityRepo.observeComments(post.id, post.visibility, currentUserId)
             .catch { error ->
                 unwrapToErrorState(error, "Falha ao carregar comentários")
@@ -413,6 +471,10 @@ class CommunityAiViewModel(
     }
 
     fun submitComment(post: PortfolioPost, authorName: String, text: String) {
+        if (!isAuthenticated) {
+            _feedbackMessage.value = "Entre com sua Conta Google para comentar no Mural."
+            return
+        }
         viewModelScope.launch {
             communityRepo.addComment(post, authorName, text).onSuccess {
                 _feedbackMessage.value = "Comentário técnico publicado no Mural!"
@@ -423,6 +485,7 @@ class CommunityAiViewModel(
     }
 
     fun deleteComment(post: PortfolioPost, comment: PostComment) {
+        if (!isAuthenticated) return
         viewModelScope.launch {
             communityRepo.deleteComment(post, comment).onSuccess {
                 _feedbackMessage.value = "Comentário removido."
@@ -433,6 +496,7 @@ class CommunityAiViewModel(
     }
 
     fun deleteOwnPost(postId: String) {
+        if (!isAuthenticated) return
         viewModelScope.launch {
             communityRepo.deletePost(postId).onSuccess {
                 _feedbackMessage.value = "Registro removido do portfólio."
@@ -443,6 +507,7 @@ class CommunityAiViewModel(
     }
 
     fun loadFullResolutionPhoto(postId: String) {
+        if (!isAuthenticated || postId.startsWith("local_")) return
         if (_loadedFullMediaCache.value.containsKey(postId)) return
         viewModelScope.launch {
             communityRepo.getFullMedia(postId).onSuccess { media: PortfolioMedia? ->
@@ -457,9 +522,11 @@ class CommunityAiViewModel(
     fun exportShareablePngCard(context: Context, post: PortfolioPost) {
         viewModelScope.launch {
             val fullBmp = _loadedFullMediaCache.value[post.id]
-                ?: communityRepo.getFullMedia(post.id).getOrNull()?.imageBase64?.let {
-                    MediaCompressor.decodeBase64ToBitmap(it)
-                }
+                ?: (if (isAuthenticated) {
+                    communityRepo.getFullMedia(post.id).getOrNull()?.imageBase64?.let {
+                        MediaCompressor.decodeBase64ToBitmap(it)
+                    }
+                } else null)
                 ?: MediaCompressor.decodeBase64ToBitmap(post.thumbnailBase64)
 
             ShareableCardGenerator.exportAndShareCard(

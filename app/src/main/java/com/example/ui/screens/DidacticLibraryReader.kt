@@ -23,6 +23,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.MenuBook
+import androidx.compose.material.icons.automirrored.filled.VolumeUp
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Description
 import androidx.compose.material.icons.filled.ExpandLess
@@ -63,12 +64,15 @@ import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.R
+import com.example.core.audio.KitchenAudioNarrator
 import com.example.data.curriculum.CurriculumWeeksAndGuides
 import com.example.data.curriculum.DidacticAxisBrochure
 import com.example.data.curriculum.DidacticBlock
 import com.example.data.curriculum.DidacticLibraryLoader
 import com.example.data.curriculum.DidacticSection
+import com.example.ui.components.AudioNarrationPlayerCard
 import com.example.ui.components.TagPill
 import com.example.ui.theme.AtelierCharcoal
 import com.example.ui.theme.InfoBlue
@@ -90,6 +94,7 @@ import com.example.ui.theme.SwissRedContainer
 fun DidacticLibrarySection(
     selectedAxisNumber: Int,
     selectedWeekNumber: Int,
+    audioNarrator: KitchenAudioNarrator,
     onSelectAxis: (Int) -> Unit,
     onPracticeAxisInSm2: (Int) -> Unit
 ) {
@@ -322,6 +327,7 @@ fun DidacticLibrarySection(
                         visibleSections = visibleSections,
                         selectedWeekNumber = selectedWeekNumber,
                         filterCurrentWeekOnly = filterCurrentWeekOnly,
+                        audioNarrator = audioNarrator,
                         showFlashcards = showFlashcardsAccordion,
                         onToggleFlashcards = { showFlashcardsAccordion = !showFlashcardsAccordion },
                         showBibliography = showBibliographyAccordion,
@@ -377,6 +383,7 @@ fun DidacticLibrarySection(
                     visibleSections = visibleSections,
                     selectedWeekNumber = selectedWeekNumber,
                     filterCurrentWeekOnly = filterCurrentWeekOnly,
+                    audioNarrator = audioNarrator,
                     showFlashcards = showFlashcardsAccordion,
                     onToggleFlashcards = { showFlashcardsAccordion = !showFlashcardsAccordion },
                     showBibliography = showBibliographyAccordion,
@@ -466,6 +473,7 @@ private fun AxisReadingPane(
     visibleSections: List<DidacticSection>,
     selectedWeekNumber: Int,
     filterCurrentWeekOnly: Boolean,
+    audioNarrator: KitchenAudioNarrator,
     showFlashcards: Boolean,
     onToggleFlashcards: () -> Unit,
     showBibliography: Boolean,
@@ -473,6 +481,9 @@ private fun AxisReadingPane(
     onDisableWeekFilter: () -> Unit,
     onPracticeAxisInSm2: () -> Unit
 ) {
+    val narrationState by audioNarrator.state.collectAsStateWithLifecycle()
+    val axisSourceId = "axis_${axis.axisNumber}"
+
     // Axis Hero & Overview Cards
     Card(
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
@@ -503,6 +514,25 @@ private fun AxisReadingPane(
         }
     }
 
+    // Native pt-BR Audio Narration Player for the entire Axis
+    AudioNarrationPlayerCard(
+        sourceId = axisSourceId,
+        title = "Áudio do Eixo ${axis.axisNumber} • ${axis.title}",
+        subtitle = "Narração integral em pt-BR das ${axis.sections.size} seções (controle de velocidade e avanço por trecho)",
+        narrationState = narrationState,
+        onTogglePlayPause = {
+            audioNarrator.togglePlayPause(
+                fallbackSourceId = axisSourceId,
+                fallbackTitle = "Eixo ${axis.axisNumber} • ${axis.title}",
+                fallbackSegmentsProvider = { KitchenAudioNarrator.buildAxisSegments(axis) }
+            )
+        },
+        onSkipPrevious = { audioNarrator.skipPrevious() },
+        onSkipNext = { audioNarrator.skipNext() },
+        onStop = { audioNarrator.stop() },
+        onSelectSpeed = { audioNarrator.setSpeechRate(it) }
+    )
+
     if (visibleSections.isEmpty() && filterCurrentWeekOnly) {
         Card(colors = CardDefaults.cardColors(containerColor = PccAmberBg), modifier = Modifier.fillMaxWidth()) {
             Column(modifier = Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -520,9 +550,11 @@ private fun AxisReadingPane(
     }
 
     visibleSections.forEach { section ->
+        val sectionSourceId = "axis_${axis.axisNumber}_sec_${section.id}"
+        val isPlayingThisSection = narrationState.activeSourceId == sectionSourceId && narrationState.isPlaying
         Card(
             colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-            border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
+            border = BorderStroke(if (isPlayingThisSection) 1.5.dp else 1.dp, if (isPlayingThisSection) InfoBlue else MaterialTheme.colorScheme.outline),
             modifier = Modifier
                 .fillMaxWidth()
                 .testTag("didactic_section_card_${section.id}")
@@ -534,12 +566,39 @@ private fun AxisReadingPane(
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     TagPill("SEÇÃO ${section.number}", SwissRedContainer, OnSwissRedContainer)
-                    Text(
-                        text = section.weeks.joinToString(", ") { "S%02d".format(it) },
-                        style = MaterialTheme.typography.labelSmall,
-                        fontFamily = JetBrainsMonoFamily,
-                        color = InfoBlue
-                    )
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Text(
+                            text = section.weeks.joinToString(", ") { "S%02d".format(it) },
+                            style = MaterialTheme.typography.labelSmall,
+                            fontFamily = JetBrainsMonoFamily,
+                            color = InfoBlue
+                        )
+                        OutlinedButton(
+                            onClick = {
+                                audioNarrator.togglePlayPause(
+                                    fallbackSourceId = sectionSourceId,
+                                    fallbackTitle = "Eixo ${axis.axisNumber} • Seção ${section.number}",
+                                    fallbackSegmentsProvider = {
+                                        KitchenAudioNarrator.buildSingleSectionSegments(axis.axisNumber, section)
+                                    }
+                                )
+                            },
+                            modifier = Modifier
+                                .height(48.dp)
+                                .testTag("didactic_section_audio_${section.id}")
+                        ) {
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Filled.VolumeUp,
+                                contentDescription = "Ouvir Seção ${section.number}",
+                                tint = if (isPlayingThisSection) SwissRed else InfoBlue
+                            )
+                            Spacer(Modifier.width(4.dp))
+                            Text(if (isPlayingThisSection) "Pausar" else "Ouvir", fontWeight = FontWeight.SemiBold)
+                        }
+                    }
                 }
                 Text(section.title, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
                 section.blocks.forEach { block ->

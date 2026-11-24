@@ -44,9 +44,9 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -63,7 +63,8 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
-import com.example.core.firebase.authStateFlow
+import com.example.core.audio.KitchenAudioNarrator
+import com.example.core.audio.OfflinePodcastPlayer
 import com.example.core.firebase.configureAppCheck
 import com.example.data.ai.ChefAiRepository
 import com.example.data.local.AtelierDatabase
@@ -72,7 +73,6 @@ import com.example.data.remote.CommunityRepository
 import com.example.ui.components.SwissCrossBadge
 import com.example.ui.components.TagPill
 import com.example.ui.screens.AssessmentCalculatorsScreen
-import com.example.ui.screens.AuthScreen
 import com.example.ui.screens.CommunityChefAiScreen
 import com.example.ui.screens.Dashboard24SScreen
 import com.example.ui.screens.RecipesKitchenMepScreen
@@ -81,6 +81,8 @@ import com.example.ui.screens.TheoryAtlasSm2Screen
 import com.example.ui.theme.AtelierCharcoal
 import com.example.ui.theme.AtelierGastronomiaTheme
 import com.example.ui.theme.OnSwissRedContainer
+import com.example.ui.theme.PccAmber
+import com.example.ui.theme.PccAmberBg
 import com.example.ui.theme.PureSurface
 import com.example.ui.theme.Slate200
 import com.example.ui.theme.SwissRed
@@ -88,9 +90,6 @@ import com.example.ui.theme.SwissRedContainer
 import com.example.ui.viewmodel.AtelierViewModel
 import com.example.ui.viewmodel.CommunityAiViewModel
 import com.example.ui.viewmodel.StreamUiState
-import com.google.firebase.Firebase
-import com.google.firebase.auth.FirebaseUser
-import com.google.firebase.auth.auth
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -102,7 +101,7 @@ class MainActivity : ComponentActivity() {
         )
         setContent {
             AtelierGastronomiaTheme {
-                AtelierRootGate()
+                AtelierShell()
             }
         }
     }
@@ -116,27 +115,14 @@ private data class NavDestination(
 )
 
 @Composable
-private fun AtelierRootGate() {
-    val currentUser by Firebase.auth.authStateFlow()
-        .collectAsStateWithLifecycle(initialValue = Firebase.auth.currentUser)
-
-    val user = currentUser
-    if (user == null) {
-        AuthScreen(onAuthSuccess = { /* authStateFlow updates reactively */ })
-    } else {
-        key(user.uid) {
-            AuthenticatedAtelierShell(user = user)
-        }
-    }
-}
-
-@Composable
-private fun AuthenticatedAtelierShell(user: FirebaseUser) {
+private fun AtelierShell() {
     val appContext = LocalContext.current.applicationContext
-    val defaultName = user.displayName?.takeIf { it.isNotBlank() } ?: "Brigada Atelier"
+    val uid = ""
+    val isSignedIn = false
+    val defaultName = "Chef Teste (Local)"
 
     val atelierVm: AtelierViewModel = viewModel(
-        key = "atelier_${user.uid}",
+        key = "atelier_local",
         factory = viewModelFactory {
             initializer {
                 val dao = AtelierDatabase.getInstance(appContext).atelierDao()
@@ -146,13 +132,13 @@ private fun AuthenticatedAtelierShell(user: FirebaseUser) {
     )
 
     val communityVm: CommunityAiViewModel = viewModel(
-        key = "community_${user.uid}",
+        key = "community_${uid.ifBlank { "guest_test" }}",
         factory = viewModelFactory {
             initializer {
                 CommunityAiViewModel(
                     communityRepo = CommunityRepository(appContext),
                     chefAiRepo = ChefAiRepository(),
-                    currentUserId = user.uid,
+                    currentUserId = uid,
                     initialDisplayName = defaultName
                 )
             }
@@ -161,6 +147,18 @@ private fun AuthenticatedAtelierShell(user: FirebaseUser) {
 
     var currentTab by rememberSaveable { mutableIntStateOf(0) }
     val snackbarHostState = remember { SnackbarHostState() }
+    val audioNarrator = remember(appContext) { KitchenAudioNarrator(appContext) }
+    val podcastPlayer = remember(appContext) { OfflinePodcastPlayer(appContext) }
+    DisposableEffect(audioNarrator, podcastPlayer) {
+        audioNarrator.onBeforeStart = { podcastPlayer.pause() }
+        podcastPlayer.onBeforeStart = { audioNarrator.stop() }
+        onDispose {
+            audioNarrator.onBeforeStart = null
+            podcastPlayer.onBeforeStart = null
+            audioNarrator.release()
+            podcastPlayer.release()
+        }
+    }
 
     val localBanner by atelierVm.statusBanner.collectAsStateWithLifecycle()
     val cloudFeedback by communityVm.feedbackMessage.collectAsStateWithLifecycle()
@@ -174,10 +172,12 @@ private fun AuthenticatedAtelierShell(user: FirebaseUser) {
 
     val myMepLinksState by communityVm.myMepLinksState.collectAsStateWithLifecycle()
 
-    LaunchedEffect(myMepLinksState) {
-        val state = myMepLinksState
-        if (state is StreamUiState.Success) {
-            atelierVm.syncCloudMepLinksIntoLocal(state.data)
+    LaunchedEffect(isSignedIn, myMepLinksState) {
+        if (isSignedIn) {
+            val state = myMepLinksState
+            if (state is StreamUiState.Success) {
+                atelierVm.syncCloudMepLinksIntoLocal(state.data)
+            }
         }
     }
 
@@ -243,11 +243,23 @@ private fun AuthenticatedAtelierShell(user: FirebaseUser) {
                                         contentColor = PureSurface
                                     )
                                 }
-                                TagPill(
-                                    text = "SEM ${"%02d".format(selectedWeek)}",
-                                    containerColor = SwissRedContainer,
-                                    contentColor = OnSwissRedContainer
-                                )
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                                ) {
+                                    if (!isSignedIn) {
+                                        TagPill(
+                                            text = stringResource(R.string.test_mode_badge),
+                                            containerColor = PccAmberBg,
+                                            contentColor = PccAmber
+                                        )
+                                    }
+                                    TagPill(
+                                        text = "SEM ${"%02d".format(selectedWeek)}",
+                                        containerColor = SwissRedContainer,
+                                        contentColor = OnSwissRedContainer
+                                    )
+                                }
                             }
                             HorizontalDivider(thickness = 2.dp, color = SwissRed)
                         }
@@ -324,6 +336,8 @@ private fun AuthenticatedAtelierShell(user: FirebaseUser) {
                             0 -> Dashboard24SScreen(
                                 atelierVm = atelierVm,
                                 communityVm = communityVm,
+                                audioNarrator = audioNarrator,
+                                podcastPlayer = podcastPlayer,
                                 onOpenTheoryTab = { currentTab = 1 },
                                 onOpenRecipeKitchen = { recipeId ->
                                     atelierVm.selectRecipe(recipeId)
@@ -333,6 +347,8 @@ private fun AuthenticatedAtelierShell(user: FirebaseUser) {
                             )
                             1 -> TheoryAtlasSm2Screen(
                                 atelierVm = atelierVm,
+                                audioNarrator = audioNarrator,
+                                podcastPlayer = podcastPlayer,
                                 onJumpToRecipe = { recipeId ->
                                     atelierVm.selectRecipe(recipeId)
                                     currentTab = 2

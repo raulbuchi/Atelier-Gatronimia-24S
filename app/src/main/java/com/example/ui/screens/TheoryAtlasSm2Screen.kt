@@ -51,11 +51,15 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.example.core.audio.KitchenAudioNarrator
+import com.example.core.audio.OfflinePodcastPlayer
 import com.example.data.curriculum.CurriculumWeeksAndGuides
 import com.example.data.curriculum.SwissmilkAndBaseRecipesCatalog
 import com.example.data.curriculum.TechnicalAtlasCatalog
 import com.example.data.local.StudyTimerEntity
 import com.example.domain.model.SmartKitchenAlertType
+import com.example.ui.components.AudioNarrationPlayerCard
+import com.example.ui.components.CoursePodcastPlayerCard
 import com.example.ui.components.KeepScreenOnEffect
 import com.example.ui.components.SmartKitchenAlertBanner
 import com.example.ui.components.TagPill
@@ -78,6 +82,8 @@ import com.example.ui.viewmodel.AtelierViewModel
 @Composable
 fun TheoryAtlasSm2Screen(
     atelierVm: AtelierViewModel,
+    audioNarrator: KitchenAudioNarrator,
+    podcastPlayer: OfflinePodcastPlayer,
     onJumpToRecipe: (String) -> Unit
 ) {
     val selectedWeekNum by atelierVm.selectedWeekNumber.collectAsStateWithLifecycle()
@@ -141,6 +147,8 @@ fun TheoryAtlasSm2Screen(
                 0 -> Lesson80MinSection(
                     currentWeek = currentWeek,
                     timerState = timerState,
+                    audioNarrator = audioNarrator,
+                    podcastPlayer = podcastPlayer,
                     onToggleTimer = { atelierVm.toggleStudyTimer(currentWeek.weekNumber) },
                     onSelectWeek = { atelierVm.selectWeek(it) }
                 )
@@ -151,6 +159,7 @@ fun TheoryAtlasSm2Screen(
                 5 -> DidacticLibrarySection(
                     selectedAxisNumber = selectedLibraryAxis,
                     selectedWeekNumber = selectedWeekNum,
+                    audioNarrator = audioNarrator,
                     onSelectAxis = { atelierVm.selectLibraryAxis(it) },
                     onPracticeAxisInSm2 = { axisNum -> atelierVm.practiceAxisInSm2(axisNum) }
                 )
@@ -174,9 +183,15 @@ fun TheoryAtlasSm2Screen(
 private fun Lesson80MinSection(
     currentWeek: com.example.domain.model.CourseWeek,
     timerState: StudyTimerEntity,
+    audioNarrator: KitchenAudioNarrator,
+    podcastPlayer: OfflinePodcastPlayer,
     onToggleTimer: () -> Unit,
     onSelectWeek: (Int) -> Unit
 ) {
+    val narrationState by audioNarrator.state.collectAsStateWithLifecycle()
+    val podcastState by podcastPlayer.state.collectAsStateWithLifecycle()
+    val weekSourceId = "week_${currentWeek.weekNumber}"
+
     Row(
         modifier = Modifier.horizontalScroll(rememberScrollState()),
         horizontalArrangement = Arrangement.spacedBy(6.dp)
@@ -209,10 +224,12 @@ private fun Lesson80MinSection(
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Text(
-                    text = "${AtelierViewModel.STUDY_PHASE_LABELS[timerState.currentPhaseIndex]} • ${formatSecondsMmSs(timerState.remainingSeconds)}",
+                    text = "Cronômetro: ${AtelierViewModel.STUDY_PHASE_LABELS[timerState.currentPhaseIndex]} • ${formatSecondsMmSs(timerState.remainingSeconds)}",
                     fontFamily = JetBrainsMonoFamily,
-                    fontWeight = FontWeight.Bold
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.weight(1f)
                 )
+                Spacer(Modifier.width(8.dp))
                 Button(
                     onClick = onToggleTimer,
                     colors = ButtonDefaults.buttonColors(containerColor = SwissRed),
@@ -230,6 +247,35 @@ private fun Lesson80MinSection(
             }
         }
     }
+
+    CoursePodcastPlayerCard(
+        currentCycleNumber = currentWeek.cycleNumber,
+        podcastState = podcastState,
+        onSelectAndPlay = { episode -> podcastPlayer.playEpisode(episode) },
+        onTogglePlayPause = { episode -> podcastPlayer.togglePlayPause(episode) },
+        onSeekTo = { ms -> podcastPlayer.seekTo(ms) },
+        onSkipBy = { delta -> podcastPlayer.skipBy(delta) },
+        onStop = { podcastPlayer.stop() },
+        onSelectSpeed = { speed -> podcastPlayer.setPlaybackSpeed(speed) }
+    )
+
+    AudioNarrationPlayerCard(
+        sourceId = weekSourceId,
+        title = "Ouvir Aula da Semana S${"%02d".format(currentWeek.weekNumber)} (Eixo ${currentWeek.axisId})",
+        subtitle = "Narração contínua em pt-BR das 5 etapas do bloco de 80 minutos",
+        narrationState = narrationState,
+        onTogglePlayPause = {
+            audioNarrator.togglePlayPause(
+                fallbackSourceId = weekSourceId,
+                fallbackTitle = "Semana S${"%02d".format(currentWeek.weekNumber)} • ${currentWeek.title}",
+                fallbackSegmentsProvider = { KitchenAudioNarrator.buildWeekLessonSegments(currentWeek) }
+            )
+        },
+        onSkipPrevious = { audioNarrator.skipPrevious() },
+        onSkipNext = { audioNarrator.skipNext() },
+        onStop = { audioNarrator.stop() },
+        onSelectSpeed = { audioNarrator.setSpeechRate(it) }
+    )
 
     val phases = listOf(
         "1. Conceito Técnico (10 min)" to currentWeek.concept10Min,

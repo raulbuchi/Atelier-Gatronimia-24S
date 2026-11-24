@@ -4,8 +4,6 @@ import android.content.Context
 import com.example.R
 import com.example.core.firebase.OperationType
 import com.example.core.firebase.handleFirestoreError
-import com.google.firebase.Firebase
-import com.google.firebase.auth.auth
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
@@ -25,11 +23,8 @@ class CommunityRepository(private val db: FirebaseFirestore) {
         )
     )
 
-    private val auth = Firebase.auth
-
     private fun requireUserId(): String {
-        return auth.currentUser?.uid
-            ?: throw IllegalStateException("Usuário deve estar autenticado com Google.")
+        throw IllegalStateException("Login Google desabilitado temporariamente para testes.")
     }
 
     fun observeProfile(userId: String): Flow<UserProfile?> {
@@ -640,7 +635,7 @@ class CommunityRepository(private val db: FirebaseFirestore) {
             .firstOrNull()
         if (firestoreError == null && error is CancellationException) return
         val exceptionToLog = firestoreError ?: (error as? Exception)
-        if (exceptionToLog != null && auth.currentUser?.uid == expectedUid) {
+        if (exceptionToLog != null && expectedUid.isNotBlank()) {
             handleFirestoreError(exceptionToLog, operationType, path)
         }
     }

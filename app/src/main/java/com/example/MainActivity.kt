@@ -44,7 +44,6 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -63,13 +62,13 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
-import com.example.core.audio.KitchenAudioNarrator
-import com.example.core.audio.OfflinePodcastPlayer
 import com.example.core.firebase.configureAppCheck
 import com.example.data.ai.ChefAiRepository
 import com.example.data.local.AtelierDatabase
 import com.example.data.local.LocalKitchenRepository
 import com.example.data.remote.CommunityRepository
+import com.example.ui.components.PersistentAudioExpandedSheet
+import com.example.ui.components.PersistentOfflineAudioBar
 import com.example.ui.components.SwissCrossBadge
 import com.example.ui.components.TagPill
 import com.example.ui.screens.AssessmentCalculatorsScreen
@@ -89,6 +88,7 @@ import com.example.ui.theme.SwissRed
 import com.example.ui.theme.SwissRedContainer
 import com.example.ui.viewmodel.AtelierViewModel
 import com.example.ui.viewmodel.CommunityAiViewModel
+import com.example.ui.viewmodel.PersistentAudioViewModel
 import com.example.ui.viewmodel.StreamUiState
 
 class MainActivity : ComponentActivity() {
@@ -147,18 +147,17 @@ private fun AtelierShell() {
 
     var currentTab by rememberSaveable { mutableIntStateOf(0) }
     val snackbarHostState = remember { SnackbarHostState() }
-    val audioNarrator = remember(appContext) { KitchenAudioNarrator(appContext) }
-    val podcastPlayer = remember(appContext) { OfflinePodcastPlayer(appContext) }
-    DisposableEffect(audioNarrator, podcastPlayer) {
-        audioNarrator.onBeforeStart = { podcastPlayer.pause() }
-        podcastPlayer.onBeforeStart = { audioNarrator.stop() }
-        onDispose {
-            audioNarrator.onBeforeStart = null
-            podcastPlayer.onBeforeStart = null
-            audioNarrator.release()
-            podcastPlayer.release()
+
+    val audioVm: PersistentAudioViewModel = viewModel(
+        key = "persistent_audio_engine",
+        factory = viewModelFactory {
+            initializer { PersistentAudioViewModel(appContext) }
         }
-    }
+    )
+    val audioNarrator = audioVm.audioNarrator
+    val podcastPlayer = audioVm.podcastPlayer
+    val podcastState by audioVm.podcastState.collectAsStateWithLifecycle()
+    val audioUiState by audioVm.uiState.collectAsStateWithLifecycle()
 
     val localBanner by atelierVm.statusBanner.collectAsStateWithLifecycle()
     val cloudFeedback by communityVm.feedbackMessage.collectAsStateWithLifecycle()
@@ -205,6 +204,7 @@ private fun AtelierShell() {
 
     val isKitchenMode by atelierVm.isKitchenModeActive.collectAsStateWithLifecycle()
     val selectedWeek by atelierVm.selectedWeekNumber.collectAsStateWithLifecycle()
+    val currentCycleNumber = ((selectedWeek - 1) / 6 + 1).coerceIn(1, 4)
 
     BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
         val isWideTablet = maxWidth >= 680.dp
@@ -268,23 +268,34 @@ private fun AtelierShell() {
             },
             bottomBar = {
                 if (!isWideTablet) {
-                    NavigationBar(containerColor = PureSurface) {
-                        destinations.forEach { dest ->
-                            val label = stringResource(dest.labelRes)
-                            NavigationBarItem(
-                                selected = currentTab == dest.index,
-                                onClick = { currentTab = dest.index },
-                                icon = { Icon(dest.icon, contentDescription = label) },
-                                label = { Text(label, maxLines = 1) },
-                                colors = NavigationBarItemDefaults.colors(
-                                    selectedIconColor = SwissRed,
-                                    selectedTextColor = AtelierCharcoal,
-                                    indicatorColor = SwissRedContainer,
-                                    unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                                    unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant
-                                ),
-                                modifier = Modifier.testTag(dest.tag)
-                            )
+                    Column(modifier = Modifier.fillMaxWidth()) {
+                        PersistentOfflineAudioBar(
+                            currentCycleNumber = currentCycleNumber,
+                            podcastState = podcastState,
+                            isMinimized = audioUiState.isMiniBarMinimized,
+                            onTogglePlayPause = { episode -> audioVm.togglePlayPause(episode) },
+                            onSkipBy = { delta -> audioVm.skipBy(delta) },
+                            onExpandSheet = { audioVm.expandSheet() },
+                            onSetMinimized = { minimized -> audioVm.setMiniBarMinimized(minimized) }
+                        )
+                        NavigationBar(containerColor = PureSurface) {
+                            destinations.forEach { dest ->
+                                val label = stringResource(dest.labelRes)
+                                NavigationBarItem(
+                                    selected = currentTab == dest.index,
+                                    onClick = { currentTab = dest.index },
+                                    icon = { Icon(dest.icon, contentDescription = label) },
+                                    label = { Text(label, maxLines = 1) },
+                                    colors = NavigationBarItemDefaults.colors(
+                                        selectedIconColor = SwissRed,
+                                        selectedTextColor = AtelierCharcoal,
+                                        indicatorColor = SwissRedContainer,
+                                        unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                                        unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant
+                                    ),
+                                    modifier = Modifier.testTag(dest.tag)
+                                )
+                            }
                         }
                     }
                 }
@@ -331,7 +342,11 @@ private fun AtelierShell() {
                         .weight(1f)
                         .fillMaxWidth()
                 ) {
-                    Box(modifier = Modifier.fillMaxSize()) {
+                    Box(
+                        modifier = Modifier
+                            .weight(1f)
+                            .fillMaxWidth()
+                    ) {
                         when (currentTab) {
                             0 -> Dashboard24SScreen(
                                 atelierVm = atelierVm,
@@ -376,8 +391,36 @@ private fun AtelierShell() {
                             )
                         }
                     }
+
+                    if (isWideTablet) {
+                        PersistentOfflineAudioBar(
+                            currentCycleNumber = currentCycleNumber,
+                            podcastState = podcastState,
+                            isMinimized = audioUiState.isMiniBarMinimized,
+                            onTogglePlayPause = { episode -> audioVm.togglePlayPause(episode) },
+                            onSkipBy = { delta -> audioVm.skipBy(delta) },
+                            onExpandSheet = { audioVm.expandSheet() },
+                            onSetMinimized = { minimized -> audioVm.setMiniBarMinimized(minimized) }
+                        )
+                    }
                 }
             }
+        }
+
+        if (audioUiState.isSheetExpanded) {
+            PersistentAudioExpandedSheet(
+                currentCycleNumber = currentCycleNumber,
+                podcastState = podcastState,
+                onDismiss = { audioVm.collapseSheet() },
+                onSelectAndPlay = { episode -> audioVm.playEpisode(episode) },
+                onTogglePlayPause = { episode -> audioVm.togglePlayPause(episode) },
+                onSeekTo = { ms -> audioVm.seekTo(ms) },
+                onSkipBy = { delta -> audioVm.skipBy(delta) },
+                onPlayPrevious = { audioVm.playPrevious(currentCycleNumber) },
+                onPlayNext = { audioVm.playNext(currentCycleNumber) },
+                onSelectSpeed = { speed -> audioVm.setPlaybackSpeed(speed) },
+                onStopAndReset = { audioVm.stopAndReset() }
+            )
         }
     }
 }

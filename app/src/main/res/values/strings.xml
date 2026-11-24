@@ -72,4 +72,16 @@
     <string name="cd_podcast_rewind">Voltar 15 segundos</string>
     <string name="cd_podcast_forward">Avançar 15 segundos</string>
     <string name="cd_podcast_stop">Parar reprodução do episódio</string>
+    <string name="persistent_player_badge">PLAYER OFFLINE • ASSETS LOCAIS</string>
+    <string name="persistent_player_offline_ready">100% OFFLINE</string>
+    <string name="persistent_player_playlist_title">Lições em Áudio Disponíveis Offline</string>
+    <string name="persistent_player_resume_at">Retomar em %1$s</string>
+    <string name="persistent_player_stop_reset">Parar e zerar</string>
+    <string name="persistent_player_storage_note">Reprodução direta dos arquivos locais empacotados em assets — funciona sem internet.</string>
+    <string name="cd_persistent_player_expand">Expandir player completo e lista de lições offline</string>
+    <string name="cd_persistent_player_minimize">Recolher barra do player de áudio</string>
+    <string name="cd_persistent_player_restore">Restaurar controles do player de áudio</string>
+    <string name="cd_persistent_player_previous">Episódio anterior</string>
+    <string name="cd_persistent_player_next">Próximo episódio</string>
+    <string name="cd_persistent_player_close_sheet">Fechar player expandido</string>
 </resources>

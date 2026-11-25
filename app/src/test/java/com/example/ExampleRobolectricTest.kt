@@ -418,10 +418,11 @@ class ExampleRobolectricTest {
     }
 
     @Test
-    fun `native didactic library loader parses 6 axes 23 sections 60 flashcards and global search`() {
+    fun `native didactic library loader parses 6 axes 24 sections 60 flashcards and global search`() {
         val catalog = com.example.data.curriculum.DidacticLibraryLoader.catalog
         assertEquals(6, catalog.axes.size)
-        assertEquals(23, catalog.axes.sumOf { it.sections.size })
+        // 23 seções originais + Seção 0 (Alinhamento & R$) da brochura v4 do Eixo 6.
+        assertEquals(24, catalog.axes.sumOf { it.sections.size })
         assertEquals(60, catalog.axes.sumOf { it.flashcards.size })
 
         val allBlocks = catalog.axes.flatMap { ax -> ax.sections.flatMap { it.blocks } }

@@ -39,7 +39,7 @@ class CourseContentTest {
         // Robolectric também lista assets do framework Android; verifique só os uploads do AI Studio.
         val unwanted = rootAssets.filter {
             it.startsWith("ai-studio-") || it.startsWith("mediaUpload") ||
-                it.startsWith("atelier_gastronomia_24s_") || it.contains("__1__")
+                it.startsWith("atelier_gastronomia_24s_") || it.contains("__1__") || it.startsWith("eixo-")
         }
         assertTrue("Assets não usados empacotados: $unwanted", unwanted.isEmpty())
     }

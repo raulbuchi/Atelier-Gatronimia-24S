@@ -69,12 +69,13 @@ android {
     noCompress += listOf("m4a", "mp3", "ogg", "wav")
     // `public/assets/aistudio` is the AI Studio upload folder; only the course JSONs and the
     // podcast audio are used at runtime. Skip specs (.md), web code (.ts), brand JPGs (the app
-    // uses res/drawable-nodpi) and the duplicated brochure upload. The first entries are aapt's
+    // uses res/drawable-nodpi), source PDFs (brochures are rendered from the JSON) and the
+    // duplicated brochure upload. The first entries are aapt's
     // defaults, which are replaced once this list is set.
     ignoreAssetsPatterns += listOf(
       "!.svn", "!.git", "!.ds_store", "!*.scc", ".*", "<dir>_*", "!CVS", "!thumbs.db",
       "!picasa.ini", "!*~",
-      "!*.md", "!*.ts", "!*.jpg", "!brochuras-didaticas-app__1__*"
+      "!*.md", "!*.ts", "!*.jpg", "!*.pdf", "!brochuras-didaticas-app__1__*"
     )
   }
   sourceSets {

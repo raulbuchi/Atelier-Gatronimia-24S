@@ -121,6 +121,16 @@ class CourseDatasetIntegrityTest {
     }
 
     @Test
+    fun axis6Brochure_isTheV4EditionInReais() {
+        val axis6 = DidacticLibraryLoader.findAxis(6)
+        assertEquals("Gestão, Cálculo de Preço (Fachrechnung), Nutrição & Liderança", axis6.title)
+        assertEquals(listOf("0", "1", "2", "3", "4"), axis6.sections.map { it.number })
+        val allText = DidacticLibraryLoader.searchAcrossLibrary("CHF").filter { it.axisNumber == 6 }
+        assertTrue("eixo 6 ainda cita CHF: $allText", allText.isEmpty())
+        assertTrue(DidacticLibraryLoader.searchAcrossLibrary("Fachrechnung").any { it.axisNumber == 6 })
+    }
+
+    @Test
     fun didacticLibrary_hasSixAxesWithValidWeekLinks() {
         val axes = DidacticLibraryLoader.catalog.axes
         assertEquals((1..6).toList(), axes.map { it.axisNumber }.sorted())

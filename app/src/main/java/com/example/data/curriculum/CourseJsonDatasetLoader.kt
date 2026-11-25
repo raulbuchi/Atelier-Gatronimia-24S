@@ -13,7 +13,6 @@ import com.example.domain.model.RecipeSpec
 import com.example.domain.model.SousVideTargetSpec
 import com.example.domain.model.SugarStageSpec
 import com.example.domain.model.SwissCutSpec
-import java.io.File
 import org.json.JSONArray
 import org.json.JSONObject
 
@@ -38,23 +37,10 @@ object CourseJsonDatasetLoader {
 
     private const val RESOURCE_FILE_NAME = "curso-24-semanas-dados-v4_3370cebc.json"
 
+    /** Carregado em IO por [CourseContent.preload] antes da UI ser montada. */
     val dataset: CanonicalCourseDataset by lazy { parseCanonicalDataset() }
 
-    private fun readRawJsonText(): String {
-        val stream = CourseJsonDatasetLoader::class.java.classLoader?.getResourceAsStream(RESOURCE_FILE_NAME)
-            ?: Thread.currentThread().contextClassLoader?.getResourceAsStream(RESOURCE_FILE_NAME)
-        if (stream != null) {
-            return stream.bufferedReader(Charsets.UTF_8).use { it.readText() }
-        }
-        val candidates = listOf(
-            File("public/assets/aistudio/$RESOURCE_FILE_NAME"),
-            File("../public/assets/aistudio/$RESOURCE_FILE_NAME"),
-            File("/app/applet/public/assets/aistudio/$RESOURCE_FILE_NAME")
-        )
-        val found = candidates.firstOrNull { it.exists() }
-            ?: error("Arquivo oficial $RESOURCE_FILE_NAME não encontrado no classpath nem em public/assets/aistudio.")
-        return found.readText(Charsets.UTF_8)
-    }
+    private fun readRawJsonText(): String = CourseContent.readText(RESOURCE_FILE_NAME)
 
     private fun parseCanonicalDataset(): CanonicalCourseDataset {
         val root = JSONObject(readRawJsonText())

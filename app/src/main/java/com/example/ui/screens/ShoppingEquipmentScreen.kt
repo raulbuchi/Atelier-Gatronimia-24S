@@ -61,16 +61,16 @@ import com.example.ui.theme.PccGreen
 import com.example.ui.theme.PccGreenBg
 import com.example.ui.theme.SwissRed
 import com.example.ui.theme.SwissRedContainer
-import com.example.ui.viewmodel.AtelierViewModel
+import com.example.ui.viewmodel.PantryViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ShoppingEquipmentScreen(
-    atelierVm: AtelierViewModel
+    pantryVm: PantryViewModel
 ) {
-    val selectedWeekNum by atelierVm.selectedWeekNumber.collectAsStateWithLifecycle()
-    val shoppingItems by atelierVm.shoppingItems.collectAsStateWithLifecycle()
-    val ownedEquipmentIds by atelierVm.ownedEquipmentIds.collectAsStateWithLifecycle()
+    val selectedWeekNum by pantryVm.selectedWeekNumber.collectAsStateWithLifecycle()
+    val shoppingItems by pantryVm.shoppingItems.collectAsStateWithLifecycle()
+    val ownedEquipmentIds by pantryVm.ownedEquipmentIds.collectAsStateWithLifecycle()
 
     var subTab by rememberSaveable { mutableIntStateOf(0) }
 
@@ -108,16 +108,16 @@ fun ShoppingEquipmentScreen(
                 ShoppingFifoSection(
                     selectedWeekNum = selectedWeekNum,
                     items = shoppingItems,
-                    onSelectWeek = { atelierVm.selectWeek(it) },
-                    onGenerateWeekList = { mult -> atelierVm.generateShoppingForWeek(selectedWeekNum, mult) },
-                    onTogglePurchased = { atelierVm.toggleShoppingPurchased(it) },
-                    onUpdateFifo = { item, batch, exp -> atelierVm.updateShoppingFifoDates(item, batch, exp) }
+                    onSelectWeek = { pantryVm.selectWeek(it) },
+                    onGenerateWeekList = { mult -> pantryVm.generateShoppingForWeek(selectedWeekNum, mult) },
+                    onTogglePurchased = { pantryVm.toggleShoppingPurchased(it) },
+                    onUpdateFifo = { item, batch, exp -> pantryVm.updateShoppingFifoDates(item, batch, exp) }
                 )
             } else {
                 EquipmentTiersChecklistSection(
                     selectedWeekNum = selectedWeekNum,
                     ownedIds = ownedEquipmentIds,
-                    onToggleOwned = { atelierVm.toggleEquipmentOwned(it) }
+                    onToggleOwned = { pantryVm.toggleEquipmentOwned(it) }
                 )
             }
         }

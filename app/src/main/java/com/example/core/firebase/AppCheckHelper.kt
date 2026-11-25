@@ -17,8 +17,10 @@ private const val RECAPTCHA_SITE_KEY_RES = "recaptcha_site_key"
 
 fun configureAppCheck(context: Context, intent: Intent?) {
     try {
-        if (FirebaseApp.getApps(context).isEmpty()) {
-            FirebaseApp.initializeApp(context)
+        if (FirebaseApp.getApps(context).isEmpty() && FirebaseApp.initializeApp(context) == null) {
+            // Build sem google-services.json: o app roda em modo local (sem comunidade nem Chef IA).
+            Log.w(TAG, "Firebase não configurado; App Check ignorado.")
+            return
         }
 
         if (BuildConfig.DEBUG) {

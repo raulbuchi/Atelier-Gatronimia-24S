@@ -67,31 +67,37 @@ android {
   testOptions { unitTests { isIncludeAndroidResources = true } }
   androidResources {
     noCompress += listOf("m4a", "mp3", "ogg", "wav")
-  }
-  packaging {
-    resources {
-      excludes += setOf(
-        "*.m4a",
-        "*.mp3",
-        "*.ogg",
-        "*.wav",
-        "*.md",
-        "*.ts",
-        "*.jpg",
-        "brochuras-didaticas-app__1__*.json"
-      )
-    }
+    // `public/assets/aistudio` is the AI Studio upload folder; only the course JSONs and the
+    // podcast audio are used at runtime. Skip specs (.md), web code (.ts), brand JPGs (the app
+    // uses res/drawable-nodpi) and the duplicated brochure upload. The first entries are aapt's
+    // defaults, which are replaced once this list is set.
+    ignoreAssetsPatterns += listOf(
+      "!.svn", "!.git", "!.ds_store", "!*.scc", ".*", "<dir>_*", "!CVS", "!thumbs.db",
+      "!picasa.ini", "!*~",
+      "!*.md", "!*.ts", "!*.jpg", "!brochuras-didaticas-app__1__*"
+    )
   }
   sourceSets {
     getByName("main") {
-      resources.srcDirs("src/main/resources", "${rootDir}/public/assets/aistudio")
+      // Course content is read through AssetManager (see CourseContent); it must NOT also be a
+      // Java resource folder, otherwise every file (incl. ~67 MB of audio) is packaged twice.
       assets.srcDirs("src/main/assets", "${rootDir}/public/assets/aistudio")
     }
+    // Room schemas exported by KSP are exposed to migration tests. Robolectric unit tests only see
+    // the assets of the variant under test, so they are added to `debug` (never to release).
+    getByName("debug") { assets.directories.add("$projectDir/schemas") }
+    getByName("androidTest") { assets.directories.add("$projectDir/schemas") }
   }
   dependenciesInfo {
     includeInApk = false
     includeInBundle = true
   }
+}
+
+// Export Room schemas (app/schemas/<db>/<version>.json) so every version bump is reviewed
+// in git and covered by MigrationTestHelper.
+ksp {
+  arg("room.schemaLocation", "$projectDir/schemas")
 }
 
 tasks.withType<Test> {
@@ -162,6 +168,7 @@ dependencies {
   testImplementation(libs.androidx.compose.ui.test.junit4)
   testImplementation(libs.androidx.core)
   testImplementation(libs.androidx.junit)
+  testImplementation(libs.androidx.room.testing)
   testImplementation(libs.firebase.auth)
   testImplementation(libs.junit)
   testImplementation(libs.kotlinx.coroutines.test)
@@ -170,6 +177,7 @@ dependencies {
   androidTestImplementation(libs.androidx.compose.ui.test.junit4)
   androidTestImplementation(libs.androidx.espresso.core)
   androidTestImplementation(libs.androidx.junit)
+  androidTestImplementation(libs.androidx.room.testing)
   androidTestImplementation(libs.androidx.runner)
   debugImplementation(libs.androidx.compose.ui.test.manifest)
   debugImplementation(libs.androidx.compose.ui.tooling)

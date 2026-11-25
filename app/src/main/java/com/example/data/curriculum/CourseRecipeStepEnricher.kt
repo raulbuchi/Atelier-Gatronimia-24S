@@ -26,32 +26,45 @@ internal object CourseRecipeStepEnricher {
         recommendedCookware: List<String>
     ): List<String> {
         val blob = (rawEquipment + recommendedCookware + recipeId).joinToString(" | ").lowercase()
+        // Somente ids do inventário canônico (`equipment_tiers` do JSON v4); a faca de legumes
+        // (Rüstmesser) já faz parte de `eq-faca-chef`. Coberto por CourseDatasetIntegrityTest.
         val ids = linkedSetOf("eq-balanca", "eq-faca-chef", "eq-tabuas")
+        fun has(vararg keys: String) = keys.any { it in blob }
 
-        if ("termômetro" in blob || "sonda" in blob || "°c" in blob) ids += "eq-termometro-sonda"
-        if ("antiaderente" in blob || "antihaft" in blob || "rosti" in blob) ids += "eq-frigideira-antihaft"
-        if ("inox" in blob || "sautoir" in blob || "flachkasserolle" in blob) ids += "eq-cacarola-sautoir"
-        if ("lyoner" in blob || "ferro" in blob || "aço" in blob) ids += "eq-lyoner-ferro"
-        if ("braisi" in blob || "schmor" in blob || "holand" in blob || "barro" in blob) ids += "eq-dutch-oven"
-        if ("caldeir" in blob || "marmite" in blob || "panela grande" in blob || "panela alta" in blob) ids += "eq-caldeirao"
-        if ("chinois" in blob || "peneira" in blob || "passiertuch" in blob || "tamis" in blob) ids += "eq-chinois"
-        if ("fouet" in blob) ids += "eq-fouet-espatula"
-        if ("bowl" in blob || "tigela" in blob) ids += "eq-bowls-inox"
-        if ("ralador" in blob || "rösti" in blob || "rosti" in blob) ids += "eq-ralador-rosti"
-        if ("espremedor" in blob || "passe-vite" in blob) ids += "eq-passe-vite"
-        if ("caquelon" in blob || "fondue" in blob) ids += "eq-caquelon"
-        if ("mixer" in blob || "liquidificador" in blob || "processador" in blob) ids += "eq-mixer"
-        if ("rolo" in blob || "folhad" in blob || "blatterteig" in blob || "torta" in blob) ids += "eq-rolo-massa"
-        if ("forma" in blob || "aro" in blob || "kokotten" in blob || "ramequin" in blob) ids += "eq-aro-torta"
-        if ("batedeira" in blob) ids += "eq-batedeira"
-        if ("saco de confeitar" in blob || "bico" in blob) ids += "eq-sacos-confeitar"
-        if ("termocirculador" in blob || "sous-vide" in blob || "-sv" in recipeId) {
-            ids += "eq-circulador-sv"
-            ids += "eq-seladora-vacuo"
-        }
-        if ("infravermelho" in blob || "frit" in blob || "donuts" in recipeId) ids += "eq-termometro-ir"
-        if ("faca de legumes" in blob || "ofício" in blob || "rüstmesser" in blob || "escarificar" in blob) ids += "eq-faca-legumes"
-        if ("pão" in blob || "serrilhada" in blob || "zopf" in recipeId) ids += "eq-faca-pao"
+        // Kit 1 — Essencial
+        if (has("termômetro", "sonda", "°c")) ids += "eq-termometro"
+        if (has("timer")) ids += "eq-timer"
+        if (has("jarra", "copo medidor", "colheres-medida", "colher de chá")) ids += "eq-medidores"
+        if (has("descascador", "sparschäler")) ids += "eq-descascador"
+        if (has("bowl", "tigela", "recipiente gn", "pote hermético")) ids += "eq-bowls"
+        if (has("peneira", "escorredor")) ids += "eq-peneira"
+        if (has("fouet", "schwingbesen", "colher de pau", "espátula de confeiteiro")) ids += "eq-fouet"
+        if (has("caldeir", "marmite", "panela")) ids += "eq-panelas"
+        if (has("liquidificador")) ids += "eq-liquidificador"
+        if (has("faca de torneado", "tourniermesser")) ids += "eq-tourniermesser"
+        if (has("antiaderente", "antihaft", "rosti", "rösti")) ids += "eq-antihaft"
+        // Kit 2 — Cozinha quente e suíça
+        if (has("ralador", "röstiraffel", "bircherraffel", "rosti", "rösti")) ids += "eq-rostiraffel"
+        if (has("bratschaufel", "espátula larga", "prato raso grande")) ids += "eq-bratschaufel"
+        if (has("caquelon", "fondue", "rechaud")) ids += "eq-caquelon"
+        if (has("sauteuse", "frigideira larga", "sauté pan", "bratpfanne")) ids += "eq-sauteuse"
+        if (has("chinois", "passiertuch")) ids += "eq-chinois"
+        if (has("mixer", "stabmixer", "processador")) ids += "eq-mixer"
+        if (has("refratári", "travessa", "assadeira")) ids += "eq-refratario"
+        if (has("braisi", "schmor", "brattopf", "barro", "holand")) ids += "eq-braisiere"
+        if (has("rôtissoire", "rotissoire", "assadeira funda")) ids += "eq-rotissoire"
+        if (has("sautoir", "rondeau", "flachkasserolle", "caçarola")) ids += "eq-rondeau-sautoir"
+        if (has("lyoner", "frigideira de aço", "ferro")) ids += "eq-lyoner"
+        if (has("buntschneide", "kanneliermesser", "zester", "ondulad")) ids += "eq-buntschneide"
+        // Kit 3 — Panificação, confeitaria e técnicas especiais
+        if (has("rolo de massa", "wallholz", "teighorn", "raspador", "folhad", "blatterteig")) ids += "eq-rolo"
+        if (has("forma ", "forma de", "formas", "aro removível", "desmontável", "donuts")) ids += "eq-formas"
+        if (has("batedeira", "grade de resfriamento")) ids += "eq-batedeira"
+        if (has("saco de confeitar", "bico", "pincel")) ids += "eq-saco-confeitar"
+        if (has("calda", "caramelo", "chocolate", "infravermelho", "frit")) ids += "eq-termometro-calda"
+        if (has("termocirculador", "sous-vide", "seladora", "vácuo") || "-sv" in recipeId) ids += "eq-sous-vide"
+        if (has("pressão", "vapor", "dampfkochtopf")) ids += "eq-pressao"
+        if (has("tamis", "timbale", "kokotten", "ramequin")) ids += "eq-tamis-timbale"
 
         return ids.toList()
     }

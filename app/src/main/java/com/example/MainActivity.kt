@@ -29,6 +29,9 @@ import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.Groups
 import androidx.compose.material.icons.filled.RestaurantMenu
 import androidx.compose.material.icons.filled.ShoppingCart
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -47,6 +50,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
@@ -63,13 +67,15 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.example.core.firebase.configureAppCheck
+import com.example.core.di.AppContainer
 import com.example.data.ai.ChefAiRepository
-import com.example.data.local.AtelierDatabase
-import com.example.data.local.LocalKitchenRepository
+import com.example.data.curriculum.CourseContent
 import com.example.data.remote.CommunityRepository
+import com.example.ui.components.AtelierFullLogoBanner
 import com.example.ui.components.AudioPlayerUI
 import com.example.ui.components.SwissCrossBadge
 import com.example.ui.components.TagPill
+import com.example.ui.components.TimerAlertsPermissionBanner
 import com.example.ui.screens.AssessmentCalculatorsScreen
 import com.example.ui.screens.CommunityChefAiScreen
 import com.example.ui.screens.Dashboard24SScreen
@@ -85,7 +91,11 @@ import com.example.ui.theme.PureSurface
 import com.example.ui.theme.Slate200
 import com.example.ui.theme.SwissRed
 import com.example.ui.theme.SwissRedContainer
-import com.example.ui.viewmodel.AtelierViewModel
+import com.example.ui.viewmodel.AppShellViewModel
+import com.example.ui.viewmodel.AssessmentViewModel
+import com.example.ui.viewmodel.CourseViewModel
+import com.example.ui.viewmodel.KitchenViewModel
+import com.example.ui.viewmodel.PantryViewModel
 import com.example.ui.viewmodel.AudioPlayerViewModel
 import com.example.ui.viewmodel.CommunityAiViewModel
 import com.example.ui.viewmodel.StreamUiState
@@ -100,11 +110,74 @@ class MainActivity : ComponentActivity() {
         )
         setContent {
             AtelierGastronomiaTheme {
-                AtelierShell()
+                CourseContentGate {
+                    AtelierShell()
+                }
             }
         }
     }
 }
+
+/**
+ * Carrega e parseia o conteúdo do curso (JSONs em assets) em Dispatchers.IO antes de montar a UI,
+ * evitando trabalho pesado na main thread no cold start.
+ */
+@Composable
+private fun CourseContentGate(content: @Composable () -> Unit) {
+    val appContext = LocalContext.current.applicationContext
+    var isReady by remember { mutableStateOf(CourseContent.isLoaded) }
+    var loadError by remember { mutableStateOf<String?>(null) }
+    var attempt by remember { mutableIntStateOf(0) }
+
+    if (!isReady) {
+        LaunchedEffect(attempt) {
+            loadError = null
+            runCatching { CourseContent.preload(appContext) }
+                .onSuccess { isReady = true }
+                .onFailure { loadError = it.localizedMessage ?: it.javaClass.simpleName }
+        }
+    }
+
+    if (isReady) {
+        content()
+        return
+    }
+
+    Surface(color = MaterialTheme.colorScheme.background, modifier = Modifier.fillMaxSize()) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(32.dp),
+            verticalArrangement = Arrangement.spacedBy(24.dp, Alignment.CenterVertically),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            AtelierFullLogoBanner(maxHeight = 96.dp)
+            val error = loadError
+            if (error == null) {
+                CircularProgressIndicator(color = SwissRed, modifier = Modifier.testTag("content_loading"))
+                Text(
+                    text = stringResource(R.string.content_loading),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            } else {
+                Text(
+                    text = stringResource(R.string.content_load_error, error),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.error
+                )
+                Button(
+                    onClick = { attempt++ },
+                    colors = ButtonDefaults.buttonColors(containerColor = SwissRed),
+                    modifier = Modifier.testTag("content_retry")
+                ) { Text(stringResource(R.string.content_retry)) }
+            }
+        }
+    }
+}
+
+/** Índice da sub-aba "Autoavaliação & Cópia" em [AssessmentCalculatorsScreen]. */
+private const val ASSESSMENT_SELF_EVAL_SUBTAB = 1
 
 private data class NavDestination(
     val index: Int,
@@ -120,15 +193,12 @@ private fun AtelierShell() {
     val isSignedIn = false
     val defaultName = "Chef Teste (Local)"
 
-    val atelierVm: AtelierViewModel = viewModel(
-        key = "atelier_local",
-        factory = viewModelFactory {
-            initializer {
-                val dao = AtelierDatabase.getInstance(appContext).atelierDao()
-                AtelierViewModel(LocalKitchenRepository(dao))
-            }
-        }
-    )
+    val container = remember { AppContainer.from(appContext) }
+    val shellVm: AppShellViewModel = viewModel(factory = container.viewModelFactory)
+    val courseVm: CourseViewModel = viewModel(factory = container.viewModelFactory)
+    val kitchenVm: KitchenViewModel = viewModel(factory = container.viewModelFactory)
+    val pantryVm: PantryViewModel = viewModel(factory = container.viewModelFactory)
+    val assessmentVm: AssessmentViewModel = viewModel(factory = container.viewModelFactory)
 
     val communityVm: CommunityAiViewModel = viewModel(
         key = "community_${uid.ifBlank { "guest_test" }}",
@@ -145,6 +215,7 @@ private fun AtelierShell() {
     )
 
     var currentTab by rememberSaveable { mutableIntStateOf(0) }
+    var assessmentSubTab by rememberSaveable { mutableIntStateOf(0) }
     val snackbarHostState = remember { SnackbarHostState() }
 
     val audioPlayerVm: AudioPlayerViewModel = viewModel(
@@ -156,14 +227,10 @@ private fun AtelierShell() {
     val audioNarrator = audioPlayerVm.audioNarrator
     val podcastPlayer = audioPlayerVm.podcastPlayer
 
-    val localBanner by atelierVm.statusBanner.collectAsStateWithLifecycle()
     val cloudFeedback by communityVm.feedbackMessage.collectAsStateWithLifecycle()
 
-    LaunchedEffect(localBanner) {
-        localBanner?.let {
-            snackbarHostState.showSnackbar(it)
-            atelierVm.clearBanner()
-        }
+    LaunchedEffect(shellVm) {
+        shellVm.userMessages.collect { snackbarHostState.showSnackbar(it) }
     }
 
     val myMepLinksState by communityVm.myMepLinksState.collectAsStateWithLifecycle()
@@ -172,7 +239,7 @@ private fun AtelierShell() {
         if (isSignedIn) {
             val state = myMepLinksState
             if (state is StreamUiState.Success) {
-                atelierVm.syncCloudMepLinksIntoLocal(state.data)
+                kitchenVm.syncCloudMepLinksIntoLocal(state.data)
             }
         }
     }
@@ -199,8 +266,9 @@ private fun AtelierShell() {
         )
     }
 
-    val isKitchenMode by atelierVm.isKitchenModeActive.collectAsStateWithLifecycle()
-    val selectedWeek by atelierVm.selectedWeekNumber.collectAsStateWithLifecycle()
+    val isKitchenMode by kitchenVm.isKitchenModeActive.collectAsStateWithLifecycle()
+    val anyTimerRunning by shellVm.anyTimerRunning.collectAsStateWithLifecycle()
+    val selectedWeek by courseVm.selectedWeekNumber.collectAsStateWithLifecycle()
     val currentCycleNumber = ((selectedWeek - 1) / 6 + 1).coerceIn(1, 4)
 
     BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
@@ -275,7 +343,10 @@ private fun AtelierShell() {
                                 val label = stringResource(dest.labelRes)
                                 NavigationBarItem(
                                     selected = currentTab == dest.index,
-                                    onClick = { currentTab = dest.index },
+                                    onClick = {
+                                        assessmentSubTab = 0
+                                        currentTab = dest.index
+                                    },
                                     icon = { Icon(dest.icon, contentDescription = label) },
                                     label = { Text(label, maxLines = 1) },
                                     colors = NavigationBarItemDefaults.colors(
@@ -313,7 +384,10 @@ private fun AtelierShell() {
                             val label = stringResource(dest.labelRes)
                             NavigationRailItem(
                                 selected = currentTab == dest.index,
-                                onClick = { currentTab = dest.index },
+                                onClick = {
+                                    assessmentSubTab = 0
+                                    currentTab = dest.index
+                                },
                                 icon = { Icon(dest.icon, contentDescription = label) },
                                 label = { Text(label) },
                                 colors = NavigationRailItemDefaults.colors(
@@ -334,6 +408,11 @@ private fun AtelierShell() {
                         .weight(1f)
                         .fillMaxWidth()
                 ) {
+                    TimerAlertsPermissionBanner(
+                        anyTimerRunning = anyTimerRunning,
+                        canScheduleExactAlarms = shellVm::canScheduleExactTimerAlarms,
+                        onPermissionsChanged = shellVm::refreshTimers
+                    )
                     Box(
                         modifier = Modifier
                             .weight(1f)
@@ -341,43 +420,50 @@ private fun AtelierShell() {
                     ) {
                         when (currentTab) {
                             0 -> Dashboard24SScreen(
-                                atelierVm = atelierVm,
+                                courseVm = courseVm,
+                                kitchenVm = kitchenVm,
                                 communityVm = communityVm,
                                 audioNarrator = audioNarrator,
                                 podcastPlayer = podcastPlayer,
                                 onOpenTheoryTab = { currentTab = 1 },
                                 onOpenRecipeKitchen = { recipeId ->
-                                    atelierVm.selectRecipe(recipeId)
+                                    kitchenVm.selectRecipe(recipeId)
                                     currentTab = 2
                                 },
-                                onOpenCommunityTab = { currentTab = 5 }
+                                onOpenCommunityTab = { currentTab = 5 },
+                                onOpenSelfEvaluation = {
+                                    assessmentSubTab = ASSESSMENT_SELF_EVAL_SUBTAB
+                                    currentTab = 4
+                                }
                             )
                             1 -> TheoryAtlasSm2Screen(
-                                atelierVm = atelierVm,
+                                courseVm = courseVm,
                                 audioNarrator = audioNarrator,
                                 podcastPlayer = podcastPlayer,
                                 onJumpToRecipe = { recipeId ->
-                                    atelierVm.selectRecipe(recipeId)
+                                    kitchenVm.selectRecipe(recipeId)
                                     currentTab = 2
                                 }
                             )
                             2 -> RecipesKitchenMepScreen(
-                                atelierVm = atelierVm,
+                                kitchenVm = kitchenVm,
                                 communityVm = communityVm,
                                 onNavigateToPhotoRegister = { currentTab = 5 },
                                 onNavigateToChefSos = {
-                                    atelierVm.exitKitchenMode()
+                                    kitchenVm.exitKitchenMode()
                                     currentTab = 5
                                 }
                             )
-                            3 -> ShoppingEquipmentScreen(atelierVm = atelierVm)
+                            3 -> ShoppingEquipmentScreen(pantryVm = pantryVm)
                             4 -> AssessmentCalculatorsScreen(
-                                atelierVm = atelierVm,
+                                assessmentVm = assessmentVm,
+                                kitchenVm = kitchenVm,
+                                initialSubTab = assessmentSubTab,
                                 onOpenMepSheet = { currentTab = 2 },
                                 onCreateNewMepSheet = { currentTab = 2 }
                             )
                             5 -> CommunityChefAiScreen(
-                                atelierVm = atelierVm,
+                                kitchenVm = kitchenVm,
                                 communityVm = communityVm,
                                 defaultAuthorName = defaultName
                             )

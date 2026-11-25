@@ -12,7 +12,7 @@ data class MepCalculatedLine(
     val effectiveTrimLossPercent: Double,
     val scaledPl: Double,
     val scaledPb: Double,
-    val lineCostChf: Double
+    val lineCostBrl: Double
 )
 
 data class MepCalculationSummary(
@@ -23,8 +23,8 @@ data class MepCalculationSummary(
     val weightedAverageFc: Double,
     val theoreticalCookedYieldGrams: Double,
     val theoreticalPortionCookedGrams: Double,
-    val totalBatchFoodCostChf: Double,
-    val foodCostPerPortionChf: Double,
+    val totalBatchFoodCostBrl: Double,
+    val foodCostPerPortionBrl: Double,
     val pricingPerPortion: SwissPricingResult,
     val benchYieldDeviationPercent: Double?
 )
@@ -38,13 +38,13 @@ data class CascadeLossResult(
 )
 
 data class SwissPricingResult(
-    val foodCostChf: Double,
-    val laborDirectChf: Double,
-    val primeCostChf: Double,
-    val grossMarginBe1Chf: Double,
-    val operatingProfitBe2Chf: Double,
-    val netSellingPriceBvpChf: Double,
-    val grossMenuPriceEvpChf: Double, // Incl. MWST 8.0%
+    val foodCostBrl: Double,
+    val laborDirectBrl: Double,
+    val primeCostBrl: Double,
+    val grossMarginBe1Brl: Double,
+    val operatingProfitBe2Brl: Double,
+    val netSellingPriceBvpBrl: Double,
+    val grossMenuPriceEvpBrl: Double, // Incl. MWST 8.0%
     val foodCostPercent: Double
 )
 
@@ -90,7 +90,7 @@ object CulinaryCalculators {
         targetServings: Int,
         cookingShrinkagePercent: Double,
         targetCmvPercent: Double,
-        directLaborPerPortionChf: Double,
+        directLaborPerPortionBrl: Double,
         actualBenchYieldGrams: Double,
         ingredientLines: List<MepIngredientLineEntity>
     ): MepCalculationSummary {
@@ -127,7 +127,7 @@ object CulinaryCalculators {
                 effectiveTrimLossPercent = effectiveTrim,
                 scaledPl = scaledPl,
                 scaledPb = scaledPb,
-                lineCostChf = cost
+                lineCostBrl = cost
             )
         }
 
@@ -142,12 +142,12 @@ object CulinaryCalculators {
         val weightedFc = if (totalPlG > 0.0) totalPbG / totalPlG else 1.0
         val cookedYieldG = totalPlG * (1.0 - safeShrinkage / 100.0)
         val cookedPortionG = cookedYieldG / safeTarget
-        val totalCost = calcLines.sumOf { it.lineCostChf }
+        val totalCost = calcLines.sumOf { it.lineCostBrl }
         val portionCost = totalCost / safeTarget
 
         val pricing = calculateSwissPricing(
             foodCostWarenkosten = portionCost,
-            directLaborPersonalkosten = directLaborPerPortionChf.coerceAtLeast(0.0),
+            directLaborPersonalkosten = directLaborPerPortionBrl.coerceAtLeast(0.0),
             overheadGemeinkosten = (portionCost * 0.35),
             targetFoodCostPercent = targetCmvPercent.coerceIn(12.0, 80.0),
             mwstRatePercent = 8.0
@@ -167,8 +167,8 @@ object CulinaryCalculators {
             weightedAverageFc = weightedFc,
             theoreticalCookedYieldGrams = cookedYieldG,
             theoreticalPortionCookedGrams = cookedPortionG,
-            totalBatchFoodCostChf = totalCost,
-            foodCostPerPortionChf = portionCost,
+            totalBatchFoodCostBrl = totalCost,
+            foodCostPerPortionBrl = portionCost,
             pricingPerPortion = pricing,
             benchYieldDeviationPercent = deviationPct
         )
@@ -223,13 +223,13 @@ object CulinaryCalculators {
         val be2 = bvp - primeCost - safeOverhead // Betriebsergebnis 2
 
         return SwissPricingResult(
-            foodCostChf = safeFood,
-            laborDirectChf = safeLabor,
-            primeCostChf = primeCost,
-            grossMarginBe1Chf = be1,
-            operatingProfitBe2Chf = be2,
-            netSellingPriceBvpChf = bvp,
-            grossMenuPriceEvpChf = evp,
+            foodCostBrl = safeFood,
+            laborDirectBrl = safeLabor,
+            primeCostBrl = primeCost,
+            grossMarginBe1Brl = be1,
+            operatingProfitBe2Brl = be2,
+            netSellingPriceBvpBrl = bvp,
+            grossMenuPriceEvpBrl = evp,
             foodCostPercent = if (bvp > 0) (safeFood / bvp) * 100.0 else 0.0
         )
     }

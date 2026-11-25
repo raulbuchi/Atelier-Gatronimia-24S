@@ -42,6 +42,7 @@ import androidx.compose.material.icons.filled.Replay10
 import androidx.compose.material.icons.filled.SkipNext
 import androidx.compose.material.icons.filled.SkipPrevious
 import androidx.compose.material.icons.filled.Stop
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -59,7 +60,6 @@ import androidx.compose.material3.Slider
 import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.minimumInteractiveComponentSize
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
@@ -78,6 +78,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.R
 import com.example.core.audio.CoursePodcastEpisode
 import com.example.core.audio.OfflinePodcastState
@@ -94,38 +95,82 @@ import com.example.ui.theme.PureSurface
 import com.example.ui.theme.Slate200
 import com.example.ui.theme.SwissRed
 import com.example.ui.theme.SwissRedContainer
+import com.example.ui.viewmodel.AudioPlayerViewModel
 import kotlin.math.abs
 
 private val DeepStudioCharcoal = Color(0xFF14181E)
 private val StudioElevatedSurface = Color(0xFF252C36)
 
 /**
- * Barra persistente de áudio offline ancorada no shell global do app.
- * Permanece acessível durante a navegação por todas as 6 abas (incluindo Modo Bancada),
- * com alvos de toque >= 48 dp, indicador contínuo de progresso e expansão para o player completo.
+ * Componente Compose `AudioPlayerUI` conectado ao `AudioPlayerViewModel`.
+ *
+ * Oferece barra de controles persistente (Play/Pause, Seek interativo direto na barra,
+ * retrocesso de 15 s e modo compacto) ancorada em todas as telas do aplicativo, além de
+ * folha modal expandida com playlist completa dos arquivos offline da pasta `assets`.
  */
 @Composable
-fun PersistentOfflineAudioBar(
+fun AudioPlayerUI(
+    viewModel: AudioPlayerViewModel,
     currentCycleNumber: Int,
-    podcastState: OfflinePodcastState,
+    modifier: Modifier = Modifier
+) {
+    val playerState by viewModel.playerState.collectAsStateWithLifecycle()
+    val chromeState by viewModel.chromeState.collectAsStateWithLifecycle()
+
+    AudioPlayerUI(
+        currentCycleNumber = currentCycleNumber,
+        playerState = playerState,
+        isMinimized = chromeState.isMiniBarMinimized,
+        isSheetExpanded = chromeState.isSheetExpanded,
+        onTogglePlayPause = { episode -> viewModel.togglePlayPause(episode) },
+        onSelectAndPlay = { episode -> viewModel.playEpisode(episode) },
+        onSeekTo = { positionMs, episodeId -> viewModel.seekTo(positionMs, episodeId) },
+        onSkipBy = { deltaMs -> viewModel.skipBy(deltaMs) },
+        onPlayPrevious = { viewModel.playPrevious(currentCycleNumber) },
+        onPlayNext = { viewModel.playNext(currentCycleNumber) },
+        onSelectSpeed = { speed -> viewModel.setPlaybackSpeed(speed) },
+        onStopAndReset = { viewModel.stopAndReset() },
+        onExpandSheet = { viewModel.expandSheet() },
+        onDismissSheet = { viewModel.collapseSheet() },
+        onSetMinimized = { minimized -> viewModel.setMiniBarMinimized(minimized) },
+        modifier = modifier
+    )
+}
+
+/**
+ * Versão stateless de `AudioPlayerUI` para reutilização, testes e desacoplamento de UI.
+ */
+@Composable
+fun AudioPlayerUI(
+    currentCycleNumber: Int,
+    playerState: OfflinePodcastState,
     isMinimized: Boolean,
+    isSheetExpanded: Boolean,
     onTogglePlayPause: (CoursePodcastEpisode) -> Unit,
+    onSelectAndPlay: (CoursePodcastEpisode) -> Unit,
+    onSeekTo: (positionMs: Int, targetEpisodeId: String) -> Unit,
     onSkipBy: (Int) -> Unit,
+    onPlayPrevious: () -> Unit,
+    onPlayNext: () -> Unit,
+    onSelectSpeed: (Float) -> Unit,
+    onStopAndReset: () -> Unit,
     onExpandSheet: () -> Unit,
+    onDismissSheet: () -> Unit,
     onSetMinimized: (Boolean) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val episode = podcastState.displayEpisodeForCycle(currentCycleNumber) ?: return
-    val isActiveEpisode = podcastState.activeEpisodeId == episode.id
-    val isPlaying = isActiveEpisode && podcastState.isPlaying
+    val episode = playerState.displayEpisodeForCycle(currentCycleNumber) ?: return
+    val isActiveEpisode = playerState.activeEpisodeId == episode.id
+    val isPlaying = isActiveEpisode && playerState.isPlaying
     val effectiveDurationMs = when {
-        isActiveEpisode && podcastState.durationMs > 0 -> podcastState.durationMs
-        else -> podcastState.episodeDurationsMs[episode.id] ?: 0
+        isActiveEpisode && playerState.durationMs > 0 -> playerState.durationMs
+        else -> playerState.episodeDurationsMs[episode.id] ?: 0
     }
     val effectivePositionMs = when {
-        isActiveEpisode -> podcastState.positionMs
-        else -> podcastState.savedPositionsMs[episode.id] ?: 0
+        isActiveEpisode -> playerState.positionMs
+        else -> playerState.savedPositionsMs[episode.id] ?: 0
     }
+
     val targetFraction = if (effectiveDurationMs > 0) {
         (effectivePositionMs.toFloat() / effectiveDurationMs.toFloat()).coerceIn(0f, 1f)
     } else {
@@ -134,7 +179,7 @@ fun PersistentOfflineAudioBar(
     val animatedProgress by animateFloatAsState(
         targetValue = targetFraction,
         animationSpec = spring(stiffness = Spring.StiffnessMediumLow),
-        label = "persistent_audio_progress"
+        label = "audio_player_ui_progress"
     )
 
     val studioGradient = remember {
@@ -149,14 +194,14 @@ fun PersistentOfflineAudioBar(
         shadowElevation = 6.dp,
         modifier = modifier
             .fillMaxWidth()
-            .testTag("persistent_audio_bar_root")
+            .testTag("audio_player_ui_root")
     ) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
                 .background(studioGradient)
         ) {
-            // Hairline progress track pinned to top edge
+            // Linha superior de progresso contínuo
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -179,10 +224,10 @@ fun PersistentOfflineAudioBar(
                     fadeIn(spring(stiffness = Spring.StiffnessMedium)) togetherWith
                         fadeOut(spring(stiffness = Spring.StiffnessMedium))
                 },
-                label = "persistent_bar_mode"
+                label = "audio_player_ui_bar_mode"
             ) { compact ->
                 if (compact) {
-                    MinimizedAudioStrip(
+                    AudioPlayerMinimizedStrip(
                         episode = episode,
                         isPlaying = isPlaying,
                         positionMs = effectivePositionMs,
@@ -192,14 +237,15 @@ fun PersistentOfflineAudioBar(
                         onExpandSheet = onExpandSheet
                     )
                 } else {
-                    FullMiniAudioBarContent(
+                    AudioPlayerPersistentBarContent(
                         episode = episode,
                         isPlaying = isPlaying,
                         isActive = isActiveEpisode,
                         positionMs = effectivePositionMs,
                         durationMs = effectiveDurationMs,
-                        speed = podcastState.playbackSpeed,
+                        speed = playerState.playbackSpeed,
                         onTogglePlayPause = { onTogglePlayPause(episode) },
+                        onSeekTo = { posMs -> onSeekTo(posMs, episode.id) },
                         onSkipBack = { onSkipBy(-15_000) },
                         onExpandSheet = onExpandSheet,
                         onMinimize = { onSetMinimized(true) }
@@ -210,10 +256,26 @@ fun PersistentOfflineAudioBar(
             HorizontalDivider(thickness = 1.dp, color = PureSurface.copy(alpha = 0.08f))
         }
     }
+
+    if (isSheetExpanded) {
+        AudioPlayerExpandedSheet(
+            episode = episode,
+            playerState = playerState,
+            onDismiss = onDismissSheet,
+            onSelectAndPlay = onSelectAndPlay,
+            onTogglePlayPause = onTogglePlayPause,
+            onSeekTo = onSeekTo,
+            onSkipBy = onSkipBy,
+            onPlayPrevious = onPlayPrevious,
+            onPlayNext = onPlayNext,
+            onSelectSpeed = onSelectSpeed,
+            onStopAndReset = onStopAndReset
+        )
+    }
 }
 
 @Composable
-private fun FullMiniAudioBarContent(
+private fun AudioPlayerPersistentBarContent(
     episode: CoursePodcastEpisode,
     isPlaying: Boolean,
     isActive: Boolean,
@@ -221,145 +283,193 @@ private fun FullMiniAudioBarContent(
     durationMs: Int,
     speed: Float,
     onTogglePlayPause: () -> Unit,
+    onSeekTo: (Int) -> Unit,
     onSkipBack: () -> Unit,
     onExpandSheet: () -> Unit,
     onMinimize: () -> Unit
 ) {
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(6.dp),
+    var isScrubbing by remember(episode.id) { mutableStateOf(false) }
+    var scrubMs by remember(episode.id) { mutableFloatStateOf(positionMs.toFloat()) }
+    val displayPosMs = if (isScrubbing) scrubMs.toInt() else positionMs
+
+    Column(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable(onClick = onExpandSheet)
-            .padding(start = 12.dp, end = 6.dp, top = 6.dp, bottom = 6.dp)
-            .testTag("persistent_audio_bar_expand_area")
+            .padding(top = 6.dp, bottom = 4.dp)
     ) {
-        // High-contrast Audio Emblem
-        Box(
-            contentAlignment = Alignment.Center,
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(6.dp),
             modifier = Modifier
-                .size(40.dp)
-                .clip(RoundedCornerShape(10.dp))
-                .background(if (isPlaying) SwissRed else StudioElevatedSurface)
+                .fillMaxWidth()
+                .clickable(onClick = onExpandSheet)
+                .padding(start = 12.dp, end = 6.dp)
+                .testTag("audio_player_expand_area")
         ) {
-            Icon(
-                imageVector = if (isPlaying) Icons.Default.GraphicEq else Icons.Default.Headphones,
-                contentDescription = stringResource(R.string.cd_podcast_audio),
-                tint = PureSurface,
-                modifier = Modifier.size(22.dp)
-            )
-        }
-
-        // Lesson Metadata & Offline Status
-        Column(
-            verticalArrangement = Arrangement.spacedBy(2.dp),
-            modifier = Modifier
-                .weight(1f)
-                .padding(horizontal = 4.dp)
-        ) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(6.dp)
+            Box(
+                contentAlignment = Alignment.Center,
+                modifier = Modifier
+                    .size(40.dp)
+                    .clip(RoundedCornerShape(10.dp))
+                    .background(if (isPlaying) SwissRed else StudioElevatedSurface)
             ) {
-                Text(
-                    text = episode.shortLabel,
-                    style = MaterialTheme.typography.labelLarge,
-                    fontWeight = FontWeight.Bold,
-                    color = PureSurface,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                    modifier = Modifier.weight(1f, fill = false)
-                )
                 Icon(
-                    imageVector = Icons.Default.OfflinePin,
-                    contentDescription = stringResource(R.string.persistent_player_offline_ready),
-                    tint = if (isPlaying) PccGreenBg else Slate200.copy(alpha = 0.75f),
-                    modifier = Modifier.size(14.dp)
+                    imageVector = if (isPlaying) Icons.Default.GraphicEq else Icons.Default.Headphones,
+                    contentDescription = stringResource(R.string.cd_podcast_audio),
+                    tint = PureSurface,
+                    modifier = Modifier.size(22.dp)
                 )
             }
 
-            val statusSubtitle = buildString {
-                if (durationMs > 0) {
-                    append(formatAudioMmSs(positionMs))
-                    append(" / ")
-                    append(formatAudioMmSs(durationMs))
-                } else {
-                    append(episode.weeksLabel)
+            Column(
+                verticalArrangement = Arrangement.spacedBy(2.dp),
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(horizontal = 4.dp)
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                ) {
+                    Text(
+                        text = episode.shortLabel,
+                        style = MaterialTheme.typography.labelLarge,
+                        fontWeight = FontWeight.Bold,
+                        color = PureSurface,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier.weight(1f, fill = false)
+                    )
+                    Icon(
+                        imageVector = Icons.Default.OfflinePin,
+                        contentDescription = stringResource(R.string.persistent_player_offline_ready),
+                        tint = if (isPlaying) PccGreenBg else Slate200.copy(alpha = 0.75f),
+                        modifier = Modifier.size(14.dp)
+                    )
                 }
-                append(" • ")
-                append(if (isPlaying) "${formatSpeedLabel(speed)} OFFLINE" else "OFFLINE")
-            }
-            Text(
-                text = statusSubtitle,
-                style = MaterialTheme.typography.labelSmall,
-                fontFamily = JetBrainsMonoFamily,
-                color = if (isPlaying) SwissRedContainer else Slate200,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis
-            )
-        }
 
-        if (isActive) {
+                val statusSubtitle = buildString {
+                    append(episode.weeksLabel)
+                    append(" • ")
+                    append(if (isPlaying) "${formatSpeedLabel(speed)} OFFLINE" else "OFFLINE")
+                }
+                Text(
+                    text = statusSubtitle,
+                    style = MaterialTheme.typography.labelSmall,
+                    fontFamily = JetBrainsMonoFamily,
+                    color = if (isPlaying) SwissRedContainer else Slate200,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+            }
+
+            if (isActive) {
+                IconButton(
+                    onClick = onSkipBack,
+                    modifier = Modifier
+                        .minimumInteractiveComponentSize()
+                        .testTag("audio_player_rewind_15s")
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Replay10,
+                        contentDescription = stringResource(R.string.cd_podcast_rewind),
+                        tint = PureSurface
+                    )
+                }
+            }
+
+            FilledIconButton(
+                onClick = onTogglePlayPause,
+                colors = IconButtonDefaults.filledIconButtonColors(
+                    containerColor = if (isPlaying) PccAmber else SwissRed,
+                    contentColor = PureSurface
+                ),
+                modifier = Modifier
+                    .size(48.dp)
+                    .testTag("audio_player_play_pause")
+            ) {
+                Icon(
+                    imageVector = if (isPlaying) Icons.Default.Pause else Icons.Default.PlayArrow,
+                    contentDescription = stringResource(R.string.cd_podcast_toggle)
+                )
+            }
+
             IconButton(
-                onClick = onSkipBack,
+                onClick = onExpandSheet,
                 modifier = Modifier
                     .minimumInteractiveComponentSize()
-                    .testTag("persistent_audio_rewind_15s")
+                    .testTag("audio_player_expand_button")
             ) {
                 Icon(
-                    imageVector = Icons.Default.Replay10,
-                    contentDescription = stringResource(R.string.cd_podcast_rewind),
-                    tint = PureSurface
+                    imageVector = Icons.Default.ExpandLess,
+                    contentDescription = stringResource(R.string.cd_persistent_player_expand),
+                    tint = Slate200
+                )
+            }
+
+            IconButton(
+                onClick = onMinimize,
+                modifier = Modifier
+                    .minimumInteractiveComponentSize()
+                    .testTag("audio_player_minimize_button")
+            ) {
+                Icon(
+                    imageVector = Icons.Default.ExpandMore,
+                    contentDescription = stringResource(R.string.cd_persistent_player_minimize),
+                    tint = Slate200.copy(alpha = 0.75f)
                 )
             }
         }
 
-        FilledIconButton(
-            onClick = onTogglePlayPause,
-            colors = IconButtonDefaults.filledIconButtonColors(
-                containerColor = if (isPlaying) PccAmber else SwissRed,
-                contentColor = PureSurface
-            ),
-            modifier = Modifier
-                .size(48.dp)
-                .testTag("persistent_audio_play_pause")
-        ) {
-            Icon(
-                imageVector = if (isPlaying) Icons.Default.Pause else Icons.Default.PlayArrow,
-                contentDescription = stringResource(R.string.cd_podcast_toggle)
-            )
-        }
-
-        IconButton(
-            onClick = onExpandSheet,
-            modifier = Modifier
-                .minimumInteractiveComponentSize()
-                .testTag("persistent_audio_expand_button")
-        ) {
-            Icon(
-                imageVector = Icons.Default.ExpandLess,
-                contentDescription = stringResource(R.string.cd_persistent_player_expand),
-                tint = Slate200
-            )
-        }
-
-        IconButton(
-            onClick = onMinimize,
-            modifier = Modifier
-                .minimumInteractiveComponentSize()
-                .testTag("persistent_audio_minimize_button")
-        ) {
-            Icon(
-                imageVector = Icons.Default.ExpandMore,
-                contentDescription = stringResource(R.string.cd_persistent_player_minimize),
-                tint = Slate200.copy(alpha = 0.75f)
-            )
+        // Controle persistente de Seek diretamente acessível na barra fixa
+        if (durationMs > 0) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 12.dp)
+            ) {
+                Text(
+                    text = formatAudioMmSs(displayPosMs),
+                    style = MaterialTheme.typography.labelSmall,
+                    fontFamily = JetBrainsMonoFamily,
+                    color = PureSurface
+                )
+                Slider(
+                    value = displayPosMs.toFloat().coerceIn(0f, durationMs.toFloat()),
+                    onValueChange = {
+                        isScrubbing = true
+                        scrubMs = it
+                    },
+                    onValueChangeFinished = {
+                        isScrubbing = false
+                        onSeekTo(scrubMs.toInt())
+                    },
+                    valueRange = 0f..durationMs.toFloat(),
+                    colors = SliderDefaults.colors(
+                        thumbColor = if (isPlaying) SwissRed else PccAmber,
+                        activeTrackColor = if (isPlaying) SwissRed else PccAmber,
+                        inactiveTrackColor = PureSurface.copy(alpha = 0.22f)
+                    ),
+                    modifier = Modifier
+                        .weight(1f)
+                        .height(32.dp)
+                        .testTag("audio_player_seek_slider")
+                )
+                Text(
+                    text = formatAudioMmSs(durationMs),
+                    style = MaterialTheme.typography.labelSmall,
+                    fontFamily = JetBrainsMonoFamily,
+                    color = Slate200
+                )
+            }
         }
     }
 }
 
 @Composable
-private fun MinimizedAudioStrip(
+private fun AudioPlayerMinimizedStrip(
     episode: CoursePodcastEpisode,
     isPlaying: Boolean,
     positionMs: Int,
@@ -375,7 +485,7 @@ private fun MinimizedAudioStrip(
             .fillMaxWidth()
             .clickable(onClick = onRestore)
             .padding(horizontal = 12.dp, vertical = 2.dp)
-            .testTag("persistent_audio_minimized_strip")
+            .testTag("audio_player_minimized_strip")
     ) {
         Box(
             modifier = Modifier
@@ -396,7 +506,7 @@ private fun MinimizedAudioStrip(
             onClick = onTogglePlayPause,
             modifier = Modifier
                 .minimumInteractiveComponentSize()
-                .testTag("persistent_audio_minimized_play_pause")
+                .testTag("audio_player_minimized_play_pause")
         ) {
             Icon(
                 imageVector = if (isPlaying) Icons.Default.Pause else Icons.Default.PlayArrow,
@@ -408,7 +518,7 @@ private fun MinimizedAudioStrip(
             onClick = onExpandSheet,
             modifier = Modifier
                 .minimumInteractiveComponentSize()
-                .testTag("persistent_audio_minimized_expand")
+                .testTag("audio_player_minimized_expand")
         ) {
             Icon(
                 imageVector = Icons.Default.ExpandLess,
@@ -419,19 +529,15 @@ private fun MinimizedAudioStrip(
     }
 }
 
-/**
- * Folha modal expandida do player persistente offline com timeline interativa,
- * velocidade de reprodução e playlist completa dos arquivos locais em `assets/`.
- */
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
-fun PersistentAudioExpandedSheet(
-    currentCycleNumber: Int,
-    podcastState: OfflinePodcastState,
+private fun AudioPlayerExpandedSheet(
+    episode: CoursePodcastEpisode,
+    playerState: OfflinePodcastState,
     onDismiss: () -> Unit,
     onSelectAndPlay: (CoursePodcastEpisode) -> Unit,
     onTogglePlayPause: (CoursePodcastEpisode) -> Unit,
-    onSeekTo: (Int) -> Unit,
+    onSeekTo: (positionMs: Int, targetEpisodeId: String) -> Unit,
     onSkipBy: (Int) -> Unit,
     onPlayPrevious: () -> Unit,
     onPlayNext: () -> Unit,
@@ -439,21 +545,20 @@ fun PersistentAudioExpandedSheet(
     onStopAndReset: () -> Unit
 ) {
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
-    val episode = podcastState.displayEpisodeForCycle(currentCycleNumber) ?: return
-    val isActiveEpisode = podcastState.activeEpisodeId == episode.id
-    val isPlaying = isActiveEpisode && podcastState.isPlaying
+    val isActiveEpisode = playerState.activeEpisodeId == episode.id
+    val isPlaying = isActiveEpisode && playerState.isPlaying
 
     var isScrubbing by remember(episode.id) { mutableStateOf(false) }
     var scrubValueMs by remember(episode.id) { mutableFloatStateOf(0f) }
 
     val durationMs = when {
-        isActiveEpisode && podcastState.durationMs > 0 -> podcastState.durationMs
-        else -> podcastState.episodeDurationsMs[episode.id] ?: 0
+        isActiveEpisode && playerState.durationMs > 0 -> playerState.durationMs
+        else -> playerState.episodeDurationsMs[episode.id] ?: 0
     }
     val displayPosMs = when {
         isScrubbing -> scrubValueMs.toInt()
-        isActiveEpisode -> podcastState.positionMs
-        else -> podcastState.savedPositionsMs[episode.id] ?: 0
+        isActiveEpisode -> playerState.positionMs
+        else -> playerState.savedPositionsMs[episode.id] ?: 0
     }
 
     ModalBottomSheet(
@@ -461,7 +566,7 @@ fun PersistentAudioExpandedSheet(
         sheetState = sheetState,
         containerColor = DeepStudioCharcoal,
         contentColor = PureSurface,
-        modifier = Modifier.testTag("persistent_audio_expanded_sheet")
+        modifier = Modifier.testTag("audio_player_expanded_sheet")
     ) {
         Column(
             verticalArrangement = Arrangement.spacedBy(16.dp),
@@ -472,7 +577,6 @@ fun PersistentAudioExpandedSheet(
                 .padding(bottom = 24.dp)
                 .navigationBarsPadding()
         ) {
-            // Top Studio Header
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -488,7 +592,7 @@ fun PersistentAudioExpandedSheet(
                         contentColor = if (isPlaying) PccGreen else OnSwissRedContainer
                     )
                     Text(
-                        text = "${podcastState.availableEpisodes.size} OFFLINE",
+                        text = "${playerState.availableEpisodes.size} OFFLINE",
                         style = MaterialTheme.typography.labelSmall,
                         fontFamily = JetBrainsMonoFamily,
                         fontWeight = FontWeight.Bold,
@@ -499,7 +603,7 @@ fun PersistentAudioExpandedSheet(
                     onClick = onDismiss,
                     modifier = Modifier
                         .minimumInteractiveComponentSize()
-                        .testTag("persistent_sheet_close_button")
+                        .testTag("audio_sheet_close_button")
                 ) {
                     Icon(
                         imageVector = Icons.Default.Close,
@@ -509,7 +613,6 @@ fun PersistentAudioExpandedSheet(
                 }
             }
 
-            // Active Lesson Hero Card
             Card(
                 colors = CardDefaults.cardColors(containerColor = StudioElevatedSurface),
                 border = BorderStroke(
@@ -561,23 +664,22 @@ fun PersistentAudioExpandedSheet(
                 }
             }
 
-            // Timeline Slider & Timecodes
             Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                 Slider(
                     value = if (durationMs > 0) displayPosMs.toFloat().coerceIn(0f, durationMs.toFloat()) else 0f,
                     onValueChange = {
-                        if (isActiveEpisode && durationMs > 0) {
+                        if (durationMs > 0) {
                             isScrubbing = true
                             scrubValueMs = it
                         }
                     },
                     onValueChangeFinished = {
-                        if (isActiveEpisode && durationMs > 0) {
+                        if (durationMs > 0) {
                             isScrubbing = false
-                            onSeekTo(scrubValueMs.toInt())
+                            onSeekTo(scrubValueMs.toInt(), episode.id)
                         }
                     },
-                    enabled = isActiveEpisode && durationMs > 0,
+                    enabled = durationMs > 0,
                     valueRange = 0f..(durationMs.coerceAtLeast(1)).toFloat(),
                     colors = SliderDefaults.colors(
                         thumbColor = SwissRed,
@@ -589,7 +691,7 @@ fun PersistentAudioExpandedSheet(
                     ),
                     modifier = Modifier
                         .fillMaxWidth()
-                        .testTag("persistent_sheet_seek_slider")
+                        .testTag("audio_sheet_seek_slider")
                 )
                 Row(
                     horizontalArrangement = Arrangement.SpaceBetween,
@@ -610,7 +712,6 @@ fun PersistentAudioExpandedSheet(
                 }
             }
 
-            // Low-Touch Transport Row (all >= 48-56 dp)
             Row(
                 horizontalArrangement = Arrangement.SpaceEvenly,
                 verticalAlignment = Alignment.CenterVertically,
@@ -620,7 +721,7 @@ fun PersistentAudioExpandedSheet(
                     onClick = onPlayPrevious,
                     modifier = Modifier
                         .size(48.dp)
-                        .testTag("persistent_sheet_prev_episode")
+                        .testTag("audio_sheet_prev_episode")
                 ) {
                     Icon(
                         imageVector = Icons.Default.SkipPrevious,
@@ -634,7 +735,7 @@ fun PersistentAudioExpandedSheet(
                     enabled = isActiveEpisode,
                     modifier = Modifier
                         .size(48.dp)
-                        .testTag("persistent_sheet_rewind_15s")
+                        .testTag("audio_sheet_rewind_15s")
                 ) {
                     Icon(
                         imageVector = Icons.Default.Replay10,
@@ -651,7 +752,7 @@ fun PersistentAudioExpandedSheet(
                     ),
                     modifier = Modifier
                         .size(60.dp)
-                        .testTag("persistent_sheet_play_pause")
+                        .testTag("audio_sheet_play_pause")
                 ) {
                     Icon(
                         imageVector = if (isPlaying) Icons.Default.Pause else Icons.Default.PlayArrow,
@@ -665,7 +766,7 @@ fun PersistentAudioExpandedSheet(
                     enabled = isActiveEpisode,
                     modifier = Modifier
                         .size(48.dp)
-                        .testTag("persistent_sheet_forward_15s")
+                        .testTag("audio_sheet_forward_15s")
                 ) {
                     Icon(
                         imageVector = Icons.Default.Forward10,
@@ -678,7 +779,7 @@ fun PersistentAudioExpandedSheet(
                     onClick = onPlayNext,
                     modifier = Modifier
                         .size(48.dp)
-                        .testTag("persistent_sheet_next_episode")
+                        .testTag("audio_sheet_next_episode")
                 ) {
                     Icon(
                         imageVector = Icons.Default.SkipNext,
@@ -688,14 +789,13 @@ fun PersistentAudioExpandedSheet(
                 }
             }
 
-            // Speed Controls + Stop & Reset
             FlowRow(
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp),
                 modifier = Modifier.fillMaxWidth()
             ) {
                 listOf(0.85f to "0,85×", 1.0f to "1,0×", 1.25f to "1,25×", 1.5f to "1,5×").forEach { (speed, label) ->
-                    val selected = abs(podcastState.playbackSpeed - speed) < 0.05f
+                    val selected = abs(playerState.playbackSpeed - speed) < 0.05f
                     FilterChip(
                         selected = selected,
                         onClick = { onSelectSpeed(speed) },
@@ -714,7 +814,7 @@ fun PersistentAudioExpandedSheet(
                         ),
                         modifier = Modifier
                             .height(48.dp)
-                            .testTag("persistent_sheet_speed_${label.replace(",", "_")}")
+                            .testTag("audio_sheet_speed_${label.replace(",", "_")}")
                     )
                 }
 
@@ -725,7 +825,7 @@ fun PersistentAudioExpandedSheet(
                         colors = ButtonDefaults.outlinedButtonColors(contentColor = PureSurface),
                         modifier = Modifier
                             .height(48.dp)
-                            .testTag("persistent_sheet_stop_reset")
+                            .testTag("audio_sheet_stop_reset")
                     ) {
                         Icon(
                             imageVector = Icons.Default.Stop,
@@ -738,7 +838,7 @@ fun PersistentAudioExpandedSheet(
                 }
             }
 
-            if (podcastState.isVolumeMutedWarning && isPlaying) {
+            if (playerState.isVolumeMutedWarning && isPlaying) {
                 Card(
                     colors = CardDefaults.cardColors(containerColor = PccAmberBg),
                     border = BorderStroke(1.dp, PccAmber),
@@ -754,14 +854,14 @@ fun PersistentAudioExpandedSheet(
                 }
             }
 
-            if (!podcastState.errorMessage.isNullOrBlank()) {
+            if (!playerState.errorMessage.isNullOrBlank()) {
                 Card(
                     colors = CardDefaults.cardColors(containerColor = PccDangerBg),
                     border = BorderStroke(1.dp, PccDanger),
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Text(
-                        text = podcastState.errorMessage,
+                        text = playerState.errorMessage,
                         style = MaterialTheme.typography.labelSmall,
                         color = PccDanger,
                         modifier = Modifier.padding(10.dp)
@@ -771,7 +871,6 @@ fun PersistentAudioExpandedSheet(
 
             HorizontalDivider(color = PureSurface.copy(alpha = 0.12f))
 
-            // Offline Local Assets Playlist
             Text(
                 text = stringResource(R.string.persistent_player_playlist_title),
                 style = MaterialTheme.typography.titleSmall,
@@ -780,14 +879,14 @@ fun PersistentAudioExpandedSheet(
             )
 
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                podcastState.availableEpisodes.forEach { item ->
-                    val isItemActive = podcastState.activeEpisodeId == item.id
-                    val isItemPlaying = isItemActive && podcastState.isPlaying
-                    val itemDurationMs = podcastState.episodeDurationsMs[item.id] ?: 0
+                playerState.availableEpisodes.forEach { item ->
+                    val isItemActive = playerState.activeEpisodeId == item.id
+                    val isItemPlaying = isItemActive && playerState.isPlaying
+                    val itemDurationMs = playerState.episodeDurationsMs[item.id] ?: 0
                     val savedPosMs = if (isItemActive) {
-                        podcastState.positionMs
+                        playerState.positionMs
                     } else {
-                        podcastState.savedPositionsMs[item.id] ?: 0
+                        playerState.savedPositionsMs[item.id] ?: 0
                     }
 
                     Card(
@@ -802,7 +901,7 @@ fun PersistentAudioExpandedSheet(
                         modifier = Modifier
                             .fillMaxWidth()
                             .clickable { onSelectAndPlay(item) }
-                            .testTag("persistent_playlist_item_${item.id}")
+                            .testTag("audio_playlist_item_${item.id}")
                     ) {
                         Row(
                             verticalAlignment = Alignment.CenterVertically,

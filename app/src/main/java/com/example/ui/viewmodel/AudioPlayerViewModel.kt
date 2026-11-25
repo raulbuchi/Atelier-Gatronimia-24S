@@ -14,46 +14,62 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-data class PersistentAudioUiState(
+data class AudioPlayerChromeState(
     val isSheetExpanded: Boolean = false,
     val isMiniBarMinimized: Boolean = false
 )
 
 /**
- * ViewModel dedicado de áudio persistente.
- * Sobrevive a rotações de tela, mudanças de configuração e troca entre todas as 6 abas do app,
- * mantendo a reprodução offline dos arquivos em `assets/` sem interrupção.
+ * ViewModel responsável por gerenciar a reprodução persistente de arquivos de áudio
+ * empacotados na pasta `assets` (100% offline, sem internet e com zero custo em nuvem).
+ *
+ * Sobrevive a rotações de tela e à troca entre todas as abas do aplicativo,
+ * mantendo controles sincronizados de play, pause, seek, salto de 15s, velocidade
+ * e checkpoint automático de progresso em SharedPreferences.
  */
-class PersistentAudioViewModel(appContext: Context) : ViewModel() {
+class AudioPlayerViewModel(appContext: Context) : ViewModel() {
 
     val audioNarrator: KitchenAudioNarrator = KitchenAudioNarrator(appContext)
     val podcastPlayer: OfflinePodcastPlayer = OfflinePodcastPlayer(appContext)
 
-    val podcastState: StateFlow<OfflinePodcastState> = podcastPlayer.state
+    val playerState: StateFlow<OfflinePodcastState> = podcastPlayer.state
 
-    private val _uiState = MutableStateFlow(PersistentAudioUiState())
-    val uiState: StateFlow<PersistentAudioUiState> = _uiState.asStateFlow()
+    private val _chromeState = MutableStateFlow(AudioPlayerChromeState())
+    val chromeState: StateFlow<AudioPlayerChromeState> = _chromeState.asStateFlow()
 
     init {
-        // Exclusão mútua entre narração TTS das brochuras e episódios Deep Dive offline
+        // Exclusão mútua entre narração TTS das brochuras e reprodução de áudios locais em assets
         audioNarrator.onBeforeStart = { podcastPlayer.pause() }
         podcastPlayer.onBeforeStart = { audioNarrator.stop() }
 
+        // Lê apenas cabeçalhos de duração dos arquivos em assets via Dispatchers.IO (sem decodificar)
         viewModelScope.launch(Dispatchers.IO) {
             podcastPlayer.preloadDurations()
         }
     }
 
+    fun playAsset(assetPath: String, resumeFromSaved: Boolean = false) {
+        podcastPlayer.playAssetPath(assetPath = assetPath, resumeFromSaved = resumeFromSaved)
+    }
+
     fun playEpisode(episode: CoursePodcastEpisode, resumeFromSaved: Boolean = true) {
-        podcastPlayer.playEpisode(episode, resumeFromSaved = resumeFromSaved)
+        podcastPlayer.playEpisode(episode = episode, resumeFromSaved = resumeFromSaved)
     }
 
     fun togglePlayPause(episode: CoursePodcastEpisode) {
         podcastPlayer.togglePlayPause(episode)
     }
 
-    fun seekTo(positionMs: Int) {
-        podcastPlayer.seekTo(positionMs)
+    fun pause() {
+        podcastPlayer.pause()
+    }
+
+    fun resume() {
+        podcastPlayer.resume()
+    }
+
+    fun seekTo(positionMs: Int, targetEpisodeId: String? = null) {
+        podcastPlayer.seekTo(positionMs = positionMs, targetEpisodeId = targetEpisodeId)
     }
 
     fun skipBy(deltaMs: Int) {
@@ -77,15 +93,15 @@ class PersistentAudioViewModel(appContext: Context) : ViewModel() {
     }
 
     fun expandSheet() {
-        _uiState.update { it.copy(isSheetExpanded = true, isMiniBarMinimized = false) }
+        _chromeState.update { it.copy(isSheetExpanded = true, isMiniBarMinimized = false) }
     }
 
     fun collapseSheet() {
-        _uiState.update { it.copy(isSheetExpanded = false) }
+        _chromeState.update { it.copy(isSheetExpanded = false) }
     }
 
     fun setMiniBarMinimized(minimized: Boolean) {
-        _uiState.update { it.copy(isMiniBarMinimized = minimized) }
+        _chromeState.update { it.copy(isMiniBarMinimized = minimized) }
     }
 
     override fun onCleared() {

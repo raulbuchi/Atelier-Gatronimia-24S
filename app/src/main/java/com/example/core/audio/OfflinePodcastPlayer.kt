@@ -438,19 +438,74 @@ class OfflinePodcastPlayer(context: Context) {
         }
     }
 
-    fun seekTo(positionMs: Int) {
-        val mp = mediaPlayer ?: return
-        val maxDur = _state.value.durationMs.coerceAtLeast(0)
+    fun playAssetPath(assetPath: String, resumeFromSaved: Boolean = false) {
+        val normalized = assetPath.trim().removePrefix("/")
+        val existing = _state.value.availableEpisodes.firstOrNull {
+            it.assetPath.equals(normalized, ignoreCase = true) ||
+                it.assetPath.endsWith("/$normalized", ignoreCase = true)
+        }
+        if (existing != null) {
+            playEpisode(existing, resumeFromSaved = resumeFromSaved)
+            return
+        }
+        val rawName = normalized.substringAfterLast('/').substringBeforeLast('.')
+        val cleanLabel = rawName
+            .replace('_', ' ')
+            .replace('-', ' ')
+            .trim()
+            .split(' ')
+            .filter { it.isNotBlank() }
+            .joinToString(" ") { word -> word.replaceFirstChar { it.uppercase() } }
+            .ifBlank { "Lição em Áudio" }
+        val adHocEpisode = CoursePodcastEpisode(
+            id = "asset_${rawName.lowercase()}",
+            filePrefix = rawName.lowercase(),
+            cycleNumber = null,
+            shortLabel = cleanLabel.take(20),
+            badge = "ÁUDIO LOCAL • ASSETS",
+            title = cleanLabel,
+            subtitle = "Reprodução offline direta de assets/$normalized",
+            weeksLabel = "Offline",
+            assetPath = normalized
+        )
+        _state.update { current ->
+            val updatedList = if (current.availableEpisodes.any { it.id == adHocEpisode.id }) {
+                current.availableEpisodes
+            } else {
+                current.availableEpisodes + adHocEpisode
+            }
+            current.copy(availableEpisodes = updatedList)
+        }
+        playEpisode(adHocEpisode, resumeFromSaved = resumeFromSaved)
+    }
+
+    fun seekTo(positionMs: Int, targetEpisodeId: String? = null) {
+        val current = _state.value
+        val resolvedId = targetEpisodeId ?: current.activeEpisodeId ?: current.lastEpisodeId
+        val maxDur = when {
+            resolvedId != null && resolvedId == current.activeEpisodeId && current.durationMs > 0 -> current.durationMs
+            resolvedId != null -> current.episodeDurationsMs[resolvedId] ?: current.durationMs
+            else -> current.durationMs
+        }.coerceAtLeast(0)
         val clamped = if (maxDur > 0) positionMs.coerceIn(0, maxDur) else positionMs.coerceAtLeast(0)
-        runCatching { mp.seekTo(clamped) }
-        val activeId = _state.value.activeEpisodeId
-        if (activeId != null) {
-            persistPosition(activeId, clamped)
+
+        val mp = mediaPlayer
+        if (mp != null && (targetEpisodeId == null || targetEpisodeId == current.activeEpisodeId)) {
+            runCatching { mp.seekTo(clamped) }
+        }
+        if (resolvedId != null) {
+            persistPosition(resolvedId, clamped)
         }
         _state.update {
+            val isTargetActive = resolvedId == null || resolvedId == it.activeEpisodeId
             it.copy(
-                positionMs = clamped,
-                savedPositionsMs = if (activeId != null && clamped > 0) it.savedPositionsMs + (activeId to clamped) else it.savedPositionsMs
+                positionMs = if (isTargetActive) clamped else it.positionMs,
+                savedPositionsMs = if (resolvedId != null) {
+                    if (clamped > 0) it.savedPositionsMs + (resolvedId to clamped)
+                    else it.savedPositionsMs - resolvedId
+                } else {
+                    it.savedPositionsMs
+                }
             )
         }
     }

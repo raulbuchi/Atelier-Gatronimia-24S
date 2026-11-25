@@ -67,8 +67,7 @@ import com.example.data.ai.ChefAiRepository
 import com.example.data.local.AtelierDatabase
 import com.example.data.local.LocalKitchenRepository
 import com.example.data.remote.CommunityRepository
-import com.example.ui.components.PersistentAudioExpandedSheet
-import com.example.ui.components.PersistentOfflineAudioBar
+import com.example.ui.components.AudioPlayerUI
 import com.example.ui.components.SwissCrossBadge
 import com.example.ui.components.TagPill
 import com.example.ui.screens.AssessmentCalculatorsScreen
@@ -87,8 +86,8 @@ import com.example.ui.theme.Slate200
 import com.example.ui.theme.SwissRed
 import com.example.ui.theme.SwissRedContainer
 import com.example.ui.viewmodel.AtelierViewModel
+import com.example.ui.viewmodel.AudioPlayerViewModel
 import com.example.ui.viewmodel.CommunityAiViewModel
-import com.example.ui.viewmodel.PersistentAudioViewModel
 import com.example.ui.viewmodel.StreamUiState
 
 class MainActivity : ComponentActivity() {
@@ -148,16 +147,14 @@ private fun AtelierShell() {
     var currentTab by rememberSaveable { mutableIntStateOf(0) }
     val snackbarHostState = remember { SnackbarHostState() }
 
-    val audioVm: PersistentAudioViewModel = viewModel(
-        key = "persistent_audio_engine",
+    val audioPlayerVm: AudioPlayerViewModel = viewModel(
+        key = "audio_player_viewmodel",
         factory = viewModelFactory {
-            initializer { PersistentAudioViewModel(appContext) }
+            initializer { AudioPlayerViewModel(appContext) }
         }
     )
-    val audioNarrator = audioVm.audioNarrator
-    val podcastPlayer = audioVm.podcastPlayer
-    val podcastState by audioVm.podcastState.collectAsStateWithLifecycle()
-    val audioUiState by audioVm.uiState.collectAsStateWithLifecycle()
+    val audioNarrator = audioPlayerVm.audioNarrator
+    val podcastPlayer = audioPlayerVm.podcastPlayer
 
     val localBanner by atelierVm.statusBanner.collectAsStateWithLifecycle()
     val cloudFeedback by communityVm.feedbackMessage.collectAsStateWithLifecycle()
@@ -269,14 +266,9 @@ private fun AtelierShell() {
             bottomBar = {
                 if (!isWideTablet) {
                     Column(modifier = Modifier.fillMaxWidth()) {
-                        PersistentOfflineAudioBar(
-                            currentCycleNumber = currentCycleNumber,
-                            podcastState = podcastState,
-                            isMinimized = audioUiState.isMiniBarMinimized,
-                            onTogglePlayPause = { episode -> audioVm.togglePlayPause(episode) },
-                            onSkipBy = { delta -> audioVm.skipBy(delta) },
-                            onExpandSheet = { audioVm.expandSheet() },
-                            onSetMinimized = { minimized -> audioVm.setMiniBarMinimized(minimized) }
+                        AudioPlayerUI(
+                            viewModel = audioPlayerVm,
+                            currentCycleNumber = currentCycleNumber
                         )
                         NavigationBar(containerColor = PureSurface) {
                             destinations.forEach { dest ->
@@ -393,34 +385,13 @@ private fun AtelierShell() {
                     }
 
                     if (isWideTablet) {
-                        PersistentOfflineAudioBar(
-                            currentCycleNumber = currentCycleNumber,
-                            podcastState = podcastState,
-                            isMinimized = audioUiState.isMiniBarMinimized,
-                            onTogglePlayPause = { episode -> audioVm.togglePlayPause(episode) },
-                            onSkipBy = { delta -> audioVm.skipBy(delta) },
-                            onExpandSheet = { audioVm.expandSheet() },
-                            onSetMinimized = { minimized -> audioVm.setMiniBarMinimized(minimized) }
+                        AudioPlayerUI(
+                            viewModel = audioPlayerVm,
+                            currentCycleNumber = currentCycleNumber
                         )
                     }
                 }
             }
-        }
-
-        if (audioUiState.isSheetExpanded) {
-            PersistentAudioExpandedSheet(
-                currentCycleNumber = currentCycleNumber,
-                podcastState = podcastState,
-                onDismiss = { audioVm.collapseSheet() },
-                onSelectAndPlay = { episode -> audioVm.playEpisode(episode) },
-                onTogglePlayPause = { episode -> audioVm.togglePlayPause(episode) },
-                onSeekTo = { ms -> audioVm.seekTo(ms) },
-                onSkipBy = { delta -> audioVm.skipBy(delta) },
-                onPlayPrevious = { audioVm.playPrevious(currentCycleNumber) },
-                onPlayNext = { audioVm.playNext(currentCycleNumber) },
-                onSelectSpeed = { speed -> audioVm.setPlaybackSpeed(speed) },
-                onStopAndReset = { audioVm.stopAndReset() }
-            )
         }
     }
 }

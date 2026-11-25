@@ -17,7 +17,7 @@ android {
     applicationId = "com.aistudio.ateliergastronomia.v4kxmp"
     minSdk = 24
     targetSdk = 36
-    versionCode = 4
+    versionCode = 5
     versionName = "4.0"
 
     testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"

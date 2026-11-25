@@ -9,7 +9,16 @@ import androidx.room.Query
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.Transaction
+import androidx.room.migration.Migration
+import androidx.sqlite.db.SupportSQLiteDatabase
 import kotlinx.coroutines.flow.Flow
+
+/**
+ * Versão atual do schema. Ao incrementar: crie a Migration correspondente, registre-a em
+ * [AtelierDatabase.ALL_MIGRATIONS], faça o build (gera `app/schemas/.../<versão>.json`) e
+ * cubra a migração em `AtelierDatabaseMigrationTest`.
+ */
+const val ATELIER_DB_VERSION = 5
 
 @Dao
 interface AtelierDao {
@@ -23,6 +32,25 @@ interface AtelierDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun upsertTimer(entity: StudyTimerEntity)
+
+    @Query("SELECT * FROM study_timer_state WHERE weekNumber = :weekNumber")
+    suspend fun getTimerOnce(weekNumber: Int): StudyTimerEntity?
+
+    // 1b. Cronômetros paralelos do Modo Cozinha
+    @Query("SELECT * FROM kitchen_timers ORDER BY createdAtEpochMs ASC")
+    fun observeKitchenTimers(): Flow<List<KitchenTimerEntity>>
+
+    @Query("SELECT * FROM kitchen_timers")
+    suspend fun getAllKitchenTimersOnce(): List<KitchenTimerEntity>
+
+    @Query("SELECT * FROM kitchen_timers WHERE id = :id")
+    suspend fun getKitchenTimerOnce(id: String): KitchenTimerEntity?
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun upsertKitchenTimer(entity: KitchenTimerEntity)
+
+    @Query("DELETE FROM kitchen_timers WHERE id = :id")
+    suspend fun deleteKitchenTimer(id: String)
 
     // 2. SM-2 Spaced Repetition
     @Query("SELECT * FROM sm2_progress")
@@ -133,6 +161,43 @@ interface AtelierDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun upsertAllSelfEvaluations(entities: List<SelfEvalEntity>)
+
+    // 7. Progressão do Curso (semana em foco, data de início, semanas concluídas, entregáveis)
+    @Query("SELECT * FROM course_progress WHERE id = 1")
+    fun observeCourseProgress(): Flow<CourseProgressEntity?>
+
+    @Query("SELECT * FROM course_progress WHERE id = 1")
+    suspend fun getCourseProgressOnce(): CourseProgressEntity?
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun upsertCourseProgress(entity: CourseProgressEntity)
+
+    @Query("SELECT * FROM week_completions ORDER BY weekNumber ASC")
+    fun observeWeekCompletions(): Flow<List<WeekCompletionEntity>>
+
+    @Query("SELECT * FROM week_completions")
+    suspend fun getAllWeekCompletionsOnce(): List<WeekCompletionEntity>
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun upsertWeekCompletion(entity: WeekCompletionEntity)
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun upsertAllWeekCompletions(entities: List<WeekCompletionEntity>)
+
+    @Query("DELETE FROM week_completions WHERE weekNumber = :weekNumber")
+    suspend fun deleteWeekCompletion(weekNumber: Int)
+
+    @Query("SELECT * FROM cycle_deliverable_checks ORDER BY cycleNumber ASC, deliverableIndex ASC")
+    fun observeCycleDeliverableChecks(): Flow<List<CycleDeliverableCheckEntity>>
+
+    @Query("SELECT * FROM cycle_deliverable_checks")
+    suspend fun getAllCycleDeliverableChecksOnce(): List<CycleDeliverableCheckEntity>
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun upsertCycleDeliverableCheck(entity: CycleDeliverableCheckEntity)
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun upsertAllCycleDeliverableChecks(entities: List<CycleDeliverableCheckEntity>)
 }
 
 @Database(
@@ -143,10 +208,14 @@ interface AtelierDao {
         MepIngredientLineEntity::class,
         ShoppingFifoEntity::class,
         EquipmentOwnedEntity::class,
-        SelfEvalEntity::class
+        SelfEvalEntity::class,
+        CourseProgressEntity::class,
+        WeekCompletionEntity::class,
+        CycleDeliverableCheckEntity::class,
+        KitchenTimerEntity::class
     ],
-    version = 3,
-    exportSchema = false
+    version = ATELIER_DB_VERSION,
+    exportSchema = true
 )
 abstract class AtelierDatabase : RoomDatabase() {
     abstract fun atelierDao(): AtelierDao
@@ -155,13 +224,76 @@ abstract class AtelierDatabase : RoomDatabase() {
         @Volatile
         private var INSTANCE: AtelierDatabase? = null
 
+        const val DATABASE_NAME = "atelier_gastronomia_24s_v4.db"
+
+        /**
+         * Versões anteriores ao schema exportado (sem histórico de migração possível).
+         * Somente essas podem ser recriadas do zero; a partir da v3 toda mudança de schema
+         * EXIGE uma [Migration] coberta por `AtelierDatabaseMigrationTest`.
+         */
+        private val LEGACY_UNMIGRATABLE_VERSIONS = intArrayOf(1, 2)
+
+        /** Todas as migrações suportadas, em ordem. Adicione aqui cada nova migração. */
+        val ALL_MIGRATIONS: Array<Migration> by lazy { arrayOf(MIGRATION_3_4, MIGRATION_4_5) }
+
+        /**
+         * v4 → v5: timers baseados em prazo (sobrevivem ao processo) + cronômetros da cozinha persistidos.
+         * Blocos de estudo que estavam "rodando" na v4 não tinham prazo gravado: são pausados mantendo
+         * o tempo restante.
+         */
+        val MIGRATION_4_5 = object : Migration(4, 5) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL(
+                    "ALTER TABLE `study_timer_state` ADD COLUMN `phaseEndsAtEpochMs` INTEGER NOT NULL DEFAULT 0"
+                )
+                db.execSQL("UPDATE `study_timer_state` SET `isRunning` = 0")
+                db.execSQL(
+                    "CREATE TABLE IF NOT EXISTS `kitchen_timers` (" +
+                        "`id` TEXT NOT NULL, `label` TEXT NOT NULL, `totalSeconds` INTEGER NOT NULL, " +
+                        "`remainingSeconds` INTEGER NOT NULL, `endsAtEpochMs` INTEGER NOT NULL, " +
+                        "`isRunning` INTEGER NOT NULL, `createdAtEpochMs` INTEGER NOT NULL, " +
+                        "PRIMARY KEY(`id`))"
+                )
+            }
+        }
+
+        /** v3 → v4: tabelas de progressão do curso (preserva todo o progresso já existente). */
+        val MIGRATION_3_4 = object : Migration(3, 4) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL(
+                    "CREATE TABLE IF NOT EXISTS `course_progress` (" +
+                        "`id` INTEGER NOT NULL, `startEpochDay` INTEGER NOT NULL, " +
+                        "`focusedWeekNumber` INTEGER NOT NULL, `updatedAtEpochMs` INTEGER NOT NULL, " +
+                        "PRIMARY KEY(`id`))"
+                )
+                db.execSQL(
+                    "CREATE TABLE IF NOT EXISTS `week_completions` (" +
+                        "`weekNumber` INTEGER NOT NULL, `completedAtEpochMs` INTEGER NOT NULL, " +
+                        "PRIMARY KEY(`weekNumber`))"
+                )
+                db.execSQL(
+                    "CREATE TABLE IF NOT EXISTS `cycle_deliverable_checks` (" +
+                        "`cycleNumber` INTEGER NOT NULL, `deliverableIndex` INTEGER NOT NULL, " +
+                        "`isDone` INTEGER NOT NULL, `updatedAtEpochMs` INTEGER NOT NULL, " +
+                        "PRIMARY KEY(`cycleNumber`, `deliverableIndex`))"
+                )
+            }
+        }
+
         fun getInstance(context: Context): AtelierDatabase {
             return INSTANCE ?: synchronized(this) {
                 INSTANCE ?: Room.databaseBuilder(
                     context.applicationContext,
                     AtelierDatabase::class.java,
-                    "atelier_gastronomia_24s_v4.db"
-                ).fallbackToDestructiveMigration(dropAllTables = true).build().also { INSTANCE = it }
+                    DATABASE_NAME
+                )
+                    .addMigrations(*ALL_MIGRATIONS)
+                    .fallbackToDestructiveMigrationFrom(
+                        dropAllTables = true,
+                        *LEGACY_UNMIGRATABLE_VERSIONS
+                    )
+                    .build()
+                    .also { INSTANCE = it }
             }
         }
     }

@@ -90,7 +90,7 @@ fun MepWeeklyCostChartCard(
     onCreateNewSheet: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    // 0 = Evolução Semanal (CMV Lote × Prime-Cost), 1 = Curva Acumulada (CHF)
+    // 0 = Evolução Semanal (CMV Lote × Prime-Cost), 1 = Curva Acumulada (R$)
     var chartMode by rememberSaveable { mutableIntStateOf(0) }
     // false = apenas semanas com fichas criadas, true = panorama completo S01–S24
     var showAll24Weeks by rememberSaveable { mutableStateOf(false) }
@@ -108,10 +108,10 @@ fun MepWeeklyCostChartCard(
     LaunchedEffect(displayedPoints, chartMode) {
         if (displayedPoints.isEmpty()) return@LaunchedEffect
         val cmvSeries = displayedPoints.map {
-            if (chartMode == 0) it.totalBatchFoodCostChf else it.cumulativeFoodCostChf
+            if (chartMode == 0) it.totalBatchFoodCostBrl else it.cumulativeFoodCostBrl
         }
         val primeSeries = displayedPoints.map {
-            if (chartMode == 0) it.totalPrimeCostChf else it.cumulativePrimeCostChf
+            if (chartMode == 0) it.totalPrimeCostBrl else it.cumulativePrimeCostBrl
         }
         modelProducer.runTransaction {
             columnSeries {
@@ -133,9 +133,9 @@ fun MepWeeklyCostChartCard(
         }
     }
 
-    val startChfFormatter = remember {
+    val startBrlFormatter = remember {
         CartesianValueFormatter { _, y, _ ->
-            "CHF %.0f".format(y)
+            "R$ %.0f".format(y)
         }
     }
 
@@ -221,13 +221,13 @@ fun MepWeeklyCostChartCard(
                     ) {
                         FinancialKpiBox(
                             label = "CMV Total (Lotes)",
-                            value = "CHF ${"%.2f".format(analytics.grandTotalFoodCostChf)}",
+                            value = "R$ ${"%.2f".format(analytics.grandTotalFoodCostBrl)}",
                             sub = "Warenkosten somados",
                             modifier = Modifier.weight(1f)
                         )
                         FinancialKpiBox(
                             label = "Prime-Cost Total",
-                            value = "CHF ${"%.2f".format(analytics.grandTotalPrimeCostChf)}",
+                            value = "R$ ${"%.2f".format(analytics.grandTotalPrimeCostBrl)}",
                             sub = "CMV + Mão de Obra",
                             modifier = Modifier.weight(1f)
                         )
@@ -238,7 +238,7 @@ fun MepWeeklyCostChartCard(
                     ) {
                         FinancialKpiBox(
                             label = "Média / Semana Ativa",
-                            value = "CHF ${"%.2f".format(analytics.averageWeeklyFoodCostChf)}",
+                            value = "R$ ${"%.2f".format(analytics.averageWeeklyFoodCostBrl)}",
                             sub = "Custo médio semanal",
                             modifier = Modifier.weight(1f)
                         )
@@ -246,7 +246,7 @@ fun MepWeeklyCostChartCard(
                         FinancialKpiBox(
                             label = "Semana de Maior Custo",
                             value = if (peak != null) {
-                                "S%02d • CHF %.0f".format(peak.weekNumber, peak.totalBatchFoodCostChf)
+                                "S%02d • R$ %.0f".format(peak.weekNumber, peak.totalBatchFoodCostBrl)
                             } else {
                                 "—"
                             },
@@ -321,11 +321,11 @@ fun MepWeeklyCostChartCard(
             ) {
                 LegendSwatch(
                     color = SwissRed,
-                    label = if (chartMode == 0) "Colunas: CMV Insumos (CHF)" else "Colunas: CMV Acumulado (CHF)"
+                    label = if (chartMode == 0) "Colunas: CMV Insumos (R$)" else "Colunas: CMV Acumulado (R$)"
                 )
                 LegendSwatch(
                     color = InfoBlue,
-                    label = if (chartMode == 0) "Linha: Prime-Cost Total (CHF)" else "Linha: Prime-Cost Acumulado (CHF)"
+                    label = if (chartMode == 0) "Linha: Prime-Cost Total (R$)" else "Linha: Prime-Cost Acumulado (R$)"
                 )
             }
 
@@ -341,7 +341,7 @@ fun MepWeeklyCostChartCard(
                         rememberColumnCartesianLayer(),
                         rememberLineCartesianLayer(),
                         startAxis = VerticalAxis.rememberStart(
-                            valueFormatter = startChfFormatter
+                            valueFormatter = startBrlFormatter
                         ),
                         bottomAxis = HorizontalAxis.rememberBottom(
                             valueFormatter = bottomFormatter
@@ -402,14 +402,14 @@ fun MepWeeklyCostChartCard(
                                     )
                                 }
                                 Text(
-                                    text = "CMV: CHF ${"%.2f".format(pt.totalBatchFoodCostChf)}",
+                                    text = "CMV: R$ ${"%.2f".format(pt.totalBatchFoodCostBrl)}",
                                     fontFamily = JetBrainsMonoFamily,
                                     style = MaterialTheme.typography.titleSmall,
                                     fontWeight = FontWeight.Bold,
                                     color = SwissRed
                                 )
                                 Text(
-                                    text = "Prime: CHF ${"%.2f".format(pt.totalPrimeCostChf)} • CMV% ${"%.1f".format(pt.averageCmvPercent)}%",
+                                    text = "Prime: R$ ${"%.2f".format(pt.totalPrimeCostBrl)} • CMV% ${"%.1f".format(pt.averageCmvPercent)}%",
                                     fontFamily = JetBrainsMonoFamily,
                                     style = MaterialTheme.typography.labelSmall
                                 )

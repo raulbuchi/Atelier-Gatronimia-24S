@@ -15,13 +15,21 @@ import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.tasks.await
 
-class CommunityRepository(private val db: FirebaseFirestore) {
+/**
+ * O Firestore é obtido sob demanda: sem `google-services.json` (FirebaseApp ausente) o app abre em
+ * modo local e nenhuma chamada ao Firestore é feita enquanto não há login.
+ */
+class CommunityRepository(firestoreProvider: () -> FirebaseFirestore) {
 
-    constructor(context: Context) : this(
+    constructor(db: FirebaseFirestore) : this({ db })
+
+    constructor(context: Context) : this({
         FirebaseFirestore.getInstance(
             context.applicationContext.getString(R.string.firestore_database_id)
         )
-    )
+    })
+
+    private val db: FirebaseFirestore by lazy(firestoreProvider)
 
     private fun requireUserId(): String {
         throw IllegalStateException("Login Google desabilitado temporariamente para testes.")

@@ -2,7 +2,6 @@ package com.example.data.curriculum
 
 import org.json.JSONArray
 import org.json.JSONObject
-import java.io.File
 
 data class DidacticLibraryCatalog(
     val schemaVersion: String,
@@ -85,9 +84,9 @@ data class DidacticSearchHit(
 object DidacticLibraryLoader {
     private const val RESOURCE_FILE_NAME = "brochuras-didaticas-app_0f609061.json"
 
+    /** Carregado em IO por [CourseContent.preload] antes da UI ser montada. */
     val catalog: DidacticLibraryCatalog by lazy {
-        val rawJson = readRawJson()
-        parseCatalog(JSONObject(rawJson))
+        parseCatalog(JSONObject(CourseContent.readText(RESOURCE_FILE_NAME)))
     }
 
     fun findAxis(axisNumber: Int): DidacticAxisBrochure {
@@ -232,22 +231,6 @@ object DidacticLibraryLoader {
         val prefix = if (start > 0) "…" else ""
         val suffix = if (end < clean.length) "…" else ""
         return "$prefix${clean.substring(start, end)}$suffix"
-    }
-
-    private fun readRawJson(): String {
-        val classLoader = DidacticLibraryLoader::class.java.classLoader
-        val stream = classLoader?.getResourceAsStream(RESOURCE_FILE_NAME)
-            ?: DidacticLibraryLoader::class.java.getResourceAsStream("/$RESOURCE_FILE_NAME")
-        if (stream != null) {
-            return stream.bufferedReader(Charsets.UTF_8).use { it.readText() }
-        }
-        val candidates = listOf(
-            File("public/assets/aistudio/$RESOURCE_FILE_NAME"),
-            File("../public/assets/aistudio/$RESOURCE_FILE_NAME")
-        )
-        val found = candidates.firstOrNull { it.exists() }
-            ?: error("Catálogo didático $RESOURCE_FILE_NAME não encontrado nos recursos internos do app.")
-        return found.readText(Charsets.UTF_8)
     }
 
     private fun parseCatalog(root: JSONObject): DidacticLibraryCatalog {

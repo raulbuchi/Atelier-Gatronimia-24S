@@ -8,13 +8,13 @@ data class WeeklyMepCostPoint(
     val cycleNumber: Int,
     val sheetsCount: Int,
     val totalServingsProduced: Int,
-    val totalBatchFoodCostChf: Double,
-    val totalBatchLaborCostChf: Double,
-    val totalPrimeCostChf: Double,
-    val averagePortionFoodCostChf: Double,
+    val totalBatchFoodCostBrl: Double,
+    val totalBatchLaborCostBrl: Double,
+    val totalPrimeCostBrl: Double,
+    val averagePortionFoodCostBrl: Double,
     val averageCmvPercent: Double,
-    val cumulativeFoodCostChf: Double,
-    val cumulativePrimeCostChf: Double,
+    val cumulativeFoodCostBrl: Double,
+    val cumulativePrimeCostBrl: Double,
     val sheetIds: List<String>,
     val sheetTitles: List<String>
 )
@@ -23,9 +23,9 @@ data class WeeklyMepCostAnalytics(
     val all24WeekPoints: List<WeeklyMepCostPoint>,
     val activeWeekPoints: List<WeeklyMepCostPoint>,
     val totalSheetsCount: Int,
-    val grandTotalFoodCostChf: Double,
-    val grandTotalPrimeCostChf: Double,
-    val averageWeeklyFoodCostChf: Double,
+    val grandTotalFoodCostBrl: Double,
+    val grandTotalPrimeCostBrl: Double,
+    val averageWeeklyFoodCostBrl: Double,
     val peakWeek: WeeklyMepCostPoint?,
     val latestDeltaPercent: Double?,
     val isUsingReferenceBaseline: Boolean
@@ -66,13 +66,13 @@ object MepFinancialAnalyticsEngine {
                     cycleNumber = cycle,
                     sheetsCount = 0,
                     totalServingsProduced = 0,
-                    totalBatchFoodCostChf = 0.0,
-                    totalBatchLaborCostChf = 0.0,
-                    totalPrimeCostChf = 0.0,
-                    averagePortionFoodCostChf = 0.0,
+                    totalBatchFoodCostBrl = 0.0,
+                    totalBatchLaborCostBrl = 0.0,
+                    totalPrimeCostBrl = 0.0,
+                    averagePortionFoodCostBrl = 0.0,
                     averageCmvPercent = 0.0,
-                    cumulativeFoodCostChf = runningCumulativeFood,
-                    cumulativePrimeCostChf = runningCumulativePrime,
+                    cumulativeFoodCostBrl = runningCumulativeFood,
+                    cumulativePrimeCostBrl = runningCumulativePrime,
                     sheetIds = emptyList(),
                     sheetTitles = emptyList()
                 )
@@ -92,15 +92,15 @@ object MepFinancialAnalyticsEngine {
                         targetServings = safeTargetServings,
                         cookingShrinkagePercent = sheet.cookingShrinkagePercent,
                         targetCmvPercent = sheet.targetCmvPercent,
-                        directLaborPerPortionChf = sheet.directLaborCost,
+                        directLaborPerPortionBrl = sheet.directLaborCost,
                         actualBenchYieldGrams = sheet.actualBenchYieldGrams,
                         ingredientLines = lines
                     )
                     val batchLabor = sheet.directLaborCost.coerceAtLeast(0.0) * safeTargetServings
-                    weekFoodCost += summary.totalBatchFoodCostChf
+                    weekFoodCost += summary.totalBatchFoodCostBrl
                     weekLaborCost += batchLabor
                     weekServings += safeTargetServings
-                    weightedBvpSum += summary.pricingPerPortion.netSellingPriceBvpChf * safeTargetServings
+                    weightedBvpSum += summary.pricingPerPortion.netSellingPriceBvpBrl * safeTargetServings
                 }
 
                 val weekPrime = weekFoodCost + weekLaborCost
@@ -115,13 +115,13 @@ object MepFinancialAnalyticsEngine {
                     cycleNumber = cycle,
                     sheetsCount = weekSheets.size,
                     totalServingsProduced = weekServings,
-                    totalBatchFoodCostChf = weekFoodCost,
-                    totalBatchLaborCostChf = weekLaborCost,
-                    totalPrimeCostChf = weekPrime,
-                    averagePortionFoodCostChf = avgPortionFood,
+                    totalBatchFoodCostBrl = weekFoodCost,
+                    totalBatchLaborCostBrl = weekLaborCost,
+                    totalPrimeCostBrl = weekPrime,
+                    averagePortionFoodCostBrl = avgPortionFood,
                     averageCmvPercent = avgCmvPct,
-                    cumulativeFoodCostChf = runningCumulativeFood,
-                    cumulativePrimeCostChf = runningCumulativePrime,
+                    cumulativeFoodCostBrl = runningCumulativeFood,
+                    cumulativePrimeCostBrl = runningCumulativePrime,
                     sheetIds = weekSheets.map { it.recipeId },
                     sheetTitles = weekSheets.map { it.title.ifBlank { it.recipeId } }
                 )
@@ -135,11 +135,11 @@ object MepFinancialAnalyticsEngine {
         } else {
             0.0
         }
-        val peak = activePoints.maxByOrNull { it.totalBatchFoodCostChf }
+        val peak = activePoints.maxByOrNull { it.totalBatchFoodCostBrl }
 
         val deltaPct = if (activePoints.size >= 2) {
-            val prev = activePoints[activePoints.size - 2].totalBatchFoodCostChf
-            val curr = activePoints.last().totalBatchFoodCostChf
+            val prev = activePoints[activePoints.size - 2].totalBatchFoodCostBrl
+            val curr = activePoints.last().totalBatchFoodCostBrl
             if (prev > 0.001) ((curr - prev) / prev) * 100.0 else null
         } else {
             null
@@ -149,9 +149,9 @@ object MepFinancialAnalyticsEngine {
             all24WeekPoints = all24,
             activeWeekPoints = activePoints,
             totalSheetsCount = totalSheets,
-            grandTotalFoodCostChf = runningCumulativeFood,
-            grandTotalPrimeCostChf = runningCumulativePrime,
-            averageWeeklyFoodCostChf = avgWeeklyFood,
+            grandTotalFoodCostBrl = runningCumulativeFood,
+            grandTotalPrimeCostBrl = runningCumulativePrime,
+            averageWeeklyFoodCostBrl = avgWeeklyFood,
             peakWeek = peak,
             latestDeltaPercent = deltaPct,
             isUsingReferenceBaseline = usingBaseline

@@ -82,7 +82,7 @@ import com.example.ui.theme.PccDanger
 import com.example.ui.theme.PccGreenBg
 import com.example.ui.theme.SwissRed
 import com.example.ui.theme.SwissRedContainer
-import com.example.ui.viewmodel.AtelierViewModel
+import com.example.ui.viewmodel.KitchenViewModel
 import com.example.ui.viewmodel.ChefAiUiState
 import com.example.ui.viewmodel.CommunityAiViewModel
 import com.example.ui.viewmodel.StreamUiState
@@ -90,15 +90,15 @@ import com.example.ui.viewmodel.StreamUiState
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CommunityChefAiScreen(
-    atelierVm: AtelierViewModel,
+    kitchenVm: KitchenViewModel,
     communityVm: CommunityAiViewModel,
     defaultAuthorName: String
 ) {
     val context = LocalContext.current
 
-    val pendingTransfer by atelierVm.pendingPhotoTransfer.collectAsStateWithLifecycle()
-    val pendingSos by atelierVm.pendingChefSos.collectAsStateWithLifecycle()
-    val selectedWeekGlobal by atelierVm.selectedWeekNumber.collectAsStateWithLifecycle()
+    val pendingTransfer by kitchenVm.pendingPhotoTransfer.collectAsStateWithLifecycle()
+    val pendingSos by kitchenVm.pendingChefSos.collectAsStateWithLifecycle()
+    val selectedWeekGlobal by kitchenVm.selectedWeekNumber.collectAsStateWithLifecycle()
     val publicMuralState by communityVm.publicMuralState.collectAsStateWithLifecycle()
     val myPostsState by communityVm.myPostsState.collectAsStateWithLifecycle()
     val profileState by communityVm.profileState.collectAsStateWithLifecycle()
@@ -108,7 +108,7 @@ fun CommunityChefAiScreen(
     val tutorChatState by communityVm.tutorChatState.collectAsStateWithLifecycle()
     val isPublishing by communityVm.isPublishing.collectAsStateWithLifecycle()
     val fullMediaCache by communityVm.loadedFullMediaCache.collectAsStateWithLifecycle()
-    val mepSheetsMap by atelierVm.mepSheetsMap.collectAsStateWithLifecycle()
+    val mepSheetsMap by kitchenVm.mepSheetsMap.collectAsStateWithLifecycle()
 
     var subTab by rememberSaveable { mutableIntStateOf(0) }
     var activeCommentsPostId by rememberSaveable { mutableStateOf<String?>(null) }
@@ -160,7 +160,7 @@ fun CommunityChefAiScreen(
                 )
             }
             subTab = 2 // Jump straight to Novo Registro + Chef IA Visual
-            atelierVm.consumePhotoTransfer()
+            kitchenVm.consumePhotoTransfer()
         }
     }
 
@@ -170,7 +170,7 @@ fun CommunityChefAiScreen(
             sosContextSummary = sos.contextSummary
             sosPrefillPrompt = sos.prefilledPrompt
             subTab = 3 // Jump straight to Tutor Chef IA
-            atelierVm.consumeChefSos()
+            kitchenVm.consumeChefSos()
         }
     }
 
@@ -193,13 +193,13 @@ fun CommunityChefAiScreen(
                 showComposerCameraX = false
                 val targetSheet = mepSheetsMap[postRecipeId]
                 if (targetSheet != null && !showQuickMuralPublisher) {
-                    val lines = atelierVm.resolveSeedLinesForSheet(postRecipeId)
+                    val lines = kitchenVm.resolveSeedLinesForSheet(postRecipeId)
                     communityVm.captureAndLinkPhotoToMepSheet(
                         context = context,
                         uri = capturedUri,
                         sheet = targetSheet,
                         onLinked = { localUriStr, cloudLink ->
-                            atelierVm.attachCreationPhotoToMepSheet(
+                            kitchenVm.attachCreationPhotoToMepSheet(
                                 sheet = targetSheet,
                                 lines = lines,
                                 localPhotoUri = localUriStr,

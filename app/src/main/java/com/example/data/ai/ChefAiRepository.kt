@@ -17,6 +17,17 @@ import org.json.JSONObject
 
 private const val TAG = "ChefAiRepository"
 
+const val CHEF_AI_UNAVAILABLE_MESSAGE =
+    "Chef IA indisponível: o Firebase não está configurado neste build (falta o google-services.json)."
+
+/** Sem FirebaseApp o SDK lança uma IllegalStateException técnica; troca por uma mensagem para o aluno. */
+private fun Exception.asChefAiUnavailableIfFirebaseMissing(): Exception =
+    if (this is IllegalStateException && message.orEmpty().contains("FirebaseApp")) {
+        IllegalStateException(CHEF_AI_UNAVAILABLE_MESSAGE, this)
+    } else {
+        this
+    }
+
 data class MultimodalChefAudit(
     val praiseOne: String,
     val praiseTwo: String,
@@ -127,7 +138,7 @@ class ChefAiRepository {
             throw e
         } catch (e: Exception) {
             Log.e(TAG, "Multimodal evaluation failed", e)
-            Result.failure(e)
+            Result.failure(e.asChefAiUnavailableIfFirebaseMissing())
         }
     }
 
@@ -161,7 +172,7 @@ class ChefAiRepository {
             throw e
         } catch (e: Exception) {
             Log.e(TAG, "Tutor stream failed", e)
-            throw e
+            throw e.asChefAiUnavailableIfFirebaseMissing()
         }
     }
 }

@@ -70,6 +70,7 @@ import com.example.data.local.StudyTimerEntity
 import com.example.domain.model.BrochureGuideSpec
 import com.example.ui.components.AtelierFullLogoBanner
 import com.example.ui.components.AudioNarrationPlayerCard
+import com.example.ui.components.CourseProgressCard
 import com.example.ui.components.CoursePodcastPlayerCard
 import com.example.ui.components.KeepScreenOnEffect
 import com.example.ui.components.TagPill
@@ -84,26 +85,29 @@ import com.example.ui.theme.PccGreen
 import com.example.ui.theme.PccGreenBg
 import com.example.ui.theme.SwissRed
 import com.example.ui.theme.SwissRedContainer
-import com.example.ui.viewmodel.AtelierViewModel
+import com.example.ui.viewmodel.CourseViewModel
+import com.example.ui.viewmodel.KitchenViewModel
 import com.example.ui.viewmodel.CommunityAiViewModel
 import com.example.ui.viewmodel.StreamUiState
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun Dashboard24SScreen(
-    atelierVm: AtelierViewModel,
+    courseVm: CourseViewModel,
+    kitchenVm: KitchenViewModel,
     communityVm: CommunityAiViewModel,
     audioNarrator: KitchenAudioNarrator,
     podcastPlayer: OfflinePodcastPlayer,
     onOpenTheoryTab: () -> Unit,
     onOpenRecipeKitchen: (String) -> Unit,
-    onOpenCommunityTab: () -> Unit
+    onOpenCommunityTab: () -> Unit,
+    onOpenSelfEvaluation: () -> Unit
 ) {
-    val selectedWeekNum by atelierVm.selectedWeekNumber.collectAsStateWithLifecycle()
-    val timersMap by atelierVm.timersMap.collectAsStateWithLifecycle()
-    val sm2Map by atelierVm.sm2Map.collectAsStateWithLifecycle()
-    val selfEvalsMap by atelierVm.selfEvaluationsMap.collectAsStateWithLifecycle()
-    val mepSheetsMap by atelierVm.mepSheetsMap.collectAsStateWithLifecycle()
+    val selectedWeekNum by courseVm.selectedWeekNumber.collectAsStateWithLifecycle()
+    val courseProgress by courseVm.courseProgress.collectAsStateWithLifecycle()
+    val timersMap by courseVm.timersMap.collectAsStateWithLifecycle()
+    val sm2Map by courseVm.sm2Map.collectAsStateWithLifecycle()
+    val mepSheetsMap by kitchenVm.mepSheetsMap.collectAsStateWithLifecycle()
     val myPostsState by communityVm.myPostsState.collectAsStateWithLifecycle()
     val narrationState by audioNarrator.state.collectAsStateWithLifecycle()
     val podcastState by podcastPlayer.state.collectAsStateWithLifecycle()
@@ -117,19 +121,19 @@ fun Dashboard24SScreen(
     val timerState = timersMap[selectedWeekNum] ?: StudyTimerEntity(
         weekNumber = selectedWeekNum,
         currentPhaseIndex = 0,
-        remainingSeconds = AtelierViewModel.STUDY_PHASE_DURATIONS_SEC[0],
+        remainingSeconds = CourseViewModel.STUDY_PHASE_DURATIONS_SEC[0],
         isRunning = false
     )
 
     // Keep screen active during 80-min bench study block
     KeepScreenOnEffect(enabled = timerState.isRunning)
 
-    val dueCardsCount = remember(sm2Map) { atelierVm.dueFlashcardsCount() }
+    val dueCardsCount = remember(sm2Map) { courseVm.dueFlashcardsCount() }
     val submittedPhotosCount = when (val st = myPostsState) {
         is StreamUiState.Success -> st.data.size
         else -> 0
     }
-    val completedWeeksCount = selfEvalsMap.size
+    val completedWeeksCount = courseProgress.completedWeeksCount
     val weekRecipes = remember(selectedWeekNum) {
         SwissmilkAndBaseRecipesCatalog.recipesForWeek(selectedWeekNum)
     }
@@ -191,7 +195,7 @@ fun Dashboard24SScreen(
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     KpiStatChip(
-                        label = "Semanas Avaliadas",
+                        label = "Semanas Concluídas",
                         value = "$completedWeeksCount / 24",
                         bg = PccGreenBg,
                         fg = PccGreen,
@@ -214,6 +218,25 @@ fun Dashboard24SScreen(
                 }
             }
         }
+
+        // Progressão do aluno: critérios da semana, conclusão formal e entregáveis do ciclo
+        CourseProgressCard(
+            snapshot = courseProgress,
+            focusedWeekNumber = selectedWeekNum,
+            onSelectWeek = { courseVm.selectWeek(it) },
+            onChangeStartDate = { courseVm.setCourseStartDate(it) },
+            onCompleteWeek = { courseVm.completeWeek(it) },
+            onReopenWeek = { courseVm.reopenWeek(it) },
+            onOpenMepSheet = weekRecipes.firstOrNull()?.let { recipe -> { onOpenRecipeKitchen(recipe.id) } },
+            onReviewFlashcards = {
+                courseVm.practiceAxisInSm2(currentWeek.axisId)
+                onOpenTheoryTab()
+            },
+            onOpenSelfEvaluation = onOpenSelfEvaluation,
+            onToggleDeliverable = { cycle, index, done ->
+                courseVm.setCycleDeliverableDone(cycle, index, done)
+            }
+        )
 
         // 4 Cycles Selector (6 weeks per cycle)
         Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -240,7 +263,7 @@ fun Dashboard24SScreen(
                         onClick = {
                             selectedCycle = cycleNum
                             val firstWeekInCycle = (cycleNum - 1) * 6 + 1
-                            atelierVm.selectWeek(firstWeekInCycle)
+                            courseVm.selectWeek(firstWeekInCycle)
                         },
                         label = { Text(label, fontWeight = FontWeight.SemiBold) },
                         colors = FilterChipDefaults.filterChipColors(
@@ -263,9 +286,9 @@ fun Dashboard24SScreen(
             ) {
                 weeksInCycle.forEach { week ->
                     val isSelected = week.weekNumber == selectedWeekNum
-                    val isDone = selfEvalsMap.containsKey(week.weekNumber)
+                    val isDone = courseProgress.week(week.weekNumber)?.isCompleted == true
                     OutlinedButton(
-                        onClick = { atelierVm.selectWeek(week.weekNumber) },
+                        onClick = { courseVm.selectWeek(week.weekNumber) },
                         border = BorderStroke(
                             width = if (isSelected) 2.dp else 1.dp,
                             color = if (isSelected) SwissRed else MaterialTheme.colorScheme.outline
@@ -281,7 +304,7 @@ fun Dashboard24SScreen(
                         if (isDone) {
                             Icon(
                                 imageVector = Icons.Default.CheckCircle,
-                                contentDescription = "Semana avaliada",
+                                contentDescription = "Semana concluída",
                                 tint = PccGreen,
                                 modifier = Modifier.size(16.dp)
                             )
@@ -345,7 +368,7 @@ fun Dashboard24SScreen(
                 weekBrochures.forEachIndexed { idx, brochure ->
                     OutlinedButton(
                         onClick = {
-                            atelierVm.openDidacticLibraryAxis(brochure.axisNumber)
+                            courseVm.openDidacticLibraryAxis(brochure.axisNumber)
                             onOpenTheoryTab()
                         },
                         modifier = Modifier
@@ -364,10 +387,10 @@ fun Dashboard24SScreen(
                 }
 
                 // 80-min Phase Progress
-                val phaseLabel = AtelierViewModel.STUDY_PHASE_LABELS.getOrElse(timerState.currentPhaseIndex) {
-                    AtelierViewModel.STUDY_PHASE_LABELS[0]
+                val phaseLabel = CourseViewModel.STUDY_PHASE_LABELS.getOrElse(timerState.currentPhaseIndex) {
+                    CourseViewModel.STUDY_PHASE_LABELS[0]
                 }
-                val totalPhaseSec = AtelierViewModel.STUDY_PHASE_DURATIONS_SEC.getOrElse(timerState.currentPhaseIndex) { 600 }
+                val totalPhaseSec = CourseViewModel.STUDY_PHASE_DURATIONS_SEC.getOrElse(timerState.currentPhaseIndex) { 600 }
                 val progress = 1f - (timerState.remainingSeconds.toFloat() / totalPhaseSec.coerceAtLeast(1))
 
                 Card(
@@ -410,7 +433,7 @@ fun Dashboard24SScreen(
                             modifier = Modifier.fillMaxWidth()
                         ) {
                             Button(
-                                onClick = { atelierVm.toggleStudyTimer(currentWeek.weekNumber) },
+                                onClick = { courseVm.toggleStudyTimer(currentWeek.weekNumber) },
                                 colors = ButtonDefaults.buttonColors(
                                     containerColor = if (timerState.isRunning) PccAmber else SwissRed
                                 ),
@@ -430,7 +453,7 @@ fun Dashboard24SScreen(
                                 )
                             }
                             OutlinedButton(
-                                onClick = { atelierVm.advanceOrResetStudyPhase(currentWeek.weekNumber, resetAll = false) },
+                                onClick = { courseVm.advanceOrResetStudyPhase(currentWeek.weekNumber, resetAll = false) },
                                 modifier = Modifier
                                     .height(56.dp)
                                     .testTag("next_study_phase_button")
@@ -441,7 +464,7 @@ fun Dashboard24SScreen(
                                 )
                             }
                             OutlinedButton(
-                                onClick = { atelierVm.advanceOrResetStudyPhase(currentWeek.weekNumber, resetAll = true) },
+                                onClick = { courseVm.advanceOrResetStudyPhase(currentWeek.weekNumber, resetAll = true) },
                                 modifier = Modifier
                                     .height(56.dp)
                                     .testTag("reset_study_phase_button")
@@ -650,7 +673,7 @@ fun Dashboard24SScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                         .clickable {
-                            atelierVm.openDidacticLibraryAxis(brochure.axisNumber)
+                            courseVm.openDidacticLibraryAxis(brochure.axisNumber)
                             onOpenTheoryTab()
                         }
                         .testTag("brochure_shortcut_${brochure.axisNumber}")

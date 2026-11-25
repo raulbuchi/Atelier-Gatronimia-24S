@@ -69,21 +69,24 @@ import com.example.ui.theme.PccGreen
 import com.example.ui.theme.PccGreenBg
 import com.example.ui.theme.SwissRed
 import com.example.ui.theme.SwissRedContainer
-import com.example.ui.viewmodel.AtelierViewModel
+import com.example.ui.viewmodel.AssessmentViewModel
+import com.example.ui.viewmodel.KitchenViewModel
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AssessmentCalculatorsScreen(
-    atelierVm: AtelierViewModel,
+    assessmentVm: AssessmentViewModel,
+    kitchenVm: KitchenViewModel,
+    initialSubTab: Int = 0,
     onOpenMepSheet: (String) -> Unit = {},
     onCreateNewMepSheet: () -> Unit = {}
 ) {
-    val selectedWeekNum by atelierVm.selectedWeekNumber.collectAsStateWithLifecycle()
-    val selfEvalsMap by atelierVm.selfEvaluationsMap.collectAsStateWithLifecycle()
-    val costAnalytics by atelierVm.weeklyMepCostAnalytics.collectAsStateWithLifecycle()
+    val selectedWeekNum by assessmentVm.selectedWeekNumber.collectAsStateWithLifecycle()
+    val selfEvalsMap by assessmentVm.selfEvaluationsMap.collectAsStateWithLifecycle()
+    val costAnalytics by kitchenVm.weeklyMepCostAnalytics.collectAsStateWithLifecycle()
 
-    var subTab by rememberSaveable { mutableIntStateOf(0) }
+    var subTab by rememberSaveable(initialSubTab) { mutableIntStateOf(initialSubTab) }
     val tabs = listOf(
         "Evolução Custos MEP",
         "Autoavaliação & Cópia",
@@ -121,20 +124,20 @@ fun AssessmentCalculatorsScreen(
                 0 -> MepWeeklyCostChartCard(
                     analytics = costAnalytics,
                     onOpenSheetById = { sheetId ->
-                        atelierVm.selectMepSheet(sheetId)
+                        kitchenVm.selectMepSheet(sheetId)
                         onOpenMepSheet(sheetId)
                     },
                     onCreateNewSheet = {
-                        atelierVm.createCustomMepSheet()
+                        kitchenVm.createCustomMepSheet()
                         onCreateNewMepSheet()
                     }
                 )
                 1 -> SelbstkontrolleAndBackupSection(
                     selectedWeekNum = selectedWeekNum,
                     savedEval = selfEvalsMap[selectedWeekNum],
-                    onSelectWeek = { atelierVm.selectWeek(it) },
-                    onSaveEval = { atelierVm.saveSelfEvaluation(it) },
-                    atelierVm = atelierVm
+                    onSelectWeek = { assessmentVm.selectWeek(it) },
+                    onSaveEval = { assessmentVm.saveSelfEvaluation(it) },
+                    assessmentVm = assessmentVm
                 )
                 2 -> FiveCulinaryCalculatorsSection()
                 3 -> ErnaehrungFiberBuilderSection()
@@ -151,7 +154,7 @@ private fun SelbstkontrolleAndBackupSection(
     savedEval: SelfEvalEntity?,
     onSelectWeek: (Int) -> Unit,
     onSaveEval: (SelfEvalEntity) -> Unit,
-    atelierVm: AtelierViewModel
+    assessmentVm: AssessmentViewModel
 ) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
@@ -242,7 +245,7 @@ private fun SelbstkontrolleAndBackupSection(
                 OutlinedButton(
                     onClick = {
                         scope.launch {
-                            val md = atelierVm.buildLernreflexionMarkdown()
+                            val md = assessmentVm.buildLernreflexionMarkdown()
                             val send = Intent(Intent.ACTION_SEND).apply {
                                 type = "text/plain"
                                 putExtra(Intent.EXTRA_SUBJECT, "Dossiê de Evolução Técnica — Atelier Gastronomia 24S")
@@ -263,7 +266,7 @@ private fun SelbstkontrolleAndBackupSection(
                 OutlinedButton(
                     onClick = {
                         scope.launch {
-                            val json = atelierVm.buildBackupJson()
+                            val json = assessmentVm.buildBackupJson()
                             val send = Intent(Intent.ACTION_SEND).apply {
                                 type = "application/json"
                                 putExtra(Intent.EXTRA_SUBJECT, "atelier-gastronomia-24s-backup.json")
@@ -311,7 +314,7 @@ private fun SelbstkontrolleAndBackupSection(
             confirmButton = {
                 Button(
                     onClick = {
-                        atelierVm.restoreFromBackupJson(importJsonInput)
+                        assessmentVm.restoreFromBackupJson(importJsonInput)
                         showImportDialog = false
                     }
                 ) { Text("Restaurar") }
@@ -384,7 +387,7 @@ private fun FiveCulinaryCalculatorsSection() {
             OutlinedTextField(targetCmvPct, { targetCmvPct = it }, label = { Text("CMV Alvo %") }, singleLine = true, modifier = Modifier.weight(1f))
         }
         Text(
-            "Custo Primário: R$ ${"%.2f".format(pricing.primeCostChf)} | Margem Bruta: R$ ${"%.2f".format(pricing.grossMarginBe1Chf)} | Resultado Operacional: R$ ${"%.2f".format(pricing.operatingProfitBe2Chf)}\nPreço Líquido: R$ ${"%.2f".format(pricing.netSellingPriceBvpChf)} → Preço de Cardápio (+8%): R$ ${"%.2f".format(pricing.grossMenuPriceEvpChf)}",
+            "Custo Primário: R$ ${"%.2f".format(pricing.primeCostBrl)} | Margem Bruta: R$ ${"%.2f".format(pricing.grossMarginBe1Brl)} | Resultado Operacional: R$ ${"%.2f".format(pricing.operatingProfitBe2Brl)}\nPreço Líquido: R$ ${"%.2f".format(pricing.netSellingPriceBvpBrl)} → Preço de Cardápio (+8% MWST, ref. suíça): R$ ${"%.2f".format(pricing.grossMenuPriceEvpBrl)}",
             fontFamily = JetBrainsMonoFamily,
             style = MaterialTheme.typography.bodySmall,
             fontWeight = FontWeight.Bold

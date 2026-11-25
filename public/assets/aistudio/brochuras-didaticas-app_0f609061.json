@@ -2231,8 +2231,8 @@
     {
       "id": "eixo-6",
       "axis_number": 6,
-      "title": "Gestão, Cálculos (Fachrechnen), Nutrição & Brigada",
-      "subtitle": "Fachrechnen 1–2, Prime-Cost, BAB/Break-even, nutrição & fibras (Ernaehrung / TBCA), 13 postos da brigada (Betriebsorganisation) e Führung/OR",
+      "title": "Gestão, Cálculo de Preço (Fachrechnung), Nutrição & Liderança",
+      "subtitle": "Cálculo de Preço (Fachrechnung 1–2 em R$), Prime-Cost, BAB/Break-even, nutrição & fibras (Ernaehrung / TBCA), 13 postos da brigada (Betriebsorganisation) e Führung/OR",
       "estimated_read_minutes": 25,
       "weeks_covered": [
         11,
@@ -2243,19 +2243,19 @@
       ],
       "badges": [
         "Ciclo 4 (Gestor)",
-        "16 Exercícios EFZ",
+        "16 Exercícios em R$",
         "Fibras ≥ 30 g/dia",
         "13 Postos Brigada",
         "10 Flashcards"
       ],
       "overview_cards": [
         {
-          "label": "Gestão & Cálculos",
-          "text": "Motor PB = PL × FC em todo o curso + 16 exercícios resolvidos de Fachrechnen 1–2, custeio BAB, Break-even, Nota Suíça 1–6 e CMV Real vs. Teórico."
+          "label": "Gestão & Cálculo de Preço",
+          "text": "Motor PB = PL × FC em todo o curso + 16 exercícios resolvidos de Cálculo de Preço (Fachrechnung 1–2 em R$), custeio BAB, Break-even, Nota Suíça 1–6 e CMV Real vs. Teórico."
         },
         {
-          "label": "Nutrição Ampliada",
-          "text": "Teor de carboidratos (%), amido 80/20, meta ≥ 30 g/dia de fibras (Ernaehrung.pdf), FODMAPs (Koppmann) e dietoterapia TBCA-USP."
+          "label": "Nutrição Ampliada v4",
+          "text": "Teor de carboidratos (%), amido 80/20, meta ≥ 30 g/dia de fibras (Ernaehrung.pdf), equivalências de 10 g, FODMAPs (Koppmann) e dietoterapia TBCA-USP."
         },
         {
           "label": "Brigada & Direito OR",
@@ -2264,15 +2264,50 @@
       ],
       "sections": [
         {
+          "id": "e6-sec-0",
+          "number": "0",
+          "title": "Alinhamento no Curso de 24 Semanas & Cálculo de Preço em Reais (R$)",
+          "weeks": [
+            1,
+            21,
+            22,
+            23,
+            24
+          ],
+          "search_keywords": [
+            "Alinhamento",
+            "Ciclo 4",
+            "Chefkoch",
+            "Gestor",
+            "Reais",
+            "R$",
+            "PB = PL × FC"
+          ],
+          "blocks": [
+            {
+              "type": "paragraph",
+              "text": "Este caderno governa o cálculo de compras (`PB = PL × FC`) desde a **Semana 1** até a **24** e concentra as **Semanas 21 a 24** (Ciclo 4 — Chefkoch / Gestor). Na **edição v4**, aos manuais *Fachrechnen* Séries 1–2, *Kalkulation*, *BP-Kalkulation* (BAB/KATAG), *Finanzen & Führung Serie 0*, TBCA-USP, Figueira e Joel Pinheiro integram-se **todos os valores financeiros convertidos em Reais (R$)**, preservando a exata formulação didática de rendimento, perdas em cascata e *mark-up* da formação suíça, além de *Ernaehrung.pdf* (amido 80/20 e meta ≥ 30 g/dia de fibras) e *Betriebsorganisation.pdf* (13 postos da brigada e 3 organogramas)."
+            },
+            {
+              "type": "callout",
+              "variant": "tip",
+              "title": "Como usar esta brochura no app",
+              "body": "Os gabaritos de Cálculo de Preço (Fachrechnung) em R$, as equivalências de 10 g de fibra e os 13 postos da brigada alimentam diretamente as calculadoras da aba Gestão e o Dossier Lernreflexion."
+            }
+          ]
+        },
+        {
           "id": "e6-sec-1",
           "number": "1",
-          "title": "Cálculos Culinários (Fachrechnen 1 & 2), Rendimento & CMV",
+          "title": "Cálculo de Preço (Fachrechnung), Rendimento & Gabarito das Séries 1 & 2",
           "weeks": [
             11,
             21
           ],
           "search_keywords": [
             "Fachrechnen",
+            "Fachrechnung",
+            "Cálculo de Preço",
             "Fator de Correção",
             "FC",
             "PB",
@@ -2288,41 +2323,41 @@
           "blocks": [
             {
               "type": "paragraph",
-              "text": "Os manuais suíços *Fachrechnen* (*Hilfsmittel* e Séries 1–2, nível EFZ), *Chef Profissional* (CIA) e Joel Pinheiro (2026) distinguem: peso bruto, tara, peso líquido (*Nettogewicht*), perdas não aproveitáveis (*Abfall/Verluste*), aparas aproveitáveis (*Abgang/Parüren*) e itens *pfannenfertig* (*pff*). Na regra de **perdas em cascata**, nunca se somam percentuais diretamente — aplica-se o produto dos rendimentos remanescentes na ordem inversa: `Compra = Porção ÷ [(1 − p_n) × ... × (1 − p_1)]`. No CMV gerencial, compara-se **CMV Real** (`EI + Compras − EF`) com **CMV Teórico** para flagrar desperdícios ou desvios de porção."
+              "text": "Os cadernos de **Cálculo de Preço** (*Fachrechnung / Fachrechnen*, *Hilfsmittel* e Séries 1–2, nível EFZ), *Chef Profissional* (CIA) e Joel Pinheiro (2026) distinguem: peso bruto, tara, peso líquido (*Nettogewicht*), perdas não aproveitáveis (*Abfall/Verluste*), aparas aproveitáveis (*Abgang/Parüren*) e itens *pfannenfertig* (*pff*). Na regra de **perdas em cascata**, nunca se somam percentuais diretamente — aplica-se o produto dos rendimentos remanescentes na ordem inversa: `Compra = Porção ÷ [(1 − p_n) × ... × (1 − p_1)]`. No CMV gerencial (Pinheiro), compara-se **CMV Real** (`Estoque Inicial + Compras − Estoque Final`) com **CMV Teórico** (soma das fichas técnicas vendidas) para flagrar desperdícios ou desvios de porção. A Figura 6.1 da brochura demonstra a regra multiplicativa no Exercício 2.1 (20 kg → 12 kg)."
             },
             {
               "type": "table",
-              "caption": "Gabarito Completo dos 16 Exercícios Oficiais Fachrechnen Séries 1 & 2 (Stufe EFZ)",
+              "caption": "Gabarito dos 16 Exercícios de Cálculo de Preço (Fachrechnung Séries 1 & 2) em R$",
               "headers": [
-                "Exercício (EFZ)",
-                "Dados de Entrada",
-                "Resultado Oficial (Hotel & Gastro formation)"
+                "Exercício de Cálculo de Preço",
+                "Dados de Entrada (R$)",
+                "Resultado do Cálculo de Preço (R$)"
               ],
               "rows": [
                 [
                   "1.1–1.3 Rendimentos",
-                  "1.1 Frango 1,2 kg (CHF 7,80) → 0,78 kg | 1.2 Aspargos 14 kg (CHF 115,50) → 8,68 kg | 1.3 Vitela 7 kg (CHF 154) − 1,2 kg aparas = 5,8 kg",
-                  "1.1: CHF 10,00/kg | 1.2: CHF 13,31/kg | 1.3: CHF 26,55/kg líquido"
+                  "1.1 Frango 1,2 kg (R$ 7,80) → 0,78 kg | 1.2 Aspargos 14 kg (R$ 115,50) → 8,68 kg | 1.3 Vitela 7 kg (R$ 154,00) − 1,2 kg aparas = 5,8 kg",
+                  "1.1: R$ 10,00/kg | 1.2: R$ 13,31/kg | 1.3: R$ 26,55/kg líquido (base Zürcher Geschnetzeltes)"
                 ],
                 [
                   "1.4–1.6 Porção & Cascata",
-                  "1.4 Costeleta CHF 3,85/pess. (CHF 18,50/kg, −15%) | 1.5 Presunto 35×200 g (−20%, −20%) | 1.6 Cenoura 25,4 kg (−20%, −25%)",
-                  "1.4: 177 g | 1.5: 10,938 kg | 1.6: 42,333 kg brutas"
+                  "1.4 Costeleta R$ 3,85/pess. (compra R$ 18,50/kg, perda 15%) | 1.5 Presunto 35×200 g (−20% osso, −20% pochar) | 1.6 Cenoura tournée 25,4 kg (−20%, −25%)",
+                  "1.4: 177 g peso máx. | 1.5: 10,938 kg compra total (0,313 kg/pess.) | 1.6: 42,333 kg brutas"
                 ],
                 [
                   "1.7–1.8 Peixes & BVP",
-                  "1.7 Tamboril 17→12,2 kg (CHF 32,40/kg), 125 g + guarn. CHF 3,50, F=3,5 | 1.8 Felchen 45×120 g (−10%, −20%), CHF 14,50/kg",
-                  "1.7: WK CHF 9,14 → BVP CHF 32,00 | 1.8: Compra 7,500 kg (WK CHF 97,88)"
+                  "1.7 Tamboril 17→12,2 kg (R$ 32,40/kg), porção 125 g + guarn. R$ 3,50, Fator=3,5 | 1.8 Felchen 45×120 g (−10% evisc., −20% filet.), compra R$ 14,50/kg",
+                  "1.7: Custo Mercad. R$ 9,14 → BVP R$ 32,00 (sem imposto) | 1.8: Compra 7,500 kg (Custo Mercad. R$ 97,88)"
                 ],
                 [
                   "2.1–2.5 Perdas Série 2",
-                  "2.1 Parisienne (75×160 g, −20%, −25%) | 2.2 Roastbeef CHF 34 (−20%, −10%) | 2.3 Camarão 8 kg (−35%) | 2.4 Tomate 120×50 g | 2.5 Pescoço suíno CHF 16,50 (−30%, −5%)",
-                  "2.1: 20,000 kg | 2.2: CHF 47,22/kg | 2.3: 12,308 kg | 2.4: 11,483 kg | 2.5: CHF 24,81/kg"
+                  "2.1 Parisienne 75×160 g (−20%, −25%) | 2.2 Roastbeef R$ 34,00/kg (−20% assar, −10% fatiar) | 2.3 Camarão 8 kg (−35%) | 2.4 Tomate 120×50 g | 2.5 Pescoço suíno R$ 16,50 (−30%, −5%)",
+                  "2.1: 20,000 kg | 2.2: R$ 47,22/kg fatiado | 2.3: 12,308 kg | 2.4: 11,483 kg | 2.5: R$ 24,81/kg"
                 ],
                 [
-                  "2.6–2.8 Vendas & MWST 8%",
-                  "2.6 EU 96.264 − WK 32.200 | 2.7 28 menus (WK 336, F=2,9) | 2.8 Rehschnitzel EVP CHF 42 (F=3,3, guarn. CHF 3,34, carne CHF 54/kg)",
-                  "2.6 BE: CHF 56.933,33 | 2.7 EVP: CHF 37,58 (BE CHF 638,40) | 2.8: 156 g de carne"
+                  "2.6–2.8 Vendas & Margem",
+                  "2.6 Faturamento R$ 96.264,00 − Custo Mercad. R$ 32.200,00 | 2.7 28 menus (Custo Mercad. R$ 336,00, Fator=2,9) | 2.8 Rehschnitzel EVP R$ 42,00 (Fator=3,3, guarn. R$ 3,34, carne R$ 54,00/kg)",
+                  "2.6 Margem Bruta (BE): R$ 56.933,33 | 2.7 Preço Efetivo (EVP): R$ 37,58 (Margem R$ 638,40) | 2.8: 156 g de carne"
                 ]
               ]
             }
@@ -2350,7 +2385,7 @@
           "blocks": [
             {
               "type": "paragraph",
-              "text": "Apenas a contabilidade gerencial (**BeBu**) via planilha de rateio (**BAB**) separa o desempenho por setor (Cozinha, Adega, Hospedagem), aplicando delimitações (*Abgrenzungen* / *Warendrittel*). No **custeio pleno** (Hotel Schütz, *Finanzen Serie 0*), o Banquete 1 vence com *Selbstkosten* de **CHF 11.087,85** (10% MGK, 36,729% FGK Cozinha, 42,293% FGK Adega, 1,363% VVGK). No **custeio parcial (*Direct Costing*)**, separa-se custo fixo ($K_f$) e variável ($k_v$) para achar o **Ponto de Equilíbrio** (`x_cr = Kf ÷ (p − kv)` — caso Hotel Montana Luzern). O orçamento para novos negócios (*Steakhouse Konstanz*, investimento CHF 1.210.000) segue **8 etapas** confrontadas com os *benchmarks* **KATAG**."
+              "text": "Apenas a contabilidade gerencial (**BeBu**) via planilha de rateio (**BAB**) separa o desempenho por setor (Cozinha, Adega, Hospedagem), aplicando delimitações (*Abgrenzungen* / *Warendrittel*). No **custeio pleno** (Hotel Schütz, *Finanzen Serie 0*), o Banquete 1 vence com Custo Próprio (*Selbstkosten*) de **R$ 11.087,85** (10% MGK, 36,729% FGK Cozinha, 42,293% FGK Adega, 1,363% VVGK). No **custeio parcial (*Direct Costing*)**, separa-se custo fixo ($K_f$) e variável ($k_v$) para achar o **Ponto de Equilíbrio** (`x_cr = Kf ÷ (p − kv)` — caso Hotel Montana Luzern). O orçamento para novos negócios (*Steakhouse Konstanz*, investimento total de **R$ 1.210.000,00**) segue **8 etapas**, com faturamento diário projetado de R$ 7.040,00 e mês de janeiro em R$ 103.500,00 bruto / R$ 96.189,59 líquido, confrontados com os *benchmarks* **KATAG** (lucro líquido setorial de 1% a 5%)."
             },
             {
               "type": "metric_strip",
@@ -2377,9 +2412,9 @@
                   "detail": "Faixa setorial típica na gastronomia"
                 },
                 {
-                  "label": "MWST Padrão (App)",
+                  "label": "MWST (ref. suíça)",
                   "value": "8%",
-                  "detail": "BVP = EVP ÷ (1 + MWST)"
+                  "detail": "BVP = EVP ÷ (1 + MWST) — referência didática"
                 }
               ]
             }
@@ -2412,7 +2447,7 @@
           "blocks": [
             {
               "type": "paragraph",
-              "text": "Integrando *Ernaehrung.pdf* (formação suíça), **Rosiane Figueira** (*Gastronomia Aplicada à Nutrição*), **Koppmann** e a base **TBCA-USP v. 7.2** (> 5.700 alimentos e 4.000 preparações), o amido vegetal é composto por cerca de **80% de amilopectina** externa e **20% de amilose** interna (75/25 em Koppmann, com leguminosas ricas em amilose 30–65% gerando menor índice glicêmico e FODMAPs como estaquiose e rafinose). A meta diária de fibras (*Nahrungsfasern*) é **≥ 30 g/dia**: ao se ligarem aos **ácidos biliares** excretados nas fezes, as fibras forçam o organismo a consumir **colesterol sanguíneo** para sintetizar novos ácidos biliares."
+              "text": "Integrando *Ernaehrung.pdf* (formação suíça), **Rosiane Figueira** (*Gastronomia Aplicada à Nutrição*), **Koppmann** e a base **TBCA-USP v. 7.2** (> 5.700 alimentos e 4.000 preparações), o amido vegetal é composto por cerca de **80% de amilopectina** externa e **20% de amilose** interna (75/25 em Koppmann, com leguminosas ricas em amilose 30–65% gerando menor índice glicêmico e FODMAPs como estaquiose e rafinose). Nos carboidratos (*Ernaehrung.pdf*), destacam-se os teores de referência: açúcar branco (100%), arroz polido (78%), mel (76%), farinha T405/massas (70%), pão *Ruchbrot* (45%), integral (40%), banana (21%), batata crua (17%), maçã (12%) e leite (5%). A meta diária de fibras (*Nahrungsfasern*) é **≥ 30 g/dia**: ao se ligarem aos **ácidos biliares** excretados nas fezes, as fibras forçam o organismo a consumir **colesterol sanguíneo** para sintetizar novos ácidos biliares, atuando na proteção cardiovascular."
             },
             {
               "type": "metric_strip",
@@ -2512,7 +2547,7 @@
           "blocks": [
             {
               "type": "paragraph",
-              "text": "O manual suíço *Betriebsorganisation.pdf* define **três organogramas** conforme o porte do negócio (Hotel sob direção geral com *Chef de service* e *Küchenchef*; Restaurante direto sob gerência; e Restauração Coletiva sob gestão de economia doméstica/cozinha) e padroniza os **13 postos da brigada clássica** em alemão, francês e inglês:"
+              "text": "O manual suíço *Betriebsorganisation.pdf* define **três organogramas** conforme o porte do negócio (Hotel sob direção geral com *Chef de service* e *Küchenchef*; Restaurante direto sob gerência; e Restauração Coletiva sob gestão de economia doméstica/cozinha) e padroniza os **13 postos da brigada clássica** em alemão, francês e inglês — incluindo as funções especializadas de *Diätkoch* (cozinheiro dietético) e *Mitarbeiterkoch* (refeitório da equipe):"
             },
             {
               "type": "table",
@@ -2556,7 +2591,7 @@
               "type": "callout",
               "variant": "critical",
               "title": "Führung, Direito Trabalhista Suíço (OR/L-GAV) & Nota Suíça 1–6",
-              "body": "A prova Führung avalia Handlungskompetenz (Fach-, Methoden- e Sozialkompetenz), liderança situacional (delegativo → orientador/diretivo diante de queda de entrega), entrevista anual (Qualifikationsgespräch) e regras imperativas do OR: contrato escrito só se altera por escrito; dever de diligência (Sorgfaltspflicht); bloqueio contra demissão durante doença/acidente não profissional (Kündigungsschutz) contando o ano de serviço exato + 13º salário e auxílio-família cantonal (ex.: CHF 220/mês em Zug). Fórmula oficial da Nota Suíça: Nota = arredondar_meio((Pontos × 5 ÷ Máx) + 1) (meta ≥ 5,0 = Gut), consolidando o Dossier Lernreflexion na Semana 24."
+              "body": "A prova Führung avalia Handlungskompetenz (Fach-, Methoden- e Sozialkompetenz), liderança situacional (delegativo → orientador/diretivo diante de queda de entrega), entrevista anual (Qualifikationsgespräch) e regras imperativas do OR: contrato escrito só se altera por escrito; dever de diligência (Sorgfaltspflicht); bloqueio contra demissão durante doença/acidente não profissional (Kündigungsschutz) contando o ano de serviço exato + 13º salário e auxílio-família cantonal (ex.: R$ 220,00/mês). Fórmula oficial da Nota Suíça: Nota = arredondar_meio((Pontos × 5 ÷ Máx) + 1) (meta ≥ 5,0 = Gut), consolidando o Dossier Lernreflexion na Semana 24."
             }
           ]
         }
@@ -2564,8 +2599,8 @@
       "flashcards": [
         {
           "id": "fc-e6-1",
-          "topic": "Fachrechnen",
-          "q": "Por que perdas em cascata de 20% e 25% não somam 45%?",
+          "topic": "Cálculo de Preço",
+          "q": "Por que no cálculo de preço e rendimento (Fachrechnung), perdas de 20% e 25% não somam 45%?",
           "a": "Cada perda incide sobre o saldo restante: (1 − 0,20) × (1 − 0,25) = 0,60 (60% líquido, ou 40% de perda composta)."
         },
         {
@@ -2578,7 +2613,7 @@
           "id": "fc-e6-3",
           "topic": "Break-even",
           "q": "Qual a fórmula do Break-even e a faixa de lucro líquido KATAG?",
-          "a": "x_cr = Kf ÷ (p − kv). Nos benchmarks KATAG, o lucro líquido final na gastronomia fica entre 1% e 5%."
+          "a": "x_cr = Kf ÷ (p − kv). Nos benchmarks setoriais KATAG, o lucro líquido final na gastronomia fica entre 1% e 5%."
         },
         {
           "id": "fc-e6-4",
@@ -2602,7 +2637,7 @@
           "id": "fc-e6-7",
           "topic": "Brigada Dieta",
           "q": "Qual posto específico responde pelas dietas clínicas e pela equipe?",
-          "a": "Diätkoch (cuisinier en diététique) faz as dietas; Mitarbeiterkoch prepara a alimentação dos colaboradores."
+          "a": "Diätkoch (cuisinier en diététique) faz as dietas prescritas; Mitarbeiterkoch prepara a alimentação dos colaboradores."
         },
         {
           "id": "fc-e6-8",
@@ -2628,7 +2663,7 @@
         "FORC / USP. Tabela Brasileira de Composição de Alimentos (TBCA v. 7.2).",
         "HOTEL & GASTRO FORMATION SCHWEIZ. Betriebsorganisation; Ernaehrung; BP-Kalkulation (KATAG); Kalkulation; Fachrechnen Hilfsmittel, Serie 1 & 2; Finanzen & Führung Serie 0; Lernreflexionsdossier; Portfolio Unterricht Information.",
         "CIA. Chef Profissional, 2011. | KOPPMANN, Mariana. Manual Básico de Gastronomia Científica, 2023.",
-        "PINHEIRO, Joel. Ficha Técnica, CMV e Precificação, 2026."
+        "PINHEIRO, Joel. Ficha Técnica, CMV e Precificação para Restaurantes, 2026."
       ]
     }
   ]

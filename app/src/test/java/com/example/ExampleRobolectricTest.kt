@@ -96,15 +96,15 @@ class ExampleRobolectricTest {
             )
 
             // Base 4 -> Target 8 servings (scale 2.0x)
-            // Vitela: PL 1200g, FC 1.25 -> PB 1500g (1.5 kg * 40 = 60 CHF)
-            // Batata: PL 1600g, FC 1.00 -> PB 1600g (1.6 kg * 5 = 8 CHF)
+            // Vitela: PL 1200g, FC 1.25 -> PB 1500g (1.5 kg * 40 = 60 R$)
+            // Batata: PL 1600g, FC 1.00 -> PB 1600g (1.6 kg * 5 = 8 R$)
             // Total PL = 2800g, Total PB = 3100g, Shrinkage 10% -> Cooked Yield = 2520g
             val summary = CulinaryCalculators.calculateMepSheetSummary(
                 baseServings = 4,
                 targetServings = 8,
                 cookingShrinkagePercent = 10.0,
                 targetCmvPercent = 25.0,
-                directLaborPerPortionChf = 8.0,
+                directLaborPerPortionBrl = 8.0,
                 actualBenchYieldGrams = 2469.6, // -2% deviation
                 ingredientLines = lines
             )
@@ -113,8 +113,8 @@ class ExampleRobolectricTest {
             assertEquals(2800.0, summary.totalScaledPlGramsEquiv, 0.01)
             assertEquals(3100.0, summary.totalScaledPbGramsEquiv, 0.01)
             assertEquals(2520.0, summary.theoreticalCookedYieldGrams, 0.01)
-            assertEquals(68.0, summary.totalBatchFoodCostChf, 0.01)
-            assertEquals(8.5, summary.foodCostPerPortionChf, 0.01)
+            assertEquals(68.0, summary.totalBatchFoodCostBrl, 0.01)
+            assertEquals(8.5, summary.foodCostPerPortionBrl, 0.01)
             assertNotNull(summary.benchYieldDeviationPercent)
             assertEquals(-2.0, summary.benchYieldDeviationPercent ?: 0.0, 0.1)
 
@@ -271,7 +271,7 @@ class ExampleRobolectricTest {
         val repo = LocalKitchenRepository(db.atelierDao())
 
         try {
-            // Semana 2: 1 ficha (PL 1000g * FC 1.0 = 1kg * 20 CHF = 20 CHF; Mão de obra 4 pax * 5 CHF = 20 CHF; Prime = 40 CHF)
+            // Semana 2: 1 ficha (PL 1000g * FC 1.0 = 1kg * 20 R$ = 20 R$; Mão de obra 4 pax * 5 R$ = 20 R$; Prime = 40 R$)
             val sheetW2 = MepSheetEntity(
                 recipeId = "mep_w2_a",
                 title = "Fundo Claro S02",
@@ -294,8 +294,8 @@ class ExampleRobolectricTest {
                 )
             )
 
-            // Semana 8: 2 fichas (Ficha B: 30 CHF CMV + 24 CHF Labor = 54 CHF; Ficha C: 20 CHF CMV + 16 CHF Labor = 36 CHF)
-            // Total Semana 8: CMV = 50 CHF, Labor = 40 CHF, Prime = 90 CHF; Delta CMV S02->S08 = (50 - 20)/20 = +150%
+            // Semana 8: 2 fichas (Ficha B: 30 R$ CMV + 24 R$ Labor = 54 R$; Ficha C: 20 R$ CMV + 16 R$ Labor = 36 R$)
+            // Total Semana 8: CMV = 50 R$, Labor = 40 R$, Prime = 90 R$; Delta CMV S02->S08 = (50 - 20)/20 = +150%
             val sheetW8B = MepSheetEntity(
                 recipeId = "mep_w8_b",
                 title = "Émincé S08",
@@ -313,7 +313,7 @@ class ExampleRobolectricTest {
                     unit = "g",
                     baseNetPl = 500.0,
                     trimLossPercent = 0.0,
-                    correctionFactorFc = 1.2, // PB = 600g -> 0.6kg * 50 CHF = 30 CHF
+                    correctionFactorFc = 1.2, // PB = 600g -> 0.6kg * 50 R$ = 30 R$
                     unitCostPerKgOrL = 50.0
                 )
             )
@@ -334,7 +334,7 @@ class ExampleRobolectricTest {
                     unit = "kg",
                     baseNetPl = 2.0,
                     trimLossPercent = 0.0,
-                    correctionFactorFc = 1.0, // PB = 2kg * 10 CHF = 20 CHF
+                    correctionFactorFc = 1.0, // PB = 2kg * 10 R$ = 20 R$
                     unitCostPerKgOrL = 10.0
                 )
             )
@@ -360,20 +360,20 @@ class ExampleRobolectricTest {
             val w2 = analytics.activeWeekPoints[0]
             assertEquals(2, w2.weekNumber)
             assertEquals(1, w2.sheetsCount)
-            assertEquals(20.0, w2.totalBatchFoodCostChf, 0.01)
-            assertEquals(40.0, w2.totalPrimeCostChf, 0.01)
+            assertEquals(20.0, w2.totalBatchFoodCostBrl, 0.01)
+            assertEquals(40.0, w2.totalPrimeCostBrl, 0.01)
 
             val w8 = analytics.activeWeekPoints[1]
             assertEquals(8, w8.weekNumber)
             assertEquals(2, w8.sheetsCount)
-            assertEquals(50.0, w8.totalBatchFoodCostChf, 0.01)
-            assertEquals(90.0, w8.totalPrimeCostChf, 0.01)
-            assertEquals(70.0, w8.cumulativeFoodCostChf, 0.01)
-            assertEquals(130.0, w8.cumulativePrimeCostChf, 0.01)
+            assertEquals(50.0, w8.totalBatchFoodCostBrl, 0.01)
+            assertEquals(90.0, w8.totalPrimeCostBrl, 0.01)
+            assertEquals(70.0, w8.cumulativeFoodCostBrl, 0.01)
+            assertEquals(130.0, w8.cumulativePrimeCostBrl, 0.01)
 
-            assertEquals(70.0, analytics.grandTotalFoodCostChf, 0.01)
-            assertEquals(130.0, analytics.grandTotalPrimeCostChf, 0.01)
-            assertEquals(35.0, analytics.averageWeeklyFoodCostChf, 0.01)
+            assertEquals(70.0, analytics.grandTotalFoodCostBrl, 0.01)
+            assertEquals(130.0, analytics.grandTotalPrimeCostBrl, 0.01)
+            assertEquals(35.0, analytics.averageWeeklyFoodCostBrl, 0.01)
             assertEquals(8, analytics.peakWeek?.weekNumber)
             assertEquals(150.0, analytics.latestDeltaPercent ?: 0.0, 0.1)
         } finally {
@@ -418,10 +418,11 @@ class ExampleRobolectricTest {
     }
 
     @Test
-    fun `native didactic library loader parses 6 axes 23 sections 60 flashcards and global search`() {
+    fun `native didactic library loader parses 6 axes 24 sections 60 flashcards and global search`() {
         val catalog = com.example.data.curriculum.DidacticLibraryLoader.catalog
         assertEquals(6, catalog.axes.size)
-        assertEquals(23, catalog.axes.sumOf { it.sections.size })
+        // 23 seções originais + Seção 0 (Alinhamento & R$) da brochura v4 do Eixo 6.
+        assertEquals(24, catalog.axes.sumOf { it.sections.size })
         assertEquals(60, catalog.axes.sumOf { it.flashcards.size })
 
         val allBlocks = catalog.axes.flatMap { ax -> ax.sections.flatMap { it.blocks } }

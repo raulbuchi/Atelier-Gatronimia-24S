@@ -32,14 +32,14 @@
     <string name="blank_mep_template">Consultar Guia &amp; Modelo (8 Blocos)</string>
     <string name="sos_chef_ai">Pedir Socorro ao Chef IA</string>
     <string name="mep_cost_chart_title">Evolução Semanal de Custos — Fichas Técnicas MEP</string>
-    <string name="mep_cost_chart_subtitle">Monitoramento de CMV de Lote (Warenkosten) e Prime-Cost por semana de produção (CHF)</string>
+    <string name="mep_cost_chart_subtitle">Monitoramento de CMV de Lote (Warenkosten) e Prime-Cost por semana de produção (R$)</string>
     <string name="mep_cost_mode_weekly">Semanal (CMV × Prime)</string>
     <string name="mep_cost_mode_cumulative">Curva Acumulada</string>
     <string name="mep_cost_scope_active">Semanas c/ Fichas</string>
     <string name="mep_cost_scope_all24">Curso 24S (S01–S24)</string>
     <string name="mep_cost_reference_badge">REFERÊNCIA S08 • SALVE UMA FICHA PARA SÉRIE PRÓPRIA</string>
     <string name="mep_cost_create_cta">Nova Ficha Técnica MEP</string>
-    <string name="cd_mep_cost_chart">Gráfico cartesiano da evolução semanal do custo total das fichas técnicas em francos suíços</string>
+    <string name="cd_mep_cost_chart">Gráfico cartesiano da evolução semanal do custo total das fichas técnicas em reais</string>
     <string name="mural_comunitario_title">Mural Comunitário da Brigada</string>
     <string name="mural_comunitario_subtitle">Compartilhe fotos das preparações no Firestore e troque curtidas e avaliações técnicas com a turma.</string>
     <string name="mural_publish_cta">Publicar Preparação no Mural</string>
@@ -84,4 +84,7 @@
     <string name="cd_persistent_player_previous">Episódio anterior</string>
     <string name="cd_persistent_player_next">Próximo episódio</string>
     <string name="cd_persistent_player_close_sheet">Fechar player expandido</string>
+    <string name="content_loading">Preparando o conteúdo das 24 semanas…</string>
+    <string name="content_load_error">Não foi possível carregar o conteúdo do curso: %1$s</string>
+    <string name="content_retry">Tentar novamente</string>
 </resources>

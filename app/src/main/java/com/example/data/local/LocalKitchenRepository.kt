@@ -7,12 +7,16 @@ import org.json.JSONObject
 class LocalKitchenRepository(private val dao: AtelierDao) {
 
     val allTimers = dao.observeAllTimers()
+    val kitchenTimers = dao.observeKitchenTimers()
     val sm2Progress = dao.observeSm2Progress()
     val mepSheets = dao.observeAllMepSheets()
     val mepLines = dao.observeAllMepLines()
     val shoppingItems = dao.observeAllShoppingItems()
     val ownedEquipment = dao.observeOwnedEquipment()
     val selfEvaluations = dao.observeSelfEvaluations()
+    val courseProgress = dao.observeCourseProgress()
+    val weekCompletions = dao.observeWeekCompletions()
+    val cycleDeliverableChecks = dao.observeCycleDeliverableChecks()
 
     suspend fun upsertTimer(entity: StudyTimerEntity) = dao.upsertTimer(entity)
     suspend fun upsertSm2(entity: Sm2ProgressEntity) = dao.upsertSm2(entity)
@@ -28,6 +32,43 @@ class LocalKitchenRepository(private val dao: AtelierDao) {
     suspend fun deleteShoppingItem(id: Long) = dao.deleteShoppingItem(id)
     suspend fun upsertEquipment(entity: EquipmentOwnedEntity) = dao.upsertEquipmentOwned(entity)
     suspend fun upsertSelfEvaluation(entity: SelfEvalEntity) = dao.upsertSelfEvaluation(entity)
+
+    /** Retorna o progresso do curso, criando-o com [defaultStartEpochDay] no primeiro uso. */
+    suspend fun getOrCreateCourseProgress(defaultStartEpochDay: Long): CourseProgressEntity {
+        dao.getCourseProgressOnce()?.let { return it }
+        val created = CourseProgressEntity(startEpochDay = defaultStartEpochDay, focusedWeekNumber = 1)
+        dao.upsertCourseProgress(created)
+        return created
+    }
+
+    suspend fun updateFocusedWeek(weekNumber: Int, defaultStartEpochDay: Long) {
+        val current = getOrCreateCourseProgress(defaultStartEpochDay)
+        if (current.focusedWeekNumber == weekNumber) return
+        dao.upsertCourseProgress(
+            current.copy(focusedWeekNumber = weekNumber, updatedAtEpochMs = System.currentTimeMillis())
+        )
+    }
+
+    suspend fun updateCourseStartDate(startEpochDay: Long) {
+        val current = getOrCreateCourseProgress(startEpochDay)
+        dao.upsertCourseProgress(
+            current.copy(startEpochDay = startEpochDay, updatedAtEpochMs = System.currentTimeMillis())
+        )
+    }
+
+    suspend fun markWeekCompleted(weekNumber: Int) =
+        dao.upsertWeekCompletion(WeekCompletionEntity(weekNumber = weekNumber))
+
+    suspend fun reopenWeek(weekNumber: Int) = dao.deleteWeekCompletion(weekNumber)
+
+    suspend fun setCycleDeliverableDone(cycleNumber: Int, deliverableIndex: Int, isDone: Boolean) =
+        dao.upsertCycleDeliverableCheck(
+            CycleDeliverableCheckEntity(
+                cycleNumber = cycleNumber,
+                deliverableIndex = deliverableIndex,
+                isDone = isDone
+            )
+        )
 
     suspend fun exportBackupJson(): String {
         val root = JSONObject()
@@ -150,6 +191,59 @@ class LocalKitchenRepository(private val dao: AtelierDao) {
             )
         }
         root.put("shoppingFifo", shopArr)
+
+        // Blocos de estudo de 80 min: critério de conclusão da semana. Exportados pausados.
+        val timersArr = JSONArray()
+        val nowMs = System.currentTimeMillis()
+        dao.getAllTimersOnce().forEach { t ->
+            val remaining = if (t.isRunning && t.phaseEndsAtEpochMs > 0) {
+                ((t.phaseEndsAtEpochMs - nowMs + 999) / 1000).toInt().coerceAtLeast(0)
+            } else {
+                t.remainingSeconds
+            }
+            timersArr.put(
+                JSONObject().apply {
+                    put("weekNumber", t.weekNumber)
+                    put("currentPhaseIndex", t.currentPhaseIndex)
+                    put("remainingSeconds", remaining)
+                    put("completedBlocksCount", t.completedBlocksCount)
+                }
+            )
+        }
+        root.put("studyTimers", timersArr)
+
+        dao.getCourseProgressOnce()?.let { p ->
+            root.put(
+                "courseProgress",
+                JSONObject().apply {
+                    put("startEpochDay", p.startEpochDay)
+                    put("focusedWeekNumber", p.focusedWeekNumber)
+                }
+            )
+        }
+
+        val completionsArr = JSONArray()
+        dao.getAllWeekCompletionsOnce().forEach { c ->
+            completionsArr.put(
+                JSONObject().apply {
+                    put("weekNumber", c.weekNumber)
+                    put("completedAtEpochMs", c.completedAtEpochMs)
+                }
+            )
+        }
+        root.put("weekCompletions", completionsArr)
+
+        val deliverablesArr = JSONArray()
+        dao.getAllCycleDeliverableChecksOnce().forEach { d ->
+            deliverablesArr.put(
+                JSONObject().apply {
+                    put("cycleNumber", d.cycleNumber)
+                    put("deliverableIndex", d.deliverableIndex)
+                    put("isDone", d.isDone)
+                }
+            )
+        }
+        root.put("cycleDeliverableChecks", deliverablesArr)
 
         return root.toString(2)
     }
@@ -280,7 +374,61 @@ class LocalKitchenRepository(private val dao: AtelierDao) {
                     fifoPriorityNote = o.optString("fifoPriorityNote", "PEPS/FIFO")
                 )
             }
+            // Substitui as semanas presentes no backup em vez de duplicar itens (ids autoincrementados).
+            list.map { it.weekNumber }.distinct().forEach { dao.clearShoppingForWeek(it) }
             dao.insertShoppingItems(list)
+            restoredCount += list.size
+        }
+
+        root.optJSONArray("studyTimers")?.let { arr ->
+            (0 until arr.length()).forEach { i ->
+                val o = arr.getJSONObject(i)
+                dao.upsertTimer(
+                    StudyTimerEntity(
+                        weekNumber = o.getInt("weekNumber").coerceIn(1, 24),
+                        currentPhaseIndex = o.optInt("currentPhaseIndex", 0).coerceIn(0, 4),
+                        remainingSeconds = o.optInt("remainingSeconds", 600).coerceAtLeast(0),
+                        isRunning = false,
+                        completedBlocksCount = o.optInt("completedBlocksCount", 0).coerceAtLeast(0),
+                        phaseEndsAtEpochMs = 0L
+                    )
+                )
+            }
+            restoredCount += arr.length()
+        }
+
+        root.optJSONObject("courseProgress")?.let { o ->
+            dao.upsertCourseProgress(
+                CourseProgressEntity(
+                    startEpochDay = o.getLong("startEpochDay"),
+                    focusedWeekNumber = o.optInt("focusedWeekNumber", 1).coerceIn(1, 24)
+                )
+            )
+            restoredCount += 1
+        }
+
+        root.optJSONArray("weekCompletions")?.let { arr ->
+            val list = (0 until arr.length()).map { i ->
+                val o = arr.getJSONObject(i)
+                WeekCompletionEntity(
+                    weekNumber = o.getInt("weekNumber"),
+                    completedAtEpochMs = o.optLong("completedAtEpochMs", System.currentTimeMillis())
+                )
+            }
+            dao.upsertAllWeekCompletions(list)
+            restoredCount += list.size
+        }
+
+        root.optJSONArray("cycleDeliverableChecks")?.let { arr ->
+            val list = (0 until arr.length()).map { i ->
+                val o = arr.getJSONObject(i)
+                CycleDeliverableCheckEntity(
+                    cycleNumber = o.getInt("cycleNumber"),
+                    deliverableIndex = o.getInt("deliverableIndex"),
+                    isDone = o.optBoolean("isDone", false)
+                )
+            }
+            dao.upsertAllCycleDeliverableChecks(list)
             restoredCount += list.size
         }
 
@@ -326,7 +474,7 @@ class LocalKitchenRepository(private val dao: AtelierDao) {
             appendLine("- **Identificador:** `${sheet.recipeId}` | **Semana:** ${sheet.weekNumber} | **Praça da Brigada:** ${sheet.stationBrigade}")
             appendLine("- **Rendimento Escalonado:** ${sheet.targetServings} porções (Base ${sheet.baseServings} • Fator de Escala ${"%.2f".format(summary.scaleFactor)}x)")
             appendLine("- **Rendimento Pós-Cocção (${"%.0f".format(sheet.cookingShrinkagePercent)}% de quebra térmica):** ${"%.0f".format(summary.theoreticalCookedYieldGrams)} g total (${"%.0f".format(summary.theoreticalPortionCookedGrams)} g/porção)")
-            appendLine("- **CMV / Porção:** R$ ${"%.2f".format(summary.foodCostPerPortionChf)} | **Preço Líquido Sugerido:** R$ ${"%.2f".format(summary.pricingPerPortion.netSellingPriceBvpChf)} | **Preço de Cardápio (c/ taxas 8%):** R$ ${"%.2f".format(summary.pricingPerPortion.grossMenuPriceEvpChf)}")
+            appendLine("- **CMV / Porção:** R$ ${"%.2f".format(summary.foodCostPerPortionBrl)} | **Preço Líquido Sugerido:** R$ ${"%.2f".format(summary.pricingPerPortion.netSellingPriceBvpBrl)} | **Preço de Cardápio (+8% MWST, ref. suíça):** R$ ${"%.2f".format(summary.pricingPerPortion.grossMenuPriceEvpBrl)}")
             if (sheet.cloudImageLink.isNotBlank()) {
                 appendLine("- **Registro Fotográfico da Criação (Firestore):** `${sheet.cloudImageLink}`")
             }
@@ -336,7 +484,7 @@ class LocalKitchenRepository(private val dao: AtelierDao) {
             appendLine()
             appendLine("## 2. Matriz de Insumos (PB = PL × FC)")
             summary.lines.forEach { l ->
-                appendLine("- **${l.source.name}** (${l.source.sector}): PL ${"%.1f".format(l.scaledPl)} ${l.source.unit} | FC ${"%.2f".format(l.effectiveFc)} (${"%.0f".format(l.effectiveTrimLossPercent)}% apara) | PB **${"%.1f".format(l.scaledPb)} ${l.source.unit}** | R$ ${"%.2f".format(l.lineCostChf)}")
+                appendLine("- **${l.source.name}** (${l.source.sector}): PL ${"%.1f".format(l.scaledPl)} ${l.source.unit} | FC ${"%.2f".format(l.effectiveFc)} (${"%.0f".format(l.effectiveTrimLossPercent)}% apara) | PB **${"%.1f".format(l.scaledPb)} ${l.source.unit}** | R$ ${"%.2f".format(l.lineCostBrl)}")
             }
             appendLine()
             appendLine("## 3. Bateria de Cozinha & Cutelaria")

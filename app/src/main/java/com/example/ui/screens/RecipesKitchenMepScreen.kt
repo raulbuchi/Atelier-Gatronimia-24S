@@ -75,7 +75,7 @@ import com.example.ui.theme.PccGreen
 import com.example.ui.theme.PccGreenBg
 import com.example.ui.theme.SwissRed
 import com.example.ui.theme.SwissRedContainer
-import com.example.ui.viewmodel.AtelierViewModel
+import com.example.ui.viewmodel.KitchenViewModel
 import com.example.ui.viewmodel.CommunityAiViewModel
 import com.example.ui.viewmodel.ParallelKitchenTimer
 import com.example.ui.viewmodel.StreamUiState
@@ -83,22 +83,22 @@ import com.example.ui.viewmodel.StreamUiState
 @OptIn(ExperimentalLayoutApi::class, ExperimentalMaterial3Api::class)
 @Composable
 fun RecipesKitchenMepScreen(
-    atelierVm: AtelierViewModel,
+    kitchenVm: KitchenViewModel,
     communityVm: CommunityAiViewModel,
     onNavigateToPhotoRegister: () -> Unit,
     onNavigateToChefSos: () -> Unit = {}
 ) {
-    val selectedRecipeId by atelierVm.selectedRecipeId.collectAsStateWithLifecycle()
-    val activeMepSheetId by atelierVm.activeMepSheetId.collectAsStateWithLifecycle()
-    val targetServings by atelierVm.targetServings.collectAsStateWithLifecycle()
-    val isKitchenMode by atelierVm.isKitchenModeActive.collectAsStateWithLifecycle()
-    val activeStepIdx by atelierVm.activeCookingStepIndex.collectAsStateWithLifecycle()
-    val parallelTimers by atelierVm.parallelTimers.collectAsStateWithLifecycle()
-    val ownedEquipmentIds by atelierVm.ownedEquipmentIds.collectAsStateWithLifecycle()
-    val mepSheetsMap by atelierVm.mepSheetsMap.collectAsStateWithLifecycle()
-    val persistedMepSheets by atelierVm.persistedMepSheetsList.collectAsStateWithLifecycle()
-    val mepLinesMap by atelierVm.mepLinesByRecipeMap.collectAsStateWithLifecycle()
-    val costAnalytics by atelierVm.weeklyMepCostAnalytics.collectAsStateWithLifecycle()
+    val selectedRecipeId by kitchenVm.selectedRecipeId.collectAsStateWithLifecycle()
+    val activeMepSheetId by kitchenVm.activeMepSheetId.collectAsStateWithLifecycle()
+    val targetServings by kitchenVm.targetServings.collectAsStateWithLifecycle()
+    val isKitchenMode by kitchenVm.isKitchenModeActive.collectAsStateWithLifecycle()
+    val activeStepIdx by kitchenVm.activeCookingStepIndex.collectAsStateWithLifecycle()
+    val parallelTimers by kitchenVm.parallelTimers.collectAsStateWithLifecycle()
+    val ownedEquipmentIds by kitchenVm.ownedEquipmentIds.collectAsStateWithLifecycle()
+    val mepSheetsMap by kitchenVm.mepSheetsMap.collectAsStateWithLifecycle()
+    val persistedMepSheets by kitchenVm.persistedMepSheetsList.collectAsStateWithLifecycle()
+    val mepLinesMap by kitchenVm.mepLinesByRecipeMap.collectAsStateWithLifecycle()
+    val costAnalytics by kitchenVm.weeklyMepCostAnalytics.collectAsStateWithLifecycle()
     val myMepLinksState by communityVm.myMepLinksState.collectAsStateWithLifecycle()
     val isSyncingMepPhoto by communityVm.isSyncingMepPhoto.collectAsStateWithLifecycle()
     val fullMediaCache by communityVm.loadedFullMediaCache.collectAsStateWithLifecycle()
@@ -118,30 +118,30 @@ fun RecipesKitchenMepScreen(
     }
 
     val initialLinesForActiveMep = remember(activeMepSheetId, mepLinesMap) {
-        mepLinesMap[activeMepSheetId] ?: atelierVm.resolveSeedLinesForSheet(activeMepSheetId)
+        mepLinesMap[activeMepSheetId] ?: kitchenVm.resolveSeedLinesForSheet(activeMepSheetId)
     }
 
     if (isKitchenMode) {
-        BackHandler { atelierVm.exitKitchenMode() }
+        BackHandler { kitchenVm.exitKitchenMode() }
         KeepScreenOnEffect(enabled = true)
         LowTouchKitchenModeView(
             recipe = activeRecipe,
             targetServings = targetServings,
             stepIndex = activeStepIdx,
             parallelTimers = parallelTimers,
-            onStepChange = { atelierVm.setCookingStep(it, activeRecipe.steps.size) },
-            onStartTimer = { id, label, mins -> atelierVm.addOrRestartParallelTimer(id, label, mins) },
-            onToggleTimer = { atelierVm.toggleParallelTimer(it) },
-            onRemoveTimer = { atelierVm.removeParallelTimer(it) },
+            onStepChange = { kitchenVm.setCookingStep(it, activeRecipe.steps.size) },
+            onStartTimer = { id, label, mins -> kitchenVm.addOrRestartParallelTimer(id, label, mins) },
+            onToggleTimer = { kitchenVm.toggleParallelTimer(it) },
+            onRemoveTimer = { kitchenVm.removeParallelTimer(it) },
             onRequestChefSos = { currentStep ->
-                atelierVm.requestChefSos(
+                kitchenVm.requestChefSos(
                     weekNumber = activeRecipe.weekNumber,
                     contextSummary = "Modo Cozinha: ${activeRecipe.title} ($targetServings porções) • Etapa ${currentStep.stepNumber}: ${currentStep.title} (${currentStep.cookwareDeFrPt})",
                     prefilledPrompt = "Chef, estou na Etapa ${currentStep.stepNumber} (${currentStep.title}) de ${activeRecipe.title} para $targetServings porções. Qual o diagnóstico rápido e controle crítico para não errar o ponto?"
                 )
                 onNavigateToChefSos()
             },
-            onExit = { atelierVm.exitKitchenMode() }
+            onExit = { kitchenVm.exitKitchenMode() }
         )
         return
     }
@@ -256,7 +256,7 @@ fun RecipesKitchenMepScreen(
                 filteredRecipes.forEach { rec ->
                     val isSel = if (subViewTab == 1) rec.id == activeMepSheetId else rec.id == activeRecipe.id
                     OutlinedButton(
-                        onClick = { atelierVm.selectRecipe(rec.id) },
+                        onClick = { kitchenVm.selectRecipe(rec.id) },
                         border = BorderStroke(if (isSel) 2.dp else 1.dp, if (isSel) SwissRed else MaterialTheme.colorScheme.outline),
                         colors = ButtonDefaults.outlinedButtonColors(
                             containerColor = if (isSel) SwissRedContainer else MaterialTheme.colorScheme.surface
@@ -275,10 +275,10 @@ fun RecipesKitchenMepScreen(
                     recipe = activeRecipe,
                     targetServings = targetServings,
                     missingTools = missingTools,
-                    onServingsChange = { atelierVm.setTargetServings(it) },
-                    onEnterKitchenMode = { atelierVm.enterKitchenMode(activeRecipe) },
+                    onServingsChange = { kitchenVm.setTargetServings(it) },
+                    onEnterKitchenMode = { kitchenVm.enterKitchenMode(activeRecipe) },
                     onOpenMepCalculator = {
-                        atelierVm.selectRecipe(activeRecipe.id)
+                        kitchenVm.selectRecipe(activeRecipe.id)
                         subViewTab = 1
                     }
                 )
@@ -289,8 +289,8 @@ fun RecipesKitchenMepScreen(
 
                 MepWeeklyCostChartCard(
                     analytics = costAnalytics,
-                    onOpenSheetById = { atelierVm.selectMepSheet(it) },
-                    onCreateNewSheet = { atelierVm.createCustomMepSheet() }
+                    onOpenSheetById = { kitchenVm.selectMepSheet(it) },
+                    onCreateNewSheet = { kitchenVm.createCustomMepSheet() }
                 )
 
                 MepCalculatorWorkstation(
@@ -303,10 +303,10 @@ fun RecipesKitchenMepScreen(
                     fullMediaCache = fullMediaCache,
                     persistedRoomSheets = persistedMepSheets,
                     initialLines = initialLinesForActiveMep,
-                    onSelectSheet = { atelierVm.selectMepSheet(it) },
-                    onCreateCustomSheet = { atelierVm.createCustomMepSheet() },
+                    onSelectSheet = { kitchenVm.selectMepSheet(it) },
+                    onCreateCustomSheet = { kitchenVm.createCustomMepSheet() },
                     onLoadZurcherExample = {
-                        atelierVm.selectRecipe(CurriculumWeeksAndGuides.exampleMepZurcherRosti.recipeId)
+                        kitchenVm.selectRecipe(CurriculumWeeksAndGuides.exampleMepZurcherRosti.recipeId)
                     },
                     onResetLinesToCatalog = {
                         val rec = catalogRecipeForMep ?: return@MepCalculatorWorkstation emptyList()
@@ -321,19 +321,19 @@ fun RecipesKitchenMepScreen(
                                 baseNetPl = ing.netAmountPl,
                                 trimLossPercent = if (fc > 1.0) ((1.0 - (1.0 / fc)) * 100.0) else 0.0,
                                 correctionFactorFc = fc,
-                                unitCostPerKgOrL = AtelierViewModel.defaultUnitCostForSector(ing.sector, ing.unit)
+                                unitCostPerKgOrL = KitchenViewModel.defaultUnitCostForSector(ing.sector, ing.unit)
                             )
                         }
                     },
-                    onSaveComplete = { sheet, lines -> atelierVm.saveMepComplete(sheet, lines) },
-                    onDeleteSheet = { sheetId -> atelierVm.deleteMepSheet(sheetId) },
+                    onSaveComplete = { sheet, lines -> kitchenVm.saveMepComplete(sheet, lines) },
+                    onDeleteSheet = { sheetId -> kitchenVm.deleteMepSheet(sheetId) },
                     onCaptureOrLinkPhoto = { ctx, uri, sheet, lines ->
                         communityVm.captureAndLinkPhotoToMepSheet(
                             context = ctx,
                             uri = uri,
                             sheet = sheet,
                             onLinked = { localUriStr, cloudLink ->
-                                atelierVm.attachCreationPhotoToMepSheet(
+                                kitchenVm.attachCreationPhotoToMepSheet(
                                     sheet = sheet,
                                     lines = lines,
                                     localPhotoUri = localUriStr,
@@ -346,11 +346,11 @@ fun RecipesKitchenMepScreen(
                         communityVm.loadFullResolutionPhoto(mediaId)
                     },
                     onRegisterTrainingPhoto = { sheet, _ ->
-                        atelierVm.preparePhotoTransferFromMep(catalogRecipeForMep, sheet)
+                        kitchenVm.preparePhotoTransferFromMep(catalogRecipeForMep, sheet)
                         onNavigateToPhotoRegister()
                     },
                     onRequestChefSos = { sheet ->
-                        atelierVm.requestChefSos(
+                        kitchenVm.requestChefSos(
                             weekNumber = sheet.weekNumber,
                             contextSummary = "Ficha MEP: ${sheet.title} | Praça ${sheet.stationBrigade} | ${sheet.targetServings} porções | PCC ≥ ${sheet.pccTargetTempC} °C",
                             prefilledPrompt = "Chef, preciso de socorro técnico na Ficha MEP \"${sheet.title}\" (${sheet.targetServings} porções, praça ${sheet.stationBrigade}, PCC ≥ ${sheet.pccTargetTempC} °C). Como corrigir textura/emulsão/rendimento sem comprometer o passe?"

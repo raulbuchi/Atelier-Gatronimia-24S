@@ -216,7 +216,7 @@ fun MepCalculatorWorkstation(
 
     val shrinkagePct = shrinkageText.replace(',', '.').toDoubleOrNull()?.coerceIn(0.0, 85.0) ?: 12.0
     val targetCmvPct = targetCmvText.replace(',', '.').toDoubleOrNull()?.coerceIn(12.0, 80.0) ?: 28.0
-    val directLaborChf = directLaborText.replace(',', '.').toDoubleOrNull()?.coerceAtLeast(0.0) ?: 8.5
+    val directLaborBrl = directLaborText.replace(',', '.').toDoubleOrNull()?.coerceAtLeast(0.0) ?: 8.5
     val actualYieldGrams = actualBenchYieldText.replace(',', '.').toDoubleOrNull()?.coerceAtLeast(0.0) ?: 0.0
     val parsedWeek = weekNumberText.toIntOrNull()?.coerceIn(1, 24) ?: (catalogRecipe?.weekNumber ?: 1)
 
@@ -225,7 +225,7 @@ fun MepCalculatorWorkstation(
         targetServings,
         shrinkagePct,
         targetCmvPct,
-        directLaborChf,
+        directLaborBrl,
         actualYieldGrams,
         editableLines.toList()
     ) {
@@ -234,7 +234,7 @@ fun MepCalculatorWorkstation(
             targetServings = targetServings,
             cookingShrinkagePercent = shrinkagePct,
             targetCmvPercent = targetCmvPct,
-            directLaborPerPortionChf = directLaborChf,
+            directLaborPerPortionBrl = directLaborBrl,
             actualBenchYieldGrams = actualYieldGrams,
             ingredientLines = editableLines.toList()
         )
@@ -254,7 +254,7 @@ fun MepCalculatorWorkstation(
             portionWeightGrams = summary.theoreticalPortionCookedGrams,
             cookingShrinkagePercent = shrinkagePct,
             targetCmvPercent = targetCmvPct,
-            directLaborCost = directLaborChf,
+            directLaborCost = directLaborBrl,
             pccTargetTempC = pccTempC,
             plateTempC = plateTempC,
             allergensCsv = allergensCsv,
@@ -443,14 +443,14 @@ fun MepCalculatorWorkstation(
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
                 KpiMetricTile(
                     label = "CMV / Porção (${"%.0f".format(targetCmvPct)}%)",
-                    value = "R$ ${"%.2f".format(summary.foodCostPerPortionChf)}",
-                    sub = "Lote R$ ${"%.2f".format(summary.totalBatchFoodCostChf)}",
+                    value = "R$ ${"%.2f".format(summary.foodCostPerPortionBrl)}",
+                    sub = "Lote R$ ${"%.2f".format(summary.totalBatchFoodCostBrl)}",
                     modifier = Modifier.weight(1f)
                 )
                 KpiMetricTile(
                     label = "Preço Sugerido",
-                    value = "Cardápio R$ ${"%.2f".format(summary.pricingPerPortion.grossMenuPriceEvpChf)}",
-                    sub = "Líquido R$ ${"%.2f".format(summary.pricingPerPortion.netSellingPriceBvpChf)} (+8%)",
+                    value = "Cardápio R$ ${"%.2f".format(summary.pricingPerPortion.grossMenuPriceEvpBrl)}",
+                    sub = "Líquido R$ ${"%.2f".format(summary.pricingPerPortion.netSellingPriceBvpBrl)} (+8% MWST ref. suíça)",
                     modifier = Modifier.weight(1f)
                 )
             }
@@ -658,7 +658,7 @@ fun MepCalculatorWorkstation(
                     ) {
                         TagPill("FC ${"%.2f".format(calcLine.effectiveFc)}", InfoBlueBg, InfoBlue)
                         Text(
-                            text = "PL ${"%.0f".format(calcLine.scaledPl)}${raw.unit} → PB ${"%.0f".format(calcLine.scaledPb)}${raw.unit} • R$ ${"%.2f".format(calcLine.lineCostChf)}",
+                            text = "PL ${"%.0f".format(calcLine.scaledPl)}${raw.unit} → PB ${"%.0f".format(calcLine.scaledPb)}${raw.unit} • R$ ${"%.2f".format(calcLine.lineCostBrl)}",
                             fontFamily = JetBrainsMonoFamily,
                             style = MaterialTheme.typography.labelMedium,
                             fontWeight = FontWeight.Bold

@@ -1,0 +1,649 @@
+{
+  "formatVersion": 1,
+  "database": {
+    "version": 4,
+    "identityHash": "938ae1adb798f1648490bcd8d09c2edd",
+    "entities": [
+      {
+        "tableName": "study_timer_state",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`weekNumber` INTEGER NOT NULL, `currentPhaseIndex` INTEGER NOT NULL, `remainingSeconds` INTEGER NOT NULL, `isRunning` INTEGER NOT NULL, `completedBlocksCount` INTEGER NOT NULL, `updatedAtEpochMs` INTEGER NOT NULL, PRIMARY KEY(`weekNumber`))",
+        "fields": [
+          {
+            "fieldPath": "weekNumber",
+            "columnName": "weekNumber",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "currentPhaseIndex",
+            "columnName": "currentPhaseIndex",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "remainingSeconds",
+            "columnName": "remainingSeconds",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "isRunning",
+            "columnName": "isRunning",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "completedBlocksCount",
+            "columnName": "completedBlocksCount",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "updatedAtEpochMs",
+            "columnName": "updatedAtEpochMs",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "weekNumber"
+          ]
+        }
+      },
+      {
+        "tableName": "sm2_progress",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`cardId` TEXT NOT NULL, `repetitions` INTEGER NOT NULL, `easinessFactor` REAL NOT NULL, `intervalDays` INTEGER NOT NULL, `nextReviewEpochDay` INTEGER NOT NULL, `lastGrade` INTEGER NOT NULL, `updatedAtEpochMs` INTEGER NOT NULL, PRIMARY KEY(`cardId`))",
+        "fields": [
+          {
+            "fieldPath": "cardId",
+            "columnName": "cardId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "repetitions",
+            "columnName": "repetitions",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "easinessFactor",
+            "columnName": "easinessFactor",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "intervalDays",
+            "columnName": "intervalDays",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "nextReviewEpochDay",
+            "columnName": "nextReviewEpochDay",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "lastGrade",
+            "columnName": "lastGrade",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "updatedAtEpochMs",
+            "columnName": "updatedAtEpochMs",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "cardId"
+          ]
+        }
+      },
+      {
+        "tableName": "mep_sheets",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`recipeId` TEXT NOT NULL, `title` TEXT NOT NULL, `weekNumber` INTEGER NOT NULL, `stationBrigade` TEXT NOT NULL, `baseServings` INTEGER NOT NULL, `targetServings` INTEGER NOT NULL, `portionWeightGrams` REAL NOT NULL, `cookingShrinkagePercent` REAL NOT NULL, `targetCmvPercent` REAL NOT NULL, `directLaborCost` REAL NOT NULL, `pccTargetTempC` INTEGER NOT NULL, `plateTempC` INTEGER NOT NULL, `allergensCsv` TEXT NOT NULL, `actualBenchYieldGrams` REAL NOT NULL, `executionScore1To5` INTEGER NOT NULL, `isCustomSheet` INTEGER NOT NULL, `block1Identification` TEXT NOT NULL, `block2IngredientsPbPlFc` TEXT NOT NULL, `block3CookwareBlades` TEXT NOT NULL, `block4PrePrepCuts` TEXT NOT NULL, `block5ThermalFlowPcc` TEXT NOT NULL, `block6PlatingFinishing` TEXT NOT NULL, `block7HygieneAllergens` TEXT NOT NULL, `block8Selbstkontrolle` TEXT NOT NULL, `localPhotoUri` TEXT NOT NULL, `cloudImageLink` TEXT NOT NULL, `cloudMediaId` TEXT NOT NULL, `photoThumbnailBase64` TEXT NOT NULL, `updatedAtEpochMs` INTEGER NOT NULL, PRIMARY KEY(`recipeId`))",
+        "fields": [
+          {
+            "fieldPath": "recipeId",
+            "columnName": "recipeId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "title",
+            "columnName": "title",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "weekNumber",
+            "columnName": "weekNumber",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "stationBrigade",
+            "columnName": "stationBrigade",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "baseServings",
+            "columnName": "baseServings",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "targetServings",
+            "columnName": "targetServings",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "portionWeightGrams",
+            "columnName": "portionWeightGrams",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "cookingShrinkagePercent",
+            "columnName": "cookingShrinkagePercent",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "targetCmvPercent",
+            "columnName": "targetCmvPercent",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "directLaborCost",
+            "columnName": "directLaborCost",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "pccTargetTempC",
+            "columnName": "pccTargetTempC",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "plateTempC",
+            "columnName": "plateTempC",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "allergensCsv",
+            "columnName": "allergensCsv",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "actualBenchYieldGrams",
+            "columnName": "actualBenchYieldGrams",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "executionScore1To5",
+            "columnName": "executionScore1To5",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "isCustomSheet",
+            "columnName": "isCustomSheet",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "block1Identification",
+            "columnName": "block1Identification",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "block2IngredientsPbPlFc",
+            "columnName": "block2IngredientsPbPlFc",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "block3CookwareBlades",
+            "columnName": "block3CookwareBlades",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "block4PrePrepCuts",
+            "columnName": "block4PrePrepCuts",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "block5ThermalFlowPcc",
+            "columnName": "block5ThermalFlowPcc",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "block6PlatingFinishing",
+            "columnName": "block6PlatingFinishing",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "block7HygieneAllergens",
+            "columnName": "block7HygieneAllergens",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "block8Selbstkontrolle",
+            "columnName": "block8Selbstkontrolle",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "localPhotoUri",
+            "columnName": "localPhotoUri",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "cloudImageLink",
+            "columnName": "cloudImageLink",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "cloudMediaId",
+            "columnName": "cloudMediaId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "photoThumbnailBase64",
+            "columnName": "photoThumbnailBase64",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "updatedAtEpochMs",
+            "columnName": "updatedAtEpochMs",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "recipeId"
+          ]
+        }
+      },
+      {
+        "tableName": "mep_ingredient_lines",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `recipeId` TEXT NOT NULL, `sortOrder` INTEGER NOT NULL, `name` TEXT NOT NULL, `sector` TEXT NOT NULL, `unit` TEXT NOT NULL, `baseNetPl` REAL NOT NULL, `trimLossPercent` REAL NOT NULL, `correctionFactorFc` REAL NOT NULL, `unitCostPerKgOrL` REAL NOT NULL)",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "recipeId",
+            "columnName": "recipeId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "sortOrder",
+            "columnName": "sortOrder",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "name",
+            "columnName": "name",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "sector",
+            "columnName": "sector",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "unit",
+            "columnName": "unit",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "baseNetPl",
+            "columnName": "baseNetPl",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "trimLossPercent",
+            "columnName": "trimLossPercent",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "correctionFactorFc",
+            "columnName": "correctionFactorFc",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "unitCostPerKgOrL",
+            "columnName": "unitCostPerKgOrL",
+            "affinity": "REAL",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": true,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_mep_ingredient_lines_recipeId",
+            "unique": false,
+            "columnNames": [
+              "recipeId"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_mep_ingredient_lines_recipeId` ON `${TABLE_NAME}` (`recipeId`)"
+          }
+        ]
+      },
+      {
+        "tableName": "shopping_fifo_items",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `weekNumber` INTEGER NOT NULL, `ingredientName` TEXT NOT NULL, `sector` TEXT NOT NULL, `unit` TEXT NOT NULL, `netQuantityPl` REAL NOT NULL, `correctionFactorFc` REAL NOT NULL, `grossQuantityPb` REAL NOT NULL, `batchDate` TEXT NOT NULL, `expiryDate` TEXT NOT NULL, `isPurchased` INTEGER NOT NULL, `fifoPriorityNote` TEXT NOT NULL)",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "weekNumber",
+            "columnName": "weekNumber",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "ingredientName",
+            "columnName": "ingredientName",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "sector",
+            "columnName": "sector",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "unit",
+            "columnName": "unit",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "netQuantityPl",
+            "columnName": "netQuantityPl",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "correctionFactorFc",
+            "columnName": "correctionFactorFc",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "grossQuantityPb",
+            "columnName": "grossQuantityPb",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "batchDate",
+            "columnName": "batchDate",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "expiryDate",
+            "columnName": "expiryDate",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "isPurchased",
+            "columnName": "isPurchased",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "fifoPriorityNote",
+            "columnName": "fifoPriorityNote",
+            "affinity": "TEXT",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": true,
+          "columnNames": [
+            "id"
+          ]
+        }
+      },
+      {
+        "tableName": "equipment_owned",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`equipmentId` TEXT NOT NULL, `isOwned` INTEGER NOT NULL, PRIMARY KEY(`equipmentId`))",
+        "fields": [
+          {
+            "fieldPath": "equipmentId",
+            "columnName": "equipmentId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "isOwned",
+            "columnName": "isOwned",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "equipmentId"
+          ]
+        }
+      },
+      {
+        "tableName": "self_evaluations",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`weekNumber` INTEGER NOT NULL, `scoreMiseEnPlace` INTEGER NOT NULL, `scoreTechnique` INTEGER NOT NULL, `scoreHygienePcc` INTEGER NOT NULL, `scoreSensory` INTEGER NOT NULL, `erkenntnisse` TEXT NOT NULL, `offenePunkte` TEXT NOT NULL, `updatedAtEpochMs` INTEGER NOT NULL, PRIMARY KEY(`weekNumber`))",
+        "fields": [
+          {
+            "fieldPath": "weekNumber",
+            "columnName": "weekNumber",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "scoreMiseEnPlace",
+            "columnName": "scoreMiseEnPlace",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "scoreTechnique",
+            "columnName": "scoreTechnique",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "scoreHygienePcc",
+            "columnName": "scoreHygienePcc",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "scoreSensory",
+            "columnName": "scoreSensory",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "erkenntnisse",
+            "columnName": "erkenntnisse",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "offenePunkte",
+            "columnName": "offenePunkte",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "updatedAtEpochMs",
+            "columnName": "updatedAtEpochMs",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "weekNumber"
+          ]
+        }
+      },
+      {
+        "tableName": "course_progress",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER NOT NULL, `startEpochDay` INTEGER NOT NULL, `focusedWeekNumber` INTEGER NOT NULL, `updatedAtEpochMs` INTEGER NOT NULL, PRIMARY KEY(`id`))",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "startEpochDay",
+            "columnName": "startEpochDay",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "focusedWeekNumber",
+            "columnName": "focusedWeekNumber",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "updatedAtEpochMs",
+            "columnName": "updatedAtEpochMs",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        }
+      },
+      {
+        "tableName": "week_completions",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`weekNumber` INTEGER NOT NULL, `completedAtEpochMs` INTEGER NOT NULL, PRIMARY KEY(`weekNumber`))",
+        "fields": [
+          {
+            "fieldPath": "weekNumber",
+            "columnName": "weekNumber",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "completedAtEpochMs",
+            "columnName": "completedAtEpochMs",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "weekNumber"
+          ]
+        }
+      },
+      {
+        "tableName": "cycle_deliverable_checks",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`cycleNumber` INTEGER NOT NULL, `deliverableIndex` INTEGER NOT NULL, `isDone` INTEGER NOT NULL, `updatedAtEpochMs` INTEGER NOT NULL, PRIMARY KEY(`cycleNumber`, `deliverableIndex`))",
+        "fields": [
+          {
+            "fieldPath": "cycleNumber",
+            "columnName": "cycleNumber",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "deliverableIndex",
+            "columnName": "deliverableIndex",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "isDone",
+            "columnName": "isDone",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "updatedAtEpochMs",
+            "columnName": "updatedAtEpochMs",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "cycleNumber",
+            "deliverableIndex"
+          ]
+        }
+      }
+    ],
+    "setupQueries": [
+      "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '938ae1adb798f1648490bcd8d09c2edd')"
+    ]
+  }
+}

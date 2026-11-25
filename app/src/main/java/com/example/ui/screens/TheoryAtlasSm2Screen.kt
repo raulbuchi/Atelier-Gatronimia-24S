@@ -76,28 +76,28 @@ import com.example.ui.theme.PccGreen
 import com.example.ui.theme.PccGreenBg
 import com.example.ui.theme.SwissRed
 import com.example.ui.theme.SwissRedContainer
-import com.example.ui.viewmodel.AtelierViewModel
+import com.example.ui.viewmodel.CourseViewModel
 
 @OptIn(ExperimentalLayoutApi::class, ExperimentalMaterial3Api::class)
 @Composable
 fun TheoryAtlasSm2Screen(
-    atelierVm: AtelierViewModel,
+    courseVm: CourseViewModel,
     audioNarrator: KitchenAudioNarrator,
     podcastPlayer: OfflinePodcastPlayer,
     onJumpToRecipe: (String) -> Unit
 ) {
-    val selectedWeekNum by atelierVm.selectedWeekNumber.collectAsStateWithLifecycle()
-    val timersMap by atelierVm.timersMap.collectAsStateWithLifecycle()
-    val sm2Map by atelierVm.sm2Map.collectAsStateWithLifecycle()
-    val selectedLibraryAxis by atelierVm.selectedLibraryAxis.collectAsStateWithLifecycle()
-    val requestedSubTab by atelierVm.requestedAtlasSubTab.collectAsStateWithLifecycle()
-    val sm2AxisFilter by atelierVm.sm2AxisFilter.collectAsStateWithLifecycle()
+    val selectedWeekNum by courseVm.selectedWeekNumber.collectAsStateWithLifecycle()
+    val timersMap by courseVm.timersMap.collectAsStateWithLifecycle()
+    val sm2Map by courseVm.sm2Map.collectAsStateWithLifecycle()
+    val selectedLibraryAxis by courseVm.selectedLibraryAxis.collectAsStateWithLifecycle()
+    val requestedSubTab by courseVm.requestedAtlasSubTab.collectAsStateWithLifecycle()
+    val sm2AxisFilter by courseVm.sm2AxisFilter.collectAsStateWithLifecycle()
 
     var subTab by rememberSaveable { mutableIntStateOf(0) }
     LaunchedEffect(requestedSubTab) {
         requestedSubTab?.let { target ->
             subTab = target.coerceIn(0, 7)
-            atelierVm.consumeAtlasSubTabRequest()
+            courseVm.consumeAtlasSubTabRequest()
         }
     }
 
@@ -149,8 +149,8 @@ fun TheoryAtlasSm2Screen(
                     timerState = timerState,
                     audioNarrator = audioNarrator,
                     podcastPlayer = podcastPlayer,
-                    onToggleTimer = { atelierVm.toggleStudyTimer(currentWeek.weekNumber) },
-                    onSelectWeek = { atelierVm.selectWeek(it) }
+                    onToggleTimer = { courseVm.toggleStudyTimer(currentWeek.weekNumber) },
+                    onSelectWeek = { courseVm.selectWeek(it) }
                 )
                 1 -> SchnittartenSection()
                 2 -> KochgeschirrartenSection()
@@ -160,19 +160,19 @@ fun TheoryAtlasSm2Screen(
                     selectedAxisNumber = selectedLibraryAxis,
                     selectedWeekNumber = selectedWeekNum,
                     audioNarrator = audioNarrator,
-                    onSelectAxis = { atelierVm.selectLibraryAxis(it) },
-                    onPracticeAxisInSm2 = { axisNum -> atelierVm.practiceAxisInSm2(axisNum) }
+                    onSelectAxis = { courseVm.selectLibraryAxis(it) },
+                    onPracticeAxisInSm2 = { axisNum -> courseVm.practiceAxisInSm2(axisNum) }
                 )
                 6 -> SwissmilkCantonsSection(
                     onJumpToRecipe = onJumpToRecipe,
-                    onOpenBrochureAxis = { axisNum -> atelierVm.openDidacticLibraryAxis(axisNum) }
+                    onOpenBrochureAxis = { axisNum -> courseVm.openDidacticLibraryAxis(axisNum) }
                 )
                 7 -> Sm2FlashcardsTrainerSection(
                     currentWeek = currentWeek,
                     sm2Map = sm2Map,
                     selectedAxisFilter = sm2AxisFilter,
-                    onSelectAxisFilter = { atelierVm.setSm2AxisFilter(it) },
-                    onGrade = { cardId, grade -> atelierVm.gradeFlashcard(cardId, grade) }
+                    onSelectAxisFilter = { courseVm.setSm2AxisFilter(it) },
+                    onGrade = { cardId, grade -> courseVm.gradeFlashcard(cardId, grade) }
                 )
             }
         }
@@ -224,7 +224,7 @@ private fun Lesson80MinSection(
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Text(
-                    text = "Cronômetro: ${AtelierViewModel.STUDY_PHASE_LABELS[timerState.currentPhaseIndex]} • ${formatSecondsMmSs(timerState.remainingSeconds)}",
+                    text = "Cronômetro: ${CourseViewModel.STUDY_PHASE_LABELS[timerState.currentPhaseIndex]} • ${formatSecondsMmSs(timerState.remainingSeconds)}",
                     fontFamily = JetBrainsMonoFamily,
                     fontWeight = FontWeight.Bold,
                     modifier = Modifier.weight(1f)
@@ -559,7 +559,7 @@ private fun Sm2FlashcardsTrainerSection(
     onSelectAxisFilter: (Int) -> Unit,
     onGrade: (String, Int) -> Unit
 ) {
-    val todayEpochDay = System.currentTimeMillis() / 86_400_000L
+    val todayEpochDay = com.example.core.session.localEpochDayNow()
     var filterOnlyWeek by rememberSaveable { mutableStateOf(false) }
     val sortedCards = remember(sm2Map, filterOnlyWeek, selectedAxisFilter, currentWeek.weekNumber) {
         val pool = when {

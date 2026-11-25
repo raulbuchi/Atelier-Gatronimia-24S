@@ -1,9 +1,16 @@
 package com.example.data.local
 
+import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.Index
 import androidx.room.PrimaryKey
 
+/**
+ * Bloco de estudo de 80 min de uma semana.
+ * - Pausado: [remainingSeconds] é o tempo restante da fase atual e [phaseEndsAtEpochMs] = 0.
+ * - Rodando: [phaseEndsAtEpochMs] é o instante (epoch ms) em que a fase atual termina; o restante
+ *   é sempre derivado do relógio (ver `TimerMath`), portanto sobrevive à morte do processo.
+ */
 @Entity(tableName = "study_timer_state")
 data class StudyTimerEntity(
     @PrimaryKey val weekNumber: Int,
@@ -11,7 +18,23 @@ data class StudyTimerEntity(
     val remainingSeconds: Int = 600,
     val isRunning: Boolean = false,
     val completedBlocksCount: Int = 0,
-    val updatedAtEpochMs: Long = System.currentTimeMillis()
+    val updatedAtEpochMs: Long = System.currentTimeMillis(),
+    @ColumnInfo(defaultValue = "0") val phaseEndsAtEpochMs: Long = 0L
+)
+
+/**
+ * Cronômetro paralelo do Modo Cozinha (ex.: Berner Platte 120/90/60/20 min), persistido para
+ * continuar contando e alertar mesmo com o app fechado. Mesma semântica de prazo do bloco de estudo.
+ */
+@Entity(tableName = "kitchen_timers")
+data class KitchenTimerEntity(
+    @PrimaryKey val id: String,
+    val label: String,
+    val totalSeconds: Int,
+    val remainingSeconds: Int,
+    val endsAtEpochMs: Long = 0L,
+    val isRunning: Boolean = false,
+    val createdAtEpochMs: Long = System.currentTimeMillis()
 )
 
 @Entity(tableName = "sm2_progress")
@@ -106,5 +129,41 @@ data class SelfEvalEntity(
     val scoreSensory: Int = 4,     // 1..5
     val erkenntnisse: String = "",
     val offenePunkte: String = "",
+    val updatedAtEpochMs: Long = System.currentTimeMillis()
+)
+
+/**
+ * Estado global do aluno no curso (linha única, id = 1).
+ * - [startEpochDay]: dia de início do curso (LocalDate.toEpochDay), base da "semana do calendário".
+ * - [focusedWeekNumber]: última semana em foco no app (restaurada ao reabrir).
+ */
+@Entity(tableName = "course_progress")
+data class CourseProgressEntity(
+    @PrimaryKey val id: Int = SINGLETON_ID,
+    val startEpochDay: Long,
+    val focusedWeekNumber: Int = 1,
+    val updatedAtEpochMs: Long = System.currentTimeMillis()
+) {
+    companion object {
+        const val SINGLETON_ID = 1
+    }
+}
+
+/** Semana formalmente concluída pelo aluno (após cumprir os critérios da semana). */
+@Entity(tableName = "week_completions")
+data class WeekCompletionEntity(
+    @PrimaryKey val weekNumber: Int,
+    val completedAtEpochMs: Long = System.currentTimeMillis()
+)
+
+/** Checklist dos entregáveis de portfólio de cada ciclo (`cycles[].portfolio_deliverables`). */
+@Entity(
+    tableName = "cycle_deliverable_checks",
+    primaryKeys = ["cycleNumber", "deliverableIndex"]
+)
+data class CycleDeliverableCheckEntity(
+    val cycleNumber: Int,
+    val deliverableIndex: Int,
+    val isDone: Boolean = false,
     val updatedAtEpochMs: Long = System.currentTimeMillis()
 )

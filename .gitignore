@@ -1,5 +1,7 @@
 *.iml
 .gradle
+# Configurações locais do Android Studio (dispositivos, seleção de alvo, inspeções)
+.idea/
 .kotlin
 /local.properties
 /.idea/caches
